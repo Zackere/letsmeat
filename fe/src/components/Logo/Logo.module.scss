@@ -1,0 +1,14 @@
+.root {
+    height: 64px;
+    color: var(--primary);
+    svg {
+        height: 100%;
+    }
+}
+
+.text {
+    font-size: 220px;
+    font-family: 'Montserrat';
+    font-weight: 700;
+    fill: var(--text-primary);
+}

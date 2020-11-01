@@ -1,0 +1,12 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.innerContainer {
+    flex: auto;
+    background-color: red;
+    display: flex;
+    flex-direction: column;
+}
