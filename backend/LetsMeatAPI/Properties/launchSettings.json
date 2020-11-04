@@ -11,8 +11,8 @@
   "profiles": {
     "Docker": {
       "commandName": "Docker",
-      // "launchBrowser": true,
-      // "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/login/google?token=1234",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/",
       "publishAllPorts": true,
       "useSSL": true
     }
