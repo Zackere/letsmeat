@@ -2,10 +2,8 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace LetsMeatAPI.Controllers {
@@ -34,9 +32,10 @@ namespace LetsMeatAPI.Controllers {
     /// </summary>
     /// <param name="googleTokenId">Google JWT</param>
     /// <returns>A token which should be used to authorize requests</returns>
+    /// <response code="200">Returns token string which should be used to authorize requests</response>
     [HttpPost]
     [Route("google")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Google(string googleTokenId) {
       try {
