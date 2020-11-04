@@ -1,5 +1,6 @@
 ﻿using Google.Apis.Auth;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -23,19 +24,21 @@ namespace LetsMeatAPI.Controllers {
       IWebHostEnvironment webHostEnvironment,
       Random rnd
     ) {
-      if(googleTokenIdValidator == null)
-        throw new ArgumentNullException("googleTokenIdValidator");
-      if(webHostEnvironment == null)
-        throw new ArgumentNullException("webHostEnvironment");
-      if(rnd == null)
-        throw new ArgumentNullException("rnd");
-      _googleTokenIdValidator = googleTokenIdValidator;
-      _webHostEnvironment = webHostEnvironment;
-      _rnd = rnd;
+      _googleTokenIdValidator = googleTokenIdValidator ?? throw new ArgumentNullException("googleTokenIdValidator");
+      _expectedGoogleAudiences = expectedGoogleAudiences;
+      _webHostEnvironment = webHostEnvironment ?? throw new ArgumentNullException("webHostEnvironment");
+      _rnd = rnd ?? throw new ArgumentNullException("rnd");
     }
+    /// <summary>
+    /// Authorizes sender using Google OAuth 2.0
+    /// </summary>
+    /// <param name="googleTokenId">Google JWT</param>
+    /// <returns>A token which should be used to authorize requests</returns>
     [HttpPost]
     [Route("google")]
-    public async Task<string> Google(string googleTokenId) {
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Google(string googleTokenId) {
       try {
         var googlePayload = await _googleTokenIdValidator(
           googleTokenId,
@@ -45,21 +48,18 @@ namespace LetsMeatAPI.Controllers {
         );
         var tokenBytes = new byte[TokenLength];
         _rnd.NextBytes(tokenBytes);
-        var tokenHexString = String.Concat(Array.ConvertAll(tokenBytes, b => b.ToString("X2")));
+        var tokenHexString = string.Concat(Array.ConvertAll(tokenBytes, b => b.ToString("X2")));
         OnTokenGranted?.Invoke(tokenHexString, googlePayload);
-        return tokenHexString;
-      } catch(InvalidJwtException e) {
-        if(_webHostEnvironment.IsDevelopment())
-          throw e;
-        Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-        return "";
+        return Ok(tokenHexString);
+      } catch {
+        return Unauthorized();
       }
     }
     public uint TokenLength { get; set; } = 128;
     public event TokenGrantedEventHandler OnTokenGranted;
     private readonly GoogleTokenIdValidator _googleTokenIdValidator;
-    private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly IEnumerable<string> _expectedGoogleAudiences;
+    private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly Random _rnd;
   }
 }
