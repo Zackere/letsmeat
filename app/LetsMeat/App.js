@@ -17,94 +17,71 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import {
-  Colors,
-} from 'react-native/Libraries/NewAppScreen';
-import {
-  GoogleSignin,
-  statusCodes
+  GoogleSignin
 } from '@react-native-community/google-signin';
 import Main from './components/Main';
 import DrawerContent from './components/DrawerContent';
 
 import SignInScreen from './components/SignIn';
+import SplashScreen from './components/SplashScreen';
 import { StateProvider, store } from './components/Store';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
 const Navigation = () => {
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: '790166575655-222h23mpv6h7n7jhjkac6gj220e5kevt.apps.googleusercontent.com'
+    });
+    GoogleSignin.isSignedIn().then((signedIn) => {
+      if (signedIn) {
+        GoogleSignin.getCurrentUser().then((userInfo) => {
+          dispatch({ type: 'SET_USER', payload: userInfo });
+          dispatch({ type: 'SET_LOADED' });
+        });
+      }
+    });
+  }, []);
+
+  let mainComponent = null;
+  if (state.loading) {
+    mainComponent = (
+      <Stack.Navigator>
+        <Stack.Screen name="SplashScreen" component={SplashScreen} options={{ headerShown: false }} />
+      </Stack.Navigator>
+    );
+  } else if (state.user.signedIn) {
+    mainComponent = (
+      <Drawer.Navigator
+        drawerContent={() => <DrawerContent />}
+      >
+        <Drawer.Screen name="Home" component={Main} />
+      </Drawer.Navigator>
+    );
+  } else {
+    mainComponent = (
+      <Stack.Navigator>
+        <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
+      </Stack.Navigator>
+    );
+  }
 
   return (
     <PaperProvider>
       <NavigationContainer>
-        {state.user.signedIn ? (
-          <Drawer.Navigator
-            drawerContent={() => <DrawerContent />}
-          >
-            <Drawer.Screen name="Home" component={Main} />
-          </Drawer.Navigator>
-        ) : (
-          <Stack.Navigator>
-            <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
-          </Stack.Navigator>
-        )}
+        {mainComponent}
       </NavigationContainer>
     </PaperProvider>
   );
 };
 
-const App = () => {
-  useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: '790166575655-222h23mpv6h7n7jhjkac6gj220e5kevt.apps.googleusercontent.com'
-    });
-  }, []);
-
-  return (
-    <StateProvider>
-      <Navigation />
-    </StateProvider>
-  );
-};
-
-// const styles = StyleSheet.create({
-//   scrollView: {
-//     backgroundColor: Colors.lighter,
-//   },
-//   engine: {
-//     position: 'absolute',
-//     right: 0,
-//   },
-//   body: {
-//     backgroundColor: Colors.white,
-//   },
-//   sectionContainer: {
-//     marginTop: 32,
-//     paddingHorizontal: 24,
-//   },
-//   sectionTitle: {
-//     fontSize: 24,
-//     fontWeight: '600',
-//     color: Colors.black,
-//   },
-//   sectionDescription: {
-//     marginTop: 8,
-//     fontSize: 18,
-//     fontWeight: '400',
-//     color: Colors.dark,
-//   },
-//   highlight: {
-//     fontWeight: '700',
-//   },
-//   footer: {
-//     color: Colors.dark,
-//     fontSize: 12,
-//     fontWeight: '600',
-//     padding: 4,
-//     paddingRight: 12,
-//     textAlign: 'right',
-//   },
-// });
+const App = () => (
+  <StateProvider>
+    <Navigation />
+  </StateProvider>
+);
 
 export default App;

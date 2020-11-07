@@ -1,9 +1,9 @@
 import React, { createContext, useReducer } from 'react';
 
 const initialState = {
+  loading: true,
   user: {
     signedIn: false,
-    userObject: {},
   },
 };
 const store = createContext(initialState);
@@ -18,10 +18,27 @@ const StateProvider = ({ children }) => {
           user: {
             ...state.user,
             signedIn: true,
-            userObject: action.payload,
+            name: action.payload.user.name,
+            email: action.payload.user.email,
+            photo: action.payload.user.photo,
+            googleToken: action.payload.idToken
           },
         };
-        console.log(newState);
+        // console.log(action.payload)
+        return newState;
+      }
+      case 'SET_LOADING': {
+        const newState = {
+          ...state,
+          loading: true,
+        };
+        return newState;
+      }
+      case 'SET_LOADED': {
+        const newState = {
+          ...state,
+          loading: false,
+        };
         return newState;
       }
       default:

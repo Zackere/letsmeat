@@ -19,7 +19,6 @@ function Main({ navigation }) {
         <TouchableHighlight
           onPress={() => {
             navigation.openDrawer();
-            console.log(state);
           }}
         >
           <View style={styles.button}>

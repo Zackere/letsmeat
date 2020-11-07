@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   GoogleSigninButton,
   GoogleSignin,
@@ -10,6 +10,7 @@ import { store } from '../Store';
 function SignInScreen() {
   const state = useContext(store);
   const { dispatch } = state;
+  const [signingIn, setSigningIn] = useState(false);
 
   const setUser = (userInfo) => {
     dispatch({ type: 'SET_USER', payload: userInfo });
@@ -49,6 +50,7 @@ function SignInScreen() {
   };
 
   const signIn = async () => {
+    setSigningIn(true);
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
@@ -67,6 +69,7 @@ function SignInScreen() {
       }
     }
   };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Let&apos;s meat</Text>
@@ -75,6 +78,7 @@ function SignInScreen() {
         size={GoogleSigninButton.Size.Wide}
         color={GoogleSigninButton.Color.Dark}
         onPress={signIn}
+        disabled={signingIn}
       />
     </View>
   );
