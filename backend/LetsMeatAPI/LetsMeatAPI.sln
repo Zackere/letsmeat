@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LetsMeatAPITests", "..\LetsMeatAPITests\LetsMeatAPITests.csproj", "{ADDC5498-61E4-442D-B42C-A31010B041DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{4837394C-7CF0-43C4-83AE-90F63454716F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4837394C-7CF0-43C4-83AE-90F63454716F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4837394C-7CF0-43C4-83AE-90F63454716F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADDC5498-61E4-442D-B42C-A31010B041DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADDC5498-61E4-442D-B42C-A31010B041DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADDC5498-61E4-442D-B42C-A31010B041DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADDC5498-61E4-442D-B42C-A31010B041DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,9 @@
-﻿using Google.Apis.Auth;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,17 +17,19 @@ namespace LetsMeatAPI.Controllers {
         string jwt,
         GoogleJsonWebSignature.ValidationSettings validationSettings
       );
-    public delegate void TokenGrantedEventHandler(string token, object userInformation);
+    public delegate void TokenGrantedEventHandler(string token, GoogleJsonWebSignature.Payload jwt);
     public LoginController(
       GoogleTokenIdValidator googleTokenIdValidator,
-      IEnumerable<string> expectedGoogleAudiences,
+      IEnumerable<string>? expectedGoogleAudiences,
       IWebHostEnvironment webHostEnvironment,
-      Random rnd
+      Random rnd,
+      ILogger<LoginController> logger
     ) {
       _googleTokenIdValidator = googleTokenIdValidator ?? throw new ArgumentNullException("googleTokenIdValidator");
       _expectedGoogleAudiences = expectedGoogleAudiences;
       _webHostEnvironment = webHostEnvironment ?? throw new ArgumentNullException("webHostEnvironment");
       _rnd = rnd ?? throw new ArgumentNullException("rnd");
+      _logger = logger ?? throw new ArgumentNullException("logger");
     }
     /// <summary>
     /// Authorizes sender using Google OAuth 2.0
@@ -51,14 +55,17 @@ namespace LetsMeatAPI.Controllers {
         OnTokenGranted?.Invoke(tokenHexString, googlePayload);
         return Ok(tokenHexString);
       } catch {
+        if(_webHostEnvironment.IsDevelopment())
+          throw;
         return Unauthorized();
       }
     }
     public uint TokenLength { get; set; } = 128;
-    public event TokenGrantedEventHandler OnTokenGranted;
+    public event TokenGrantedEventHandler? OnTokenGranted;
     private readonly GoogleTokenIdValidator _googleTokenIdValidator;
-    private readonly IEnumerable<string> _expectedGoogleAudiences;
+    private readonly IEnumerable<string>? _expectedGoogleAudiences;
     private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly Random _rnd;
+    private readonly ILogger<LoginController> _logger;
   }
 }
