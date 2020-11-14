@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,6 +20,10 @@ namespace LetsMeatAPI {
     private readonly string _letsMeatAPIPolicy = "_letsMeatAPIPolicy";
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services) {
+      services.AddDbContext<LMDbContext>(options =>
+        options.UseSqlServer(Configuration.GetConnectionString("LMDatabase"))
+               .UseLazyLoadingProxies()
+      );
       services.AddSingleton<IControllerActivator, ControllerFactory>(
         serviceProvider => new ControllerFactory(
             _webHostEnvironment,
@@ -27,7 +32,8 @@ namespace LetsMeatAPI {
               Environment.GetEnvironmentVariable("MOBILE_GOOGLE_CLIENT_ID")
             }
             where aud != null
-            select aud
+            select aud,
+            serviceProvider
           )
       );
       services.AddControllers();
@@ -40,6 +46,8 @@ namespace LetsMeatAPI {
         var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
         config.IncludeXmlComments(xmlPath);
       });
+
+      services.AddTransient<UserManager>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
