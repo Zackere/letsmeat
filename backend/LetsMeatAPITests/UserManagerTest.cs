@@ -33,6 +33,7 @@ namespace LetsMeatAPITests {
     }
     [Theory]
     [MemberData(nameof(UsersWithTokens), 35712, 1)]
+    [MemberData(nameof(UsersWithTokens), 32167, 5)]
     public void RegistersUsersOnTokenGrantedForTheFirstLoginEver(
       string[] tokens,
       Google.Apis.Auth.GoogleJsonWebSignature.Payload[] jwts
@@ -41,6 +42,8 @@ namespace LetsMeatAPITests {
       var userManager = new LetsMeatAPI.UserManager(context, Mock.Of<ILogger<LetsMeatAPI.UserManager>>());
       foreach(var (token, jwt) in tokens.Zip(jwts))
         userManager.OnTokenGranted(token, jwt);
+
+      Assert.Equal(tokens.Count(), context.Users.Count());
 
       foreach(var user in context.Users) {
         var (token, jwt) = (from p in tokens.Zip(jwts)
