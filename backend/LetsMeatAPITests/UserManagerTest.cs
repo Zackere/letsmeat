@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -120,7 +119,7 @@ namespace LetsMeatAPITests {
     private static string RandomString(Random rnd, int length) {
       var bytes = new byte[length];
       rnd.NextBytes(bytes);
-      return Encoding.UTF8.GetString(bytes);
+      return Convert.ToBase64String(bytes);
     }
     public static IEnumerable<object[]> UsersWithTokens(int seed, int n) {
       var rnd = new Random(seed);
