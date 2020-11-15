@@ -6,6 +6,20 @@
 image: mcr.microsoft.com/dotnet/core/sdk:3.1
 
 pipelines:
+  branches:
+    master:
+      - step:
+          name: Deploy backend
+          caches:
+            - dotnetcore
+          script:
+            - apt-get update && apt-get install -y zip 
+            - cd backend/LetsMeatAPI
+            - dotnet restore
+            - dotnet build --no-restore --configuration Release
+            - dotnet publish --no-restore --no-build --configuration Release
+            - zip -r letsmeatapi.zip bin/Release/netcoreapp3.1/publish/
+            - curl -u wreplin:${AZURE_DEPLOYMENT_PASSWORD} --data-binary @letsmeatapi.zip https://letsmeatapi.scm.azurewebsites.net/api/zipdeploy
   default:
     - parallel:
         - step:
