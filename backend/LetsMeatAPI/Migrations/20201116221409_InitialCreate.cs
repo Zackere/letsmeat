@@ -7,7 +7,7 @@ namespace LetsMeatAPI.Migrations {
       migrationBuilder.CreateTable(
           name: "Groups",
           columns: table => new {
-            Id = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+            Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
             Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false)
           },
           constraints: table => {
@@ -30,12 +30,12 @@ namespace LetsMeatAPI.Migrations {
       migrationBuilder.CreateTable(
           name: "Events",
           columns: table => new {
-            Id = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+            Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
             Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
             CandidateTimes = table.Column<string>(type: "nvarchar(max)", nullable: false),
             Deadline = table.Column<DateTime>(type: "datetime2", nullable: false),
             Result = table.Column<string>(type: "nvarchar(max)", nullable: true),
-            GroupId = table.Column<string>(type: "nvarchar(128)", nullable: true)
+            GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
           },
           constraints: table => {
             table.PrimaryKey("PK_Events", x => x.Id);
@@ -50,9 +50,9 @@ namespace LetsMeatAPI.Migrations {
       migrationBuilder.CreateTable(
           name: "Locations",
           columns: table => new {
-            Id = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+            Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
             Info = table.Column<string>(type: "nvarchar(max)", nullable: false),
-            GroupId = table.Column<string>(type: "nvarchar(128)", nullable: true)
+            GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
           },
           constraints: table => {
             table.PrimaryKey("PK_Locations", x => x.Id);
@@ -69,7 +69,7 @@ namespace LetsMeatAPI.Migrations {
           columns: table => new {
             FromId = table.Column<string>(type: "nvarchar(128)", nullable: false),
             ToId = table.Column<string>(type: "nvarchar(128)", nullable: false),
-            GroupId = table.Column<string>(type: "nvarchar(128)", nullable: false),
+            GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
             Amount = table.Column<int>(type: "int", nullable: false)
           },
           constraints: table => {
@@ -95,7 +95,7 @@ namespace LetsMeatAPI.Migrations {
       migrationBuilder.CreateTable(
           name: "GroupUser",
           columns: table => new {
-            GroupsId = table.Column<string>(type: "nvarchar(128)", nullable: false),
+            GroupsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
             UsersId = table.Column<string>(type: "nvarchar(128)", nullable: false)
           },
           constraints: table => {
@@ -119,7 +119,7 @@ namespace LetsMeatAPI.Migrations {
           columns: table => new {
             FromId = table.Column<string>(type: "nvarchar(128)", nullable: false),
             ToId = table.Column<string>(type: "nvarchar(128)", nullable: false),
-            GroupId = table.Column<string>(type: "nvarchar(128)", nullable: false)
+            GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
           },
           constraints: table => {
             table.PrimaryKey("PK_Invitation", x => new { x.FromId, x.ToId, x.GroupId });
@@ -145,7 +145,7 @@ namespace LetsMeatAPI.Migrations {
       migrationBuilder.CreateTable(
           name: "Votes",
           columns: table => new {
-            EventId = table.Column<string>(type: "nvarchar(128)", nullable: false),
+            EventId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
             UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
             Order = table.Column<string>(type: "nvarchar(max)", nullable: false)
           },
@@ -162,8 +162,8 @@ namespace LetsMeatAPI.Migrations {
       migrationBuilder.CreateTable(
           name: "EventLocation",
           columns: table => new {
-            CandidateLocationsId = table.Column<string>(type: "nvarchar(128)", nullable: false),
-            EventsWithMeId = table.Column<string>(type: "nvarchar(128)", nullable: false)
+            CandidateLocationsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+            EventsWithMeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
           },
           constraints: table => {
             table.PrimaryKey("PK_EventLocation", x => new { x.CandidateLocationsId, x.EventsWithMeId });

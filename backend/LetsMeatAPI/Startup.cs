@@ -35,7 +35,10 @@ namespace LetsMeatAPI {
       services.AddControllers();
       services.AddCors(cors => cors.AddPolicy(
         _letsMeatAPIPolicy,
-        builder => builder.AllowAnyOrigin().AllowAnyMethod()
+        builder => builder
+                  .AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
       ));
       services.AddSwaggerGen(config => {
         var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";

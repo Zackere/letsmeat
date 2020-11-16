@@ -64,21 +64,21 @@ namespace LetsMeatAPITests {
     }
     [Fact]
     public async Task ProvidesInformationAboutLoggedInUsers() {
-      var data = UsersWithTokens(123321, 1);
-      var token = (data.ElementAt(0)[0] as object[])[0] as string;
-      var jwt = (data.ElementAt(0)[1] as object[])[0] as Google.Apis.Auth.GoogleJsonWebSignature.Payload;
+      var data = UsersWithTokens(123321, 1).First();
+      var token = (data[0] as object[])[0] as string;
+      var jwt = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
       var (context, connection) = GetDb();
       var userManager = new LetsMeatAPI.UserManager(context, Mock.Of<ILogger<LetsMeatAPI.UserManager>>());
 
       await userManager.OnTokenGranted(token, jwt);
       Assert.Equal(jwt.Subject, userManager.IsLoggedIn(token));
-      Assert.True(userManager.LogOut(token));
-      Assert.False(userManager.LogOut(token));
+      Assert.Equal(jwt.Subject, userManager.LogOut(token));
+      Assert.Null(userManager.LogOut(token));
       token += "dsjiadjsaoi";
       await userManager.OnTokenGranted(token, jwt);
       Assert.Equal(jwt.Subject, userManager.IsLoggedIn(token));
-      Assert.True(userManager.LogOut(token));
-      Assert.False(userManager.LogOut(token));
+      Assert.Equal(jwt.Subject, userManager.LogOut(token));
+      Assert.Null(userManager.LogOut(token));
 
       context.Dispose();
       connection.Close();
@@ -86,11 +86,11 @@ namespace LetsMeatAPITests {
     }
     [Fact]
     public async Task UpdatesUserInformationUponLogin() {
-      var data = UsersWithTokens(123321, 2);
-      var token = (data.ElementAt(0)[0] as object[])[0] as string;
-      var jwt = (data.ElementAt(0)[1] as object[])[0] as GoogleJsonWebSignature.Payload;
-      var token2 = (data.ElementAt(1)[0] as object[])[0] as string;
-      var jwt2 = (data.ElementAt(1)[1] as object[])[0] as GoogleJsonWebSignature.Payload;
+      var data = UsersWithTokens(123321, 2).First();
+      var token = (data[0] as object[])[0] as string;
+      var jwt = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
+      var token2 = (data[0] as object[])[1] as string;
+      var jwt2 = (data[1] as object[])[1] as GoogleJsonWebSignature.Payload;
       jwt2.Subject = jwt.Subject; // They are the same user
       var (context, connection) = GetDb();
 
@@ -118,12 +118,12 @@ namespace LetsMeatAPITests {
       connection.Dispose();
     }
     [Fact]
-    public async Task HandlesDbUpdateExceptionOnRealDb() {
-      var data = UsersWithTokens(123321, 2);
-      var token1 = (data.ElementAt(0)[0] as object[])[0] as string;
-      var jwt1 = (data.ElementAt(0)[1] as object[])[0] as GoogleJsonWebSignature.Payload;
-      var token2 = (data.ElementAt(1)[0] as object[])[0] as string;
-      var jwt2 = (data.ElementAt(1)[1] as object[])[0] as GoogleJsonWebSignature.Payload;
+    public async Task ThrowsDbUpdateExceptionOnRealDb() {
+      var data = UsersWithTokens(123321, 2).First();
+      var token1 = (data[0] as object[])[0] as string;
+      var jwt1 = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
+      var token2 = (data[0] as object[])[1] as string;
+      var jwt2 = (data[1] as object[])[1] as GoogleJsonWebSignature.Payload;
       jwt2.Subject = jwt1.Subject; // Force conflict
       var (context1, connection1) = GetDb();
       var context2 = new LetsMeatAPI.LMDbContext(
@@ -140,7 +140,7 @@ namespace LetsMeatAPITests {
           Assert.Equal(new[] { jwt1.Subject }, key);
           var ret = await genuineUsers.FindAsync(key);
           Assert.Null(ret);
-          await Task.Delay(1000);
+          await Task.Delay(1500);
           return ret;
         });
       mockUsers.Setup(u => u.AddAsync(It.IsAny<LetsMeatAPI.Models.User>(), It.IsAny<CancellationToken>()))
@@ -149,7 +149,7 @@ namespace LetsMeatAPITests {
       var userManager1 = new LetsMeatAPI.UserManager(context1, Mock.Of<ILogger<LetsMeatAPI.UserManager>>());
       var userManager2 = new LetsMeatAPI.UserManager(context2, Mock.Of<ILogger<LetsMeatAPI.UserManager>>());
       context2.Users = mockUsers.Object;
-      var create2 = userManager2.OnTokenGranted(token2, jwt2);
+      var create2 = Assert.ThrowsAsync<DbUpdateException>(() => userManager2.OnTokenGranted(token2, jwt2));
       await Task.Delay(500);
       await userManager1.OnTokenGranted(token1, jwt1);
       await create2;
@@ -164,10 +164,10 @@ namespace LetsMeatAPITests {
       connection1.Dispose();
     }
     [Fact]
-    public async Task HandlesDbUpdateConcurrencyExceptionOnRealDb() {
-      var data = UsersWithTokens(123321, 1);
-      var token1 = (data.ElementAt(0)[0] as object[])[0] as string;
-      var jwt1 = (data.ElementAt(0)[1] as object[])[0] as GoogleJsonWebSignature.Payload;
+    public async Task ThrowsDbUpdateConcurrencyExceptionOnRealDb() {
+      var data = UsersWithTokens(123321, 1).First();
+      var token1 = (data[0] as object[])[0] as string;
+      var jwt1 = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
       var (context1, connection1) = GetDb();
       var context2 = new LetsMeatAPI.LMDbContext(
                           new DbContextOptionsBuilder<LetsMeatAPI.LMDbContext>()
@@ -197,7 +197,7 @@ namespace LetsMeatAPITests {
       context1.Users = mockUsers.Object;
       var userManager1 = new LetsMeatAPI.UserManager(context1, Mock.Of<ILogger<LetsMeatAPI.UserManager>>());
 
-      var update1 = userManager1.OnTokenGranted(token1, jwt1);
+      var update1 = Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => userManager1.OnTokenGranted(token1, jwt1));
       await Task.Delay(500);
       context2.Users.Remove(context2.Users.Find(jwt1.Subject));
       await context2.SaveChangesAsync();
@@ -229,19 +229,21 @@ namespace LetsMeatAPITests {
     }
     public static IEnumerable<object[]> UsersWithTokens(int seed, int n) {
       var rnd = new Random(seed);
+      var tokens = new string[n];
+      var jwts = new GoogleJsonWebSignature.Payload[n];
       while(n-- > 0) {
-        yield return new object[] {
-          new[] { RandomString(rnd, 128) },
-          new[] {
-            new GoogleJsonWebSignature.Payload {
-              Subject = RandomString(rnd, 12),
-              Picture = RandomString(rnd, 18),
-              Email = RandomString(rnd, 10),
-              Name = RandomString(rnd, 25)
-            }
-          }
+        tokens[n] = RandomString(rnd, 128);
+        jwts[n] = new() {
+          Subject = RandomString(rnd, 12),
+          Picture = RandomString(rnd, 18),
+          Email = RandomString(rnd, 10),
+          Name = RandomString(rnd, 25)
         };
       }
+      yield return new object[] {
+          tokens,
+          jwts
+      };
     }
   }
 }

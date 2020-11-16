@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LetsMeatAPI.Migrations
 {
     [DbContext(typeof(LMDbContext))]
-    [Migration("20201114204238_InitialCreate")]
+    [Migration("20201116221409_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,11 +23,11 @@ namespace LetsMeatAPI.Migrations
 
             modelBuilder.Entity("EventLocation", b =>
                 {
-                    b.Property<string>("CandidateLocationsId")
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<Guid>("CandidateLocationsId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("EventsWithMeId")
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<Guid>("EventsWithMeId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("CandidateLocationsId", "EventsWithMeId");
 
@@ -38,8 +38,8 @@ namespace LetsMeatAPI.Migrations
 
             modelBuilder.Entity("GroupUser", b =>
                 {
-                    b.Property<string>("GroupsId")
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<Guid>("GroupsId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UsersId")
                         .HasColumnType("nvarchar(128)");
@@ -59,8 +59,8 @@ namespace LetsMeatAPI.Migrations
                     b.Property<string>("ToId")
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<string>("GroupId")
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Amount")
                         .HasColumnType("int");
@@ -76,9 +76,9 @@ namespace LetsMeatAPI.Migrations
 
             modelBuilder.Entity("LetsMeatAPI.Models.Event", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CandidateTimes")
                         .IsRequired()
@@ -87,8 +87,8 @@ namespace LetsMeatAPI.Migrations
                     b.Property<DateTime>("Deadline")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("GroupId")
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -107,9 +107,9 @@ namespace LetsMeatAPI.Migrations
 
             modelBuilder.Entity("LetsMeatAPI.Models.Group", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -129,8 +129,8 @@ namespace LetsMeatAPI.Migrations
                     b.Property<string>("ToId")
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<string>("GroupId")
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("FromId", "ToId", "GroupId");
 
@@ -146,12 +146,12 @@ namespace LetsMeatAPI.Migrations
 
             modelBuilder.Entity("LetsMeatAPI.Models.Location", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("GroupId")
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Info")
                         .IsRequired()
@@ -195,8 +195,8 @@ namespace LetsMeatAPI.Migrations
 
             modelBuilder.Entity("LetsMeatAPI.Models.Vote", b =>
                 {
-                    b.Property<string>("EventId")
-                        .HasColumnType("nvarchar(128)");
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
