@@ -19,6 +19,7 @@ pipelines:
             - dotnet build --no-restore --configuration Release
             - dotnet publish --no-restore --no-build --configuration Release
             - zip -r letsmeatapi.zip bin/Release/netcoreapp3.1/publish/
+            - curl -u wreplin:${AZURE_DEPLOYMENT_PASSWORD} -H "Content-Type: application/json" -X POST -d '{"command":"find . -mindepth 1 -delete","dir":"/home/site/wwwroot"}' https://letsmeatapi.scm.azurewebsites.net/api/command
             - curl -u wreplin:${AZURE_DEPLOYMENT_PASSWORD} --data-binary @letsmeatapi.zip https://letsmeatapi.scm.azurewebsites.net/api/zipdeploy
   default:
     - parallel:
