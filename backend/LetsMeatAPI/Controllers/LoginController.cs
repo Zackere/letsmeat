@@ -17,16 +17,20 @@ namespace LetsMeatAPI.Controllers {
         string jwt,
         GoogleJsonWebSignature.ValidationSettings validationSettings
       );
-    public delegate void TokenGrantedEventHandler(string token, GoogleJsonWebSignature.Payload jwt);
+    public class GoogleAudiences {
+      public IEnumerable<string>? Auds { get; set; }
+    }
     public LoginController(
       GoogleTokenIdValidator googleTokenIdValidator,
-      IEnumerable<string>? expectedGoogleAudiences,
+      UserManager userManager,
+      GoogleAudiences? expectedGoogleAudiences,
       IWebHostEnvironment webHostEnvironment,
       Random rnd,
       ILogger<LoginController> logger
     ) {
       _googleTokenIdValidator = googleTokenIdValidator ?? throw new ArgumentNullException("googleTokenIdValidator");
-      _expectedGoogleAudiences = expectedGoogleAudiences;
+      _userManager = userManager ?? throw new ArgumentNullException("userManager");
+      _expectedGoogleAudiences = expectedGoogleAudiences?.Auds;
       _webHostEnvironment = webHostEnvironment ?? throw new ArgumentNullException("webHostEnvironment");
       _rnd = rnd ?? throw new ArgumentNullException("rnd");
       _logger = logger ?? throw new ArgumentNullException("logger");
@@ -52,7 +56,7 @@ namespace LetsMeatAPI.Controllers {
         var tokenBytes = new byte[TokenLength];
         _rnd.NextBytes(tokenBytes);
         var tokenHexString = string.Concat(Array.ConvertAll(tokenBytes, b => b.ToString("X2")));
-        OnTokenGranted?.Invoke(tokenHexString, googlePayload);
+        await _userManager.OnTokenGranted(tokenHexString, googlePayload);
         return Ok(tokenHexString);
       } catch {
         if(_webHostEnvironment.IsDevelopment())
@@ -61,8 +65,8 @@ namespace LetsMeatAPI.Controllers {
       }
     }
     public uint TokenLength { get; set; } = 128;
-    public event TokenGrantedEventHandler? OnTokenGranted;
     private readonly GoogleTokenIdValidator _googleTokenIdValidator;
+    private readonly UserManager _userManager;
     private readonly IEnumerable<string>? _expectedGoogleAudiences;
     private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly Random _rnd;

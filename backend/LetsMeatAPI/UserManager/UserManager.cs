@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace LetsMeatAPI {
   public class UserManager {
@@ -12,35 +12,27 @@ namespace LetsMeatAPI {
       _context = context;
       _logger = logger;
     }
-    public void OnTokenGranted(string token, GoogleJsonWebSignature.Payload jwt) {
-      var user = _context.Users.Find(jwt.Subject) ?? new();
-      user.Id = jwt.Subject;
-      user.PictureUrl = jwt.Picture;
-      user.Email = jwt.Email;
-      user.Name = jwt.Name;
-      switch(_context.Entry(user).State) {
-      case EntityState.Added:
-      case EntityState.Detached:
-        try {
-          _context.Add(user);
-        } catch(Exception ex) {
-          _logger.LogError(ex.ToString());
-        }
-        break;
-      case EntityState.Modified:
-        _context.Update(user);
-        break;
-      case EntityState.Unchanged:
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
+    public async Task OnTokenGranted(string token, GoogleJsonWebSignature.Payload jwt) {
+      var user = await _context.Users.FindAsync(jwt.Subject);
+      if(user == null) {
+        await _context.Users.AddAsync(new() {
+          Id = jwt.Subject,
+          PictureUrl = jwt.Picture,
+          Email = jwt.Email,
+          Name = jwt.Name,
+          Prefs = "{}"
+        });
+      } else {
+        user.PictureUrl = jwt.Picture;
+        user.Email = jwt.Email;
+        user.Name = jwt.Name;
       }
       try {
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
       } catch(DbUpdateConcurrencyException ex) {
         _logger.LogError(ex.ToString());
-        ex.Entries.Single().Reload();
-      } catch(Exception ex) {
+        return;
+      } catch(DbUpdateException ex) {
         _logger.LogError(ex.ToString());
         return;
       }

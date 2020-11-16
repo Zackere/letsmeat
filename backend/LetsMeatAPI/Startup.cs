@@ -1,6 +1,6 @@
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,31 +11,27 @@ using System.Linq;
 
 namespace LetsMeatAPI {
   public class Startup {
-    public Startup(IConfiguration configuration, IWebHostEnvironment env) {
-      Configuration = configuration;
-      _webHostEnvironment = env;
+    public Startup(IConfiguration configuration) {
+      _configuration = configuration;
     }
-    public IConfiguration Configuration { get; }
-    private IWebHostEnvironment _webHostEnvironment { get; set; }
-    private readonly string _letsMeatAPIPolicy = "_letsMeatAPIPolicy";
-    // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services) {
       services.AddDbContext<LMDbContext>(options =>
-        options.UseSqlServer(Configuration.GetConnectionString("LMDatabase"))
+        options.UseSqlServer(_configuration.GetConnectionString("LMDatabase"))
                .UseLazyLoadingProxies()
       );
-      services.AddSingleton<IControllerActivator, ControllerFactory>(
-        serviceProvider => new ControllerFactory(
-            _webHostEnvironment,
-            from aud in new[] {
-              Environment.GetEnvironmentVariable("WEB_GOOGLE_CLIENT_ID"),
-              Environment.GetEnvironmentVariable("MOBILE_GOOGLE_CLIENT_ID")
-            }
-            where aud != null
-            select aud,
-            serviceProvider
-          )
+      services.AddScoped<Random>();
+      services.AddScoped<UserManager>();
+      services.AddScoped<Controllers.LoginController.GoogleTokenIdValidator>(
+        _ => GoogleJsonWebSignature.ValidateAsync
       );
+      services.AddScoped(_ => new Controllers.LoginController.GoogleAudiences {
+        Auds = from aud in new[] {
+                Environment.GetEnvironmentVariable("WEB_GOOGLE_CLIENT_ID"),
+                Environment.GetEnvironmentVariable("MOBILE_GOOGLE_CLIENT_ID")
+               }
+               where aud != null
+               select aud
+      });
       services.AddControllers();
       services.AddCors(cors => cors.AddPolicy(
         _letsMeatAPIPolicy,
@@ -46,8 +42,6 @@ namespace LetsMeatAPI {
         var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
         config.IncludeXmlComments(xmlPath);
       });
-
-      services.AddTransient<UserManager>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,5 +60,7 @@ namespace LetsMeatAPI {
         config.RoutePrefix = string.Empty;
       });
     }
+    private readonly IConfiguration _configuration;
+    private readonly string _letsMeatAPIPolicy = "_letsMeatAPIPolicy";
   }
 }
