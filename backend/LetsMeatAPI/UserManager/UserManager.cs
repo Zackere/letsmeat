@@ -26,16 +26,9 @@ namespace LetsMeatAPI {
         user.PictureUrl = jwt.Picture;
         user.Email = jwt.Email;
         user.Name = jwt.Name;
+        _context.Entry(user).State = EntityState.Modified;
       }
-      try {
-        await _context.SaveChangesAsync();
-      } catch(DbUpdateConcurrencyException ex) {
-        _logger.LogError(ex.ToString());
-        return;
-      } catch(DbUpdateException ex) {
-        _logger.LogError(ex.ToString());
-        return;
-      }
+      await _context.SaveChangesAsync();
       logUser(token, jwt.Subject);
     }
     public string? IsLoggedIn(string token) {
@@ -50,18 +43,18 @@ namespace LetsMeatAPI {
         _mtx.ReleaseReaderLock();
       }
     }
-    public bool LogOut(string token) {
+    public string? LogOut(string token) {
       var id = IsLoggedIn(token);
       if(id == null)
-        return false;
+        return null;
       try {
         _mtx.AcquireWriterLock(_mtxTimeout);
         _loggedUsersTokenToId.Remove(token);
         _loggedUsersIdToToken.Remove(id);
-        return true;
+        return id;
       } catch(ApplicationException ex) {
         _logger.LogError(ex.ToString());
-        return false;
+        return null;
       } finally {
         _mtx.ReleaseWriterLock();
       }
@@ -77,7 +70,6 @@ namespace LetsMeatAPI {
         _loggedUsersTokenToId[token] = id;
       } catch(ApplicationException ex) {
         _logger.LogError(ex.ToString());
-        return;
       } finally {
         _mtx.ReleaseLock();
       }
@@ -87,6 +79,6 @@ namespace LetsMeatAPI {
     private readonly static Dictionary<string, string> _loggedUsersIdToToken = new();
     private readonly static Dictionary<string, string> _loggedUsersTokenToId = new();
     private readonly static ReaderWriterLock _mtx = new();
-    private readonly static int _mtxTimeout = 1000;
+    private readonly static int _mtxTimeout = 500;
   }
 }

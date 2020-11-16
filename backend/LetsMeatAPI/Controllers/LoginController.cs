@@ -2,7 +2,7 @@ using Google.Apis.Auth;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -56,11 +56,20 @@ namespace LetsMeatAPI.Controllers {
         var tokenBytes = new byte[TokenLength];
         _rnd.NextBytes(tokenBytes);
         var tokenHexString = string.Concat(Array.ConvertAll(tokenBytes, b => b.ToString("X2")));
-        await _userManager.OnTokenGranted(tokenHexString, googlePayload);
-        return Ok(tokenHexString);
-      } catch {
-        if(_webHostEnvironment.IsDevelopment())
-          throw;
+        try {
+          await _userManager.OnTokenGranted(tokenHexString, googlePayload);
+        } catch(Exception ex)
+          when(ex is DbUpdateConcurrencyException ||
+               ex is DbUpdateException
+        ) {
+          _logger.LogError(ex.ToString());
+          return Conflict();
+        }
+        return _userManager.IsLoggedIn(tokenHexString) == googlePayload.Subject
+          ? Ok(tokenHexString)
+          : (IActionResult)StatusCode(StatusCodes.Status500InternalServerError);
+      } catch(Exception ex) {
+        _logger.LogError(ex.ToString());
         return Unauthorized();
       }
     }
