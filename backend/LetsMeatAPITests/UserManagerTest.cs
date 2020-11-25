@@ -1,11 +1,7 @@
 using Google.Apis.Auth;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,27 +9,8 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace LetsMeatAPITests {
-  public class UserManagerTest {
-    private readonly ITestOutputHelper _output;
-    public UserManagerTest(ITestOutputHelper output) {
-      _output = output;
-    }
-    private (LetsMeatAPI.LMDbContext context, SqliteConnection connection) GetDb() {
-      var connectionStringBuilder = new SqliteConnectionStringBuilder() {
-        DataSource = Path.GetRandomFileName()
-      };
-      var connection = new SqliteConnection(connectionStringBuilder.ToString());
-      var options = new DbContextOptionsBuilder<LetsMeatAPI.LMDbContext>()
-                        .UseSqlite(connection)
-                        .LogTo(s => _output.WriteLine(s), LogLevel.Debug)
-                        .EnableSensitiveDataLogging()
-                        .Options;
-      var context = new LetsMeatAPI.LMDbContext(options);
-      context.Database.EnsureCreated();
-      context.Database.EnsureDeleted();
-      context.Database.EnsureCreated();
-      return (context, connection);
-    }
+  public class UserManagerTest : TestBase {
+    public UserManagerTest(ITestOutputHelper output) : base(output) { }
     [Theory]
     [MemberData(nameof(UsersWithTokens), 35712, 1)]
     [MemberData(nameof(UsersWithTokens), 32167, 5)]
@@ -50,7 +27,7 @@ namespace LetsMeatAPITests {
 
       foreach(var user in context.Users) {
         var (token, jwt) = (from p in tokens.Zip(jwts)
-                            where p.Second.Subject.Equals(user.Id)
+                            where p.Second.Subject == user.Id
                             select p).FirstOrDefault();
         Assert.NotNull(token);
         Assert.NotNull(jwt);
@@ -221,29 +198,6 @@ namespace LetsMeatAPITests {
       Assert.Equal(jwt.Email, user.Email);
       Assert.Equal(jwt.Name, user.Name);
       Assert.Equal(prefs, user.Prefs);
-    }
-    private static string RandomString(Random rnd, int length) {
-      var bytes = new byte[length];
-      rnd.NextBytes(bytes);
-      return Convert.ToBase64String(bytes);
-    }
-    public static IEnumerable<object[]> UsersWithTokens(int seed, int n) {
-      var rnd = new Random(seed);
-      var tokens = new string[n];
-      var jwts = new GoogleJsonWebSignature.Payload[n];
-      while(n-- > 0) {
-        tokens[n] = RandomString(rnd, 128);
-        jwts[n] = new() {
-          Subject = RandomString(rnd, 12),
-          Picture = RandomString(rnd, 18),
-          Email = RandomString(rnd, 10),
-          Name = RandomString(rnd, 25)
-        };
-      }
-      yield return new object[] {
-          tokens,
-          jwts
-      };
     }
   }
 }

@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace LetsMeatAPI.Controllers {
@@ -53,6 +55,9 @@ namespace LetsMeatAPI.Controllers {
             Audience = _expectedGoogleAudiences,
           }
         );
+        using var hasher = SHA256.Create();
+        var hashBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(googlePayload.Subject));
+        googlePayload.Subject = string.Concat(Array.ConvertAll(hashBytes, b => b.ToString("X2")));
         var tokenBytes = new byte[TokenLength];
         _rnd.NextBytes(tokenBytes);
         var tokenHexString = string.Concat(Array.ConvertAll(tokenBytes, b => b.ToString("X2")));

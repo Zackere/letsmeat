@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -61,6 +62,27 @@ namespace LetsMeatAPI.Controllers {
         email = user.Email,
         name = user.Name,
       });
+    }
+    [HttpGet]
+    [Route("search")]
+    public async Task<ActionResult<IEnumerable<UserInformationResponse>>> Search(
+      string token,
+      string name,
+      string email
+    ) {
+      var userId = _userManager.IsLoggedIn(token);
+      if(userId == null)
+        return Unauthorized();
+      return await (from user in _context.Users
+                    where user.Name.Contains(name) &&
+                              user.Email.Contains(email) &&
+                              user.Id != userId
+                    select new UserInformationResponse() {
+                      id = user.Id,
+                      picture_url = user.PictureUrl,
+                      email = user.Email,
+                      name = user.Name
+                    }).ToListAsync();
     }
     private readonly UserManager _userManager;
     private readonly LMDbContext _context;

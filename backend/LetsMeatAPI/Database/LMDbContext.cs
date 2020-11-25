@@ -10,6 +10,7 @@ namespace LetsMeatAPI {
     public DbSet<Location> Locations { get; set; }
     public DbSet<Event> Events { get; set; }
     public DbSet<Vote> Votes { get; set; }
+    public DbSet<Invitation> Invitations { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
       modelBuilder.Entity<User>()
         .Property(u => u.Prefs)
@@ -31,10 +32,7 @@ namespace LetsMeatAPI {
       modelBuilder.Entity<Vote>()
         .HasKey(vote => new { vote.EventId, vote.UserId });
       modelBuilder.Entity<Invitation>()
-        .HasKey(inv => new { inv.FromId, inv.ToId, inv.GroupId });
-      modelBuilder.Entity<Invitation>()
-        .HasOne(inv => inv.From)
-        .WithOne();
+        .HasKey(inv => new { inv.ToId, inv.GroupId });
     }
   }
 }

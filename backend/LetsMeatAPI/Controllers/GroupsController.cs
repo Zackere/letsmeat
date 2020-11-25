@@ -110,6 +110,31 @@ namespace LetsMeatAPI.Controllers {
                  }
       });
     }
+    public class GroupJoinBody {
+      public Guid id { get; set; }
+    }
+    [HttpPost]
+    [Route("join")]
+    public async Task<ActionResult> Join(
+      string token,
+      [FromBody] GroupJoinBody body
+    ) {
+      var userId = _userManager.IsLoggedIn(token);
+      if(userId == null)
+        return Unauthorized();
+      var grp = await _context.Groups.FindAsync(body.id);
+      if(grp == null)
+        return NotFound();
+      var user = await _context.Users.FindAsync(userId);
+      grp.Users.Add(user);
+      try {
+        await _context.SaveChangesAsync();
+      } catch(DbUpdateException ex) {
+        _logger.LogError(ex.ToString());
+        return Conflict();
+      }
+      return Ok();
+    }
     private readonly UserManager _userManager;
     private readonly LMDbContext _context;
     private readonly ILogger<GroupsController> _logger;
