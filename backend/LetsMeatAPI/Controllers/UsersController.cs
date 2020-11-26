@@ -44,28 +44,36 @@ namespace LetsMeatAPI.Controllers {
         return Unauthorized();
       body.ids.Sort();
       var ret = await (from user in _context.Users
-                       where user.Id != userId && body.ids.BinarySearch(user.Id) >= 0
+                       where body.ids.BinarySearch(user.Id) >= 0
                        select new UserInformationResponse {
                          id = user.Id,
                          picture_url = user.PictureUrl,
                          email = user.Email,
                          name = user.Name
                        }).ToListAsync();
-      if(body.ids.BinarySearch(userId) >= 0) {
-        var user = _context.Users.Find(userId);
-        ret.Append(new UserInformationResponse {
-          id = user.Id,
-          picture_url = user.PictureUrl,
-          email = user.Email,
-          name = user.Name,
-          groups = from grp in user.Groups
-                   select new UserInformationResponse.GroupInformation() {
-                     id = grp.Id,
-                     name = grp.Name
-                   }
-        });
-      }
       return ret;
+    }
+    [HttpGet]
+    [Route("info")]
+    public async Task<ActionResult<UserInformationResponse>> Info(
+      string token
+    ) {
+      var userId = _userManager.IsLoggedIn(token);
+      if(userId == null)
+        return Unauthorized();
+      _context.Users.Include(u => u.Groups);
+      var user = await _context.Users.FindAsync(userId);
+      return new UserInformationResponse {
+        id = user.Id,
+        picture_url = user.PictureUrl,
+        email = user.Email,
+        name = user.Name,
+        groups = from grp in user.Groups
+                 select new UserInformationResponse.GroupInformation {
+                   id = grp.Id,
+                   name = grp.Name
+                 }
+      };
     }
     [HttpGet]
     [Route("search")]

@@ -1,7 +1,6 @@
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,16 +15,9 @@ namespace LetsMeatAPI {
       _configuration = configuration;
     }
     public void ConfigureServices(IServiceCollection services) {
-      var dbPath = Path.GetRandomFileName();
-      services.AddDbContext<LMDbContext>(options => {
-        var connectionStringBuilder = new SqliteConnectionStringBuilder() {
-          DataSource = dbPath
-        };
-        var connection = new SqliteConnection(connectionStringBuilder.ToString());
-        options
-          .UseSqlite(connection)
-          .UseLazyLoadingProxies();
-      }
+      services.AddDbContext<LMDbContext>(options =>
+        options.UseSqlServer(_configuration.GetConnectionString("LMDatabase"))
+               .UseLazyLoadingProxies()
       );
       services.AddScoped<Random>();
       services.AddScoped<UserManager>();
