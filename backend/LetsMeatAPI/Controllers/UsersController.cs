@@ -30,20 +30,30 @@ namespace LetsMeatAPI.Controllers {
       public string name { get; set; }
       public IEnumerable<GroupInformation>? groups { get; set; }
     }
-    [HttpGet]
+    public class UsersInfoBody {
+      public List<string> ids { get; set; }
+    }
+    [HttpPost]
     [Route("info")]
-    public async Task<ActionResult<UserInformationResponse>> Info(
+    public async Task<ActionResult<IEnumerable<UserInformationResponse>>> Info(
       string token,
-      string id
+      [FromBody] UsersInfoBody body
     ) {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
-      var user = await _context.Users.FindAsync(id);
-      if(user == null)
-        return NotFound();
-      if(id == user.Id) {
-        return Ok(new UserInformationResponse() {
+      body.ids.Sort();
+      var ret = await (from user in _context.Users
+                       where user.Id != userId && body.ids.BinarySearch(user.Id) >= 0
+                       select new UserInformationResponse {
+                         id = user.Id,
+                         picture_url = user.PictureUrl,
+                         email = user.Email,
+                         name = user.Name
+                       }).ToListAsync();
+      if(body.ids.BinarySearch(userId) >= 0) {
+        var user = _context.Users.Find(userId);
+        ret.Append(new UserInformationResponse {
           id = user.Id,
           picture_url = user.PictureUrl,
           email = user.Email,
@@ -55,13 +65,7 @@ namespace LetsMeatAPI.Controllers {
                    }
         });
       }
-
-      return Ok(new UserInformationResponse {
-        id = user.Id,
-        picture_url = user.PictureUrl,
-        email = user.Email,
-        name = user.Name,
-      });
+      return ret;
     }
     [HttpGet]
     [Route("search")]

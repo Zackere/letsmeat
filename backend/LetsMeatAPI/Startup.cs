@@ -16,9 +16,10 @@ namespace LetsMeatAPI {
       _configuration = configuration;
     }
     public void ConfigureServices(IServiceCollection services) {
+      var dbPath = Path.GetRandomFileName();
       services.AddDbContext<LMDbContext>(options => {
         var connectionStringBuilder = new SqliteConnectionStringBuilder() {
-          DataSource = Path.GetRandomFileName()
+          DataSource = dbPath
         };
         var connection = new SqliteConnection(connectionStringBuilder.ToString());
         options
