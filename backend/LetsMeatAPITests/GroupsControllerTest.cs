@@ -74,6 +74,7 @@ namespace LetsMeatAPITests {
       Assert.Equal("ASD", grpCreated.name);
       var grp = context.Groups.Find(grpCreated.id);
       Assert.NotNull(grp);
+      Assert.Equal(grpCreated.name, grp.Name);
       Assert.Equal(jwt1.Subject, grp.OwnerId);
       Assert.Collection(grp.Users, user => Assert.Equal(jwt1.Subject, user.Id));
 

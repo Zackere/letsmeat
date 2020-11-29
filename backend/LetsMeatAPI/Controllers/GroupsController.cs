@@ -59,7 +59,6 @@ namespace LetsMeatAPI.Controllers {
       public class UserInformation {
         public string id { get; set; }
         public string picture_url { get; set; }
-        public string email { get; set; }
         public string name { get; set; }
       }
       public class LocationInformation {
@@ -96,7 +95,6 @@ namespace LetsMeatAPI.Controllers {
                 select new GroupInformationResponse.UserInformation {
                   id = user.Id,
                   picture_url = user.PictureUrl,
-                  email = user.Email,
                   name = user.Name
                 },
         locations = from location in grp.Locations

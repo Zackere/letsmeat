@@ -48,7 +48,6 @@ namespace LetsMeatAPI.Controllers {
                        select new UserInformationResponse {
                          id = user.Id,
                          picture_url = user.PictureUrl,
-                         email = user.Email,
                          name = user.Name
                        }).ToListAsync();
       return ret;
@@ -79,20 +78,17 @@ namespace LetsMeatAPI.Controllers {
     [Route("search")]
     public async Task<ActionResult<IEnumerable<UserInformationResponse>>> Search(
       string token,
-      string name,
-      string email
+      string name
     ) {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
       return await (from user in _context.Users
                     where user.Name.Contains(name) &&
-                              user.Email.Contains(email) &&
                               user.Id != userId
                     select new UserInformationResponse() {
                       id = user.Id,
                       picture_url = user.PictureUrl,
-                      email = user.Email,
                       name = user.Name
                     }).ToListAsync();
     }
