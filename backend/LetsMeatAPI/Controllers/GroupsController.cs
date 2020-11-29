@@ -35,7 +35,7 @@ namespace LetsMeatAPI.Controllers {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
-      var user = _context.Users.Find(userId);
+      var user = await _context.Users.FindAsync(userId);
       var grp = new Models.Group() {
         Name = body.name,
         Owner = user,
@@ -43,7 +43,7 @@ namespace LetsMeatAPI.Controllers {
         Locations = new List<Models.Location>(),
         Events = new List<Models.Event>()
       };
-      _context.Groups.Add(grp);
+      await _context.Groups.AddAsync(grp);
       try {
         await _context.SaveChangesAsync();
       } catch(DbUpdateException ex) {
@@ -135,6 +135,27 @@ namespace LetsMeatAPI.Controllers {
         _logger.LogError(ex.ToString());
         return Conflict();
       }
+      return Ok();
+    }
+    public class GroupDeleteBody {
+      public Guid id { get; set; }
+    }
+    [HttpDelete]
+    [Route("delete")]
+    public async Task<ActionResult> Delete(
+      string token,
+      [FromBody] GroupDeleteBody body
+    ) {
+      var userId = _userManager.IsLoggedIn(token);
+      if(userId == null)
+        return Unauthorized();
+      var grp = await _context.Groups.FindAsync(body.id);
+      if(grp == null)
+        return NotFound();
+      if(grp.OwnerId != userId)
+        return Unauthorized();
+      _context.Remove(grp);
+      await _context.SaveChangesAsync();
       return Ok();
     }
     private readonly UserManager _userManager;

@@ -1,4 +1,5 @@
 using Google.Apis.Auth;
+using LetsMeatAPI;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -36,18 +37,18 @@ namespace LetsMeatAPITests {
           jwts
       };
     }
-    public (LetsMeatAPI.LMDbContext context, SqliteConnection connection) GetDb() {
+    public (LMDbContext context, SqliteConnection connection) GetDb() {
       var connectionStringBuilder = new SqliteConnectionStringBuilder() {
         DataSource = Path.GetRandomFileName()
       };
       var connection = new SqliteConnection(connectionStringBuilder.ToString());
-      var options = new DbContextOptionsBuilder<LetsMeatAPI.LMDbContext>()
+      var options = new DbContextOptionsBuilder<LMDbContext>()
                         .UseSqlite(connection)
                         .UseLazyLoadingProxies()
                         .LogTo(s => _output.WriteLine(s), LogLevel.Debug)
                         .EnableSensitiveDataLogging()
                         .Options;
-      var context = new LetsMeatAPI.LMDbContext(options);
+      var context = new LMDbContext(options);
       context.Database.EnsureCreated();
       context.Database.EnsureDeleted();
       context.Database.EnsureCreated();

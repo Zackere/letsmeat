@@ -1,4 +1,6 @@
 using Google.Apis.Auth;
+using LetsMeatAPI;
+using LetsMeatAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -19,9 +21,8 @@ namespace LetsMeatAPITests {
       GoogleJsonWebSignature.Payload[] jwts
     ) {
       var (context, connection) = GetDb();
-      var userManager = new LetsMeatAPI.UserManager(context, Mock.Of<ILogger<LetsMeatAPI.UserManager>>());
-      foreach(var (token, jwt) in tokens.Zip(jwts))
-        await userManager.OnTokenGranted(token, jwt);
+      var userManager = new UserManager(context, Mock.Of<ILogger<UserManager>>());
+      await Task.WhenAll(tokens.Zip(jwts).Select(p => userManager.OnTokenGranted(p.First, p.Second)).ToArray());
 
       Assert.Equal(tokens.Count(), context.Users.Count());
 
@@ -45,7 +46,7 @@ namespace LetsMeatAPITests {
       var token = (data[0] as object[])[0] as string;
       var jwt = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
       var (context, connection) = GetDb();
-      var userManager = new LetsMeatAPI.UserManager(context, Mock.Of<ILogger<LetsMeatAPI.UserManager>>());
+      var userManager = new UserManager(context, Mock.Of<ILogger<UserManager>>());
 
       await userManager.OnTokenGranted(token, jwt);
       Assert.Equal(jwt.Subject, userManager.IsLoggedIn(token));
@@ -71,7 +72,10 @@ namespace LetsMeatAPITests {
       jwt2.Subject = jwt.Subject; // They are the same user
       var (context, connection) = GetDb();
 
-      var userManager = new LetsMeatAPI.UserManager(context, Mock.Of<ILogger<LetsMeatAPI.UserManager>>());
+      var userManager = new UserManager(
+        context,
+        Mock.Of<ILogger<UserManager>>()
+      );
       await userManager.OnTokenGranted(token, jwt);
 
       Assert.Equal(1, context.Users.Count());
@@ -103,15 +107,15 @@ namespace LetsMeatAPITests {
       var jwt2 = (data[1] as object[])[1] as GoogleJsonWebSignature.Payload;
       jwt2.Subject = jwt1.Subject; // Force conflict
       var (context1, connection1) = GetDb();
-      var context2 = new LetsMeatAPI.LMDbContext(
-                          new DbContextOptionsBuilder<LetsMeatAPI.LMDbContext>()
+      var context2 = new LMDbContext(
+                          new DbContextOptionsBuilder<LMDbContext>()
                            .UseSqlite(connection1)
                            .LogTo(s => _output.WriteLine(s), LogLevel.Debug)
                            .EnableSensitiveDataLogging()
                            .Options
                          );
       var genuineUsers = context2.Users;
-      var mockUsers = new Mock<DbSet<LetsMeatAPI.Models.User>>(MockBehavior.Strict);
+      var mockUsers = new Mock<DbSet<User>>(MockBehavior.Strict);
       mockUsers.Setup(u => u.FindAsync(It.IsAny<object[]>()))
         .Returns<object[]>(async key => {
           Assert.Equal(new[] { jwt1.Subject }, key);
@@ -120,11 +124,11 @@ namespace LetsMeatAPITests {
           await Task.Delay(1500);
           return ret;
         });
-      mockUsers.Setup(u => u.AddAsync(It.IsAny<LetsMeatAPI.Models.User>(), It.IsAny<CancellationToken>()))
-        .Returns<LetsMeatAPI.Models.User, CancellationToken>((u, t) => genuineUsers.AddAsync(u, t));
+      mockUsers.Setup(u => u.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+        .Returns<User, CancellationToken>((u, t) => genuineUsers.AddAsync(u, t));
 
-      var userManager1 = new LetsMeatAPI.UserManager(context1, Mock.Of<ILogger<LetsMeatAPI.UserManager>>());
-      var userManager2 = new LetsMeatAPI.UserManager(context2, Mock.Of<ILogger<LetsMeatAPI.UserManager>>());
+      var userManager1 = new UserManager(context1, Mock.Of<ILogger<UserManager>>());
+      var userManager2 = new UserManager(context2, Mock.Of<ILogger<UserManager>>());
       context2.Users = mockUsers.Object;
       var create2 = Assert.ThrowsAsync<DbUpdateException>(() => userManager2.OnTokenGranted(token2, jwt2));
       await Task.Delay(500);
@@ -146,14 +150,14 @@ namespace LetsMeatAPITests {
       var token1 = (data[0] as object[])[0] as string;
       var jwt1 = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
       var (context1, connection1) = GetDb();
-      var context2 = new LetsMeatAPI.LMDbContext(
-                          new DbContextOptionsBuilder<LetsMeatAPI.LMDbContext>()
+      var context2 = new LMDbContext(
+                          new DbContextOptionsBuilder<LMDbContext>()
                            .UseSqlite(connection1)
                            .LogTo(s => _output.WriteLine(s), LogLevel.Debug)
                            .EnableSensitiveDataLogging()
                            .Options
                          );
-      context2.Users.Add(new LetsMeatAPI.Models.User {
+      context2.Users.Add(new User {
         Id = jwt1.Subject,
         PictureUrl = jwt1.Picture,
         Email = jwt1.Email,
@@ -162,7 +166,7 @@ namespace LetsMeatAPITests {
       });
       await context2.SaveChangesAsync();
       var genuineUsers = context1.Users;
-      var mockUsers = new Mock<DbSet<LetsMeatAPI.Models.User>>(MockBehavior.Strict);
+      var mockUsers = new Mock<DbSet<User>>(MockBehavior.Strict);
       mockUsers.Setup(u => u.FindAsync(It.IsAny<object[]>()))
         .Returns<object[]>(async key => {
           Assert.Equal(new[] { jwt1.Subject }, key);
@@ -172,7 +176,7 @@ namespace LetsMeatAPITests {
           return ret;
         });
       context1.Users = mockUsers.Object;
-      var userManager1 = new LetsMeatAPI.UserManager(context1, Mock.Of<ILogger<LetsMeatAPI.UserManager>>());
+      var userManager1 = new UserManager(context1, Mock.Of<ILogger<UserManager>>());
 
       var update1 = Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => userManager1.OnTokenGranted(token1, jwt1));
       await Task.Delay(500);
@@ -189,7 +193,7 @@ namespace LetsMeatAPITests {
       connection1.Dispose();
     }
     private void VerifyUserInformation(
-      LetsMeatAPI.Models.User user,
+      User user,
       GoogleJsonWebSignature.Payload jwt,
       string prefs = "{}"
     ) {

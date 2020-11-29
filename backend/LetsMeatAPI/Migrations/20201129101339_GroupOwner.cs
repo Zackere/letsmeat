@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace LetsMeatAPI.Migrations {
   public partial class GroupOwner : Migration {

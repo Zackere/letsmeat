@@ -1,6 +1,9 @@
 using Google.Apis.Auth;
+using LetsMeatAPI;
+using LetsMeatAPI.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Moq;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +17,7 @@ namespace LetsMeatAPITests {
       var (context, connection) = GetDb();
       var userManager = new LetsMeatAPI.UserManager(
         context,
-        Moq.Mock.Of<ILogger<LetsMeatAPI.UserManager>>()
+        Mock.Of<ILogger<UserManager>>()
       );
       var data = UsersWithTokens(643, 2).First();
       var token1 = (data[0] as object[])[0] as string;
@@ -25,25 +28,24 @@ namespace LetsMeatAPITests {
       await userManager.OnTokenGranted(token1, jwt1);
       await userManager.OnTokenGranted(token2, jwt2);
 
-      var groupController = new LetsMeatAPI.Controllers.GroupsController(
+      var groupController = new GroupsController(
         userManager,
         context,
-        Moq.Mock.Of<ILogger<LetsMeatAPI.Controllers.GroupsController>>()
+        Mock.Of<ILogger<GroupsController>>()
       );
       var grp = await groupController.Create(token2, new() { name = "ASD" });
-      var invitationController = new LetsMeatAPI.Controllers.InvitationsController(
+      var invitationController = new InvitationsController(
         userManager,
         context,
-        Moq.Mock.Of<ILogger<LetsMeatAPI.Controllers.InvitationsController>>()
+        Mock.Of<ILogger<InvitationsController>>()
       );
-      var groupCreatedResponse = (LetsMeatAPI.Controllers.GroupsController.GroupCreatedResponse)((OkObjectResult)grp.Result).Value;
+      var groupCreatedResponse = (GroupsController.GroupCreatedResponse)((OkObjectResult)grp.Result).Value;
       await invitationController.Send(token2, new() {
         to_id = jwt1.Subject,
         group_id = groupCreatedResponse.id
       });
 
-      Assert.Equal(1, context.Invitations.Count());
-      Assert.Equal(jwt1.Subject, context.Invitations.First().ToId);
+      Assert.Collection(context.Invitations, inv => Assert.Equal(jwt1.Subject, inv.ToId));
     }
   }
 }

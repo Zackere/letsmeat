@@ -55,13 +55,15 @@ namespace LetsMeatAPI.Controllers {
         return NotFound();
       if(!grp.Users.Contains(await _context.Users.FindAsync(userId)))
         return Unauthorized();
+      if(grp.Users.Contains(await _context.Users.FindAsync(body.to_id)))
+        return Conflict();
       var inv = await _context.Invitations.FindAsync(new object[] {
         body.to_id,
         body.group_id
       });
       if(inv != null)
         return Conflict();
-      _context.Invitations.Add(new Models.Invitation() {
+      await _context.Invitations.AddAsync(new Models.Invitation() {
         FromId = userId,
         GroupId = body.group_id,
         ToId = body.to_id

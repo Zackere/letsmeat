@@ -44,11 +44,11 @@ namespace LetsMeatAPI {
       }
     }
     public string? LogOut(string token) {
-      var id = IsLoggedIn(token);
-      if(id == null)
-        return null;
       try {
         _mtx.AcquireWriterLock(_mtxTimeout);
+        _loggedUsersTokenToId.TryGetValue(token, out var id);
+        if(id == null)
+          return null;
         _loggedUsersTokenToId.Remove(token);
         _loggedUsersIdToToken.Remove(id);
         return id;
@@ -61,9 +61,8 @@ namespace LetsMeatAPI {
     }
     private void logUser(string token, string id) {
       try {
-        _mtx.AcquireReaderLock(_mtxTimeout);
+        _mtx.AcquireWriterLock(_mtxTimeout);
         _loggedUsersIdToToken.TryGetValue(id, out var oldToken);
-        _mtx.UpgradeToWriterLock(_mtxTimeout);
         if(oldToken != null)
           _loggedUsersTokenToId.Remove(oldToken);
         _loggedUsersIdToToken[id] = token;
@@ -71,14 +70,14 @@ namespace LetsMeatAPI {
       } catch(ApplicationException ex) {
         _logger.LogError(ex.ToString());
       } finally {
-        _mtx.ReleaseLock();
+        _mtx.ReleaseWriterLock();
       }
     }
     private readonly LMDbContext _context;
     private readonly ILogger<UserManager> _logger;
-    private readonly static Dictionary<string, string> _loggedUsersIdToToken = new();
-    private readonly static Dictionary<string, string> _loggedUsersTokenToId = new();
-    private readonly static ReaderWriterLock _mtx = new();
-    private readonly static int _mtxTimeout = 500;
+    private static readonly Dictionary<string, string> _loggedUsersIdToToken = new();
+    private static readonly Dictionary<string, string> _loggedUsersTokenToId = new();
+    private static readonly ReaderWriterLock _mtx = new();
+    private static readonly int _mtxTimeout = 500;
   }
 }

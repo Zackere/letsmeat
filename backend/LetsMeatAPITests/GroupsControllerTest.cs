@@ -1,6 +1,9 @@
 using Google.Apis.Auth;
+using LetsMeatAPI;
+using LetsMeatAPI.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Moq;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -12,9 +15,9 @@ namespace LetsMeatAPITests {
     [Fact]
     public async Task UsersCanJoinOtherGroups() {
       var (context, connection) = GetDb();
-      var userManager = new LetsMeatAPI.UserManager(
+      var userManager = new UserManager(
         context,
-        Moq.Mock.Of<ILogger<LetsMeatAPI.UserManager>>()
+        Mock.Of<ILogger<UserManager>>()
       );
       var data = UsersWithTokens(643, 2).First();
       var token1 = (data[0] as object[])[0] as string;
@@ -22,17 +25,19 @@ namespace LetsMeatAPITests {
       var token2 = (data[0] as object[])[1] as string;
       var jwt2 = (data[1] as object[])[1] as GoogleJsonWebSignature.Payload;
 
-      await userManager.OnTokenGranted(token1, jwt1);
-      await userManager.OnTokenGranted(token2, jwt2);
+      await Task.WhenAll(
+        userManager.OnTokenGranted(token1, jwt1),
+        userManager.OnTokenGranted(token2, jwt2)
+      );
 
-      var groupController = new LetsMeatAPI.Controllers.GroupsController(
+      var groupController = new GroupsController(
         userManager,
         context,
-        Moq.Mock.Of<ILogger<LetsMeatAPI.Controllers.GroupsController>>()
+        Mock.Of<ILogger<GroupsController>>()
       );
       var grp = await groupController.Create(token2, new() { name = "ASD" });
       var grpOk = grp.Result as OkObjectResult;
-      var response = grpOk.Value as LetsMeatAPI.Controllers.GroupsController.GroupCreatedResponse;
+      var response = grpOk.Value as GroupsController.GroupCreatedResponse;
       await groupController.Join(token2, new() { id = response.id });
 
       Assert.Equal(1, context.Groups.Count());
@@ -44,9 +49,9 @@ namespace LetsMeatAPITests {
     [Fact]
     public async Task UsersCanCreateGroups() {
       var (context, connection) = GetDb();
-      var userManager = new LetsMeatAPI.UserManager(
+      var userManager = new UserManager(
         context,
-        Moq.Mock.Of<ILogger<LetsMeatAPI.UserManager>>()
+        Mock.Of<ILogger<UserManager>>()
       );
       var data = UsersWithTokens(643, 1).First();
       var token1 = (data[0] as object[])[0] as string;
@@ -54,23 +59,80 @@ namespace LetsMeatAPITests {
 
       await userManager.OnTokenGranted(token1, jwt1);
 
-      var groupController = new LetsMeatAPI.Controllers.GroupsController(
+      var groupController = new GroupsController(
         userManager,
         context,
-        Moq.Mock.Of<ILogger<LetsMeatAPI.Controllers.GroupsController>>()
+        Mock.Of<ILogger<GroupsController>>()
       );
       var createRes = await groupController.Create(token1, new() { name = "ASD" });
       Assert.IsType<OkObjectResult>(createRes.Result);
       var grpOk = createRes.Result as OkObjectResult;
-      Assert.IsType<LetsMeatAPI.Controllers.GroupsController.GroupCreatedResponse>(
+      Assert.IsType<GroupsController.GroupCreatedResponse>(
         grpOk.Value
       );
-      var grpCreated = grpOk.Value as LetsMeatAPI.Controllers.GroupsController.GroupCreatedResponse;
+      var grpCreated = grpOk.Value as GroupsController.GroupCreatedResponse;
       Assert.Equal("ASD", grpCreated.name);
       var grp = context.Groups.Find(grpCreated.id);
       Assert.NotNull(grp);
       Assert.Equal(jwt1.Subject, grp.OwnerId);
-      Assert.Collection(context.Users, user => Assert.Equal(jwt1.Subject, user.Id));
+      Assert.Collection(grp.Users, user => Assert.Equal(jwt1.Subject, user.Id));
+
+      context.Dispose();
+      connection.Dispose();
+    }
+    [Fact]
+    public async Task UsersCanDeleteGroupTheyOwn() {
+      var (context, connection) = GetDb();
+      var userManager = new UserManager(
+        context,
+        Mock.Of<ILogger<UserManager>>()
+      );
+      var data = UsersWithTokens(643, 3).First();
+      var token1 = (data[0] as object[])[0] as string;
+      var jwt1 = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
+      var token2 = (data[0] as object[])[1] as string;
+      var jwt2 = (data[1] as object[])[1] as GoogleJsonWebSignature.Payload;
+      var token3 = (data[0] as object[])[2] as string;
+      var jwt3 = (data[1] as object[])[2] as GoogleJsonWebSignature.Payload;
+
+      await Task.WhenAll(
+        userManager.OnTokenGranted(token1, jwt1),
+        userManager.OnTokenGranted(token2, jwt2),
+        userManager.OnTokenGranted(token3, jwt3)
+      );
+      Assert.Equal(3, context.Users.Count());
+
+      var groupController = new GroupsController(
+        userManager,
+        context,
+        Mock.Of<ILogger<GroupsController>>()
+      );
+      var invitationController = new InvitationsController(
+        userManager,
+        context,
+        Mock.Of<ILogger<InvitationsController>>()
+      );
+
+      var grp = await groupController.Create(token1, new() { name = "ASD" });
+      var groupCreatedResponse = (GroupsController.GroupCreatedResponse)((OkObjectResult)grp.Result).Value;
+      await invitationController.Send(token1, new() {
+        to_id = jwt2.Subject,
+        group_id = groupCreatedResponse.id
+      });
+      await groupController.Join(token3, new() { id = groupCreatedResponse.id });
+      var deleteRes = await groupController.Delete(token1, new() { id = groupCreatedResponse.id });
+      Assert.IsType<OkResult>(deleteRes);
+
+      Assert.Empty(context.Groups);
+      var user1 = await context.Users.FindAsync(jwt1.Subject);
+      Assert.Empty(user1.OwnedGroups);
+      Assert.Empty(user1.Groups);
+      Assert.Empty(context.Invitations);
+      var user3 = await context.Users.FindAsync(jwt3.Subject);
+      Assert.Empty(user3.Groups);
+
+      context.Dispose();
+      connection.Dispose();
     }
   }
 }
