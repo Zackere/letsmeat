@@ -13,5 +13,6 @@ namespace LetsMeatAPI.Models {
     public virtual ICollection<Debt> DebtsForOthers { get; set; }
     public virtual ICollection<Debt> DebtsForMe { get; set; }
     public virtual ICollection<Invitation> Invitations { get; set; }
+    public virtual ICollection<Group> OwnedGroups { get; set; }
   }
 }

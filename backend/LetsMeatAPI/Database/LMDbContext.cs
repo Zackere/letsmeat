@@ -27,12 +27,19 @@ namespace LetsMeatAPI {
         .HasMany(user => user.Invitations)
         .WithOne(inv => inv.To)
         .OnDelete(DeleteBehavior.NoAction);
+      modelBuilder.Entity<User>()
+        .HasMany(user => user.OwnedGroups)
+        .WithOne(g => g.Owner)
+        .OnDelete(DeleteBehavior.NoAction);
       modelBuilder.Entity<Debt>()
         .HasKey(debt => new { debt.FromId, debt.ToId, debt.GroupId });
       modelBuilder.Entity<Vote>()
         .HasKey(vote => new { vote.EventId, vote.UserId });
       modelBuilder.Entity<Invitation>()
         .HasKey(inv => new { inv.ToId, inv.GroupId });
+      modelBuilder.Entity<Group>()
+        .HasMany(g => g.Users)
+        .WithMany(u => u.Groups);
     }
   }
 }

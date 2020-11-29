@@ -12,6 +12,7 @@ pipelines:
           name: Deploy backend
           caches:
             - dotnetcore
+          deployment: production
           script:
             - apt-get update && apt-get install -y zip 
             - cd backend/LetsMeatAPI
@@ -22,6 +23,10 @@ pipelines:
             - zip -r ../letsmeatapi.zip *
             - cd ..
             - curl -u wreplin:${AZURE_DEPLOYMENT_PASSWORD} --data-binary @letsmeatapi.zip https://letsmeatapi.scm.azurewebsites.net/api/zipdeploy
+          condition:
+            changesets:
+              includePaths:
+                - backend/LetsMeatAPI/**
   default:
     - parallel:
         - step:
@@ -30,21 +35,10 @@ pipelines:
               - dotnetcore
             script:
               - cd backend/LetsMeatAPITests
-              - REPORTS_PATH=./test-reports/build_${BITBUCKET_BUILD_NUMBER}
               - dotnet restore
               - dotnet build --no-restore --configuration Release
-              - dotnet test --no-build --configuration Release --test-adapter-path:.
-        - step:
-            name: Lint the backend code
-            caches:
-              - dotnetcore
-            script:
-              - cd backend/LetsMeatAPI
-              - export SOLUTION_NAME=LetsMeatAPI
-              - export REPORTS_PATH=linter-reports
-              - dotnet new tool-manifest
-              - dotnet tool install JetBrains.ReSharper.GlobalTools
-              - dotnet tool restore
-              - dotnet jb inspectcode ${SOLUTION_NAME}.sln --output="${REPORTS_PATH}/jb-${BITBUCKET_BUILD_NUMBER}.xml"
-            artifacts:
-              - linter-reports/**
+              - dotnet test --no-build --configuration Release --verbosity normal
+            condition:
+              changesets:
+                includePaths:
+                  - backend/**

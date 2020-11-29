@@ -35,9 +35,11 @@ namespace LetsMeatAPI.Controllers {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
+      var user = _context.Users.Find(userId);
       var grp = new Models.Group() {
         Name = body.name,
-        Users = new List<Models.User>() { _context.Users.Find(userId) },
+        Owner = user,
+        Users = new List<Models.User>() { user },
         Locations = new List<Models.Location>(),
         Events = new List<Models.Event>()
       };
