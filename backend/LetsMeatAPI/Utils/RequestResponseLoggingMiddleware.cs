@@ -58,6 +58,7 @@ namespace LetsMeatAPI.Utils {
                 $"Host: {context.Request.Host}\n" +
                 $"Path: {context.Request.Path}\n" +
                 $"QueryString: {context.Request.QueryString}\n" +
+                $"Response Code: {context.Response.StatusCode}\n" +
                 $"Response Body: {text}\n";
 
       await responseBody.CopyToAsync(originalBodyStream);
