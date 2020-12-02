@@ -1,4 +1,4 @@
-Logs/
+logs.txt
 *.swp
 *.*~
 project.lock.json
