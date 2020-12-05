@@ -119,6 +119,11 @@ namespace LetsMeatAPITests {
         context,
         Mock.Of<ILogger<EventsController>>()
       );
+      var debtsController = new DebtsController(
+        userManager,
+        context,
+        Mock.Of<ILogger<DebtsController>>()
+      );
 
       var grp = await groupController.Create(token1, new() { name = "ASD" });
       var groupCreatedResponse = (GroupsController.GroupCreatedResponse)((OkObjectResult)grp.Result).Value;
@@ -132,9 +137,18 @@ namespace LetsMeatAPITests {
         group_id = groupCreatedResponse.id,
         name = "ASD"
       });
+      Assert.Equal(1, context.Events.Count());
+      await debtsController.Add(token1, new() {
+        amount = 20,
+        group_id = groupCreatedResponse.id,
+        from_id = jwt1.Subject,
+        to_id = jwt3.Subject,
+      });
+      Assert.Equal(1, context.Debts.Count());
       var deleteRes = await groupController.Delete(token1, new() { id = groupCreatedResponse.id });
       Assert.IsType<OkResult>(deleteRes);
 
+      Assert.Empty(context.Debts);
       Assert.Empty(context.Events);
       Assert.Empty(context.Groups);
       var user1 = await context.Users.FindAsync(jwt1.Subject);

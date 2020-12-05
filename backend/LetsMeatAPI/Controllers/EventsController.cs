@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace LetsMeatAPI.Controllers {
@@ -36,16 +37,15 @@ namespace LetsMeatAPI.Controllers {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
-      var user = await _context.Users.FindAsync(userId);
       var grp = await _context.Groups.FindAsync(body.group_id);
       if(grp == null)
         return NotFound();
-      if(!grp.Users.Contains(user))
+      if(!grp.Users.Any(u => u.Id == userId))
         return Unauthorized();
       var ev = new Event() {
         CandidateLocations = new List<Location>(),
         CandidateTimes = "[]",
-        Creator = user,
+        CreatorId = userId,
         Deadline = body.deadline,
         GroupId = grp.Id,
         Name = body.name,
