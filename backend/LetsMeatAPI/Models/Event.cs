@@ -7,6 +7,10 @@ namespace LetsMeatAPI.Models {
   public class Event {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
+    public Guid GroupId { get; set; }
+    public virtual Group Group { get; set; }
+    public string CreatorId { get; set; }
+    public virtual User Creator { get; set; }
     [MaxLength(64)]
     [Required]
     public string Name { get; set; }

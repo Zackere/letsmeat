@@ -1,5 +1,4 @@
 using Google.Apis.Auth;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,14 +25,12 @@ namespace LetsMeatAPI.Controllers {
       GoogleTokenIdValidator googleTokenIdValidator,
       UserManager userManager,
       GoogleAudiences? expectedGoogleAudiences,
-      IWebHostEnvironment webHostEnvironment,
       Random rnd,
       ILogger<LoginController> logger
     ) {
       _googleTokenIdValidator = googleTokenIdValidator ?? throw new ArgumentNullException("googleTokenIdValidator");
       _userManager = userManager ?? throw new ArgumentNullException("userManager");
       _expectedGoogleAudiences = expectedGoogleAudiences?.Auds;
-      _webHostEnvironment = webHostEnvironment ?? throw new ArgumentNullException("webHostEnvironment");
       _rnd = rnd ?? throw new ArgumentNullException("rnd");
       _logger = logger ?? throw new ArgumentNullException("logger");
     }
@@ -82,7 +79,6 @@ namespace LetsMeatAPI.Controllers {
     private readonly GoogleTokenIdValidator _googleTokenIdValidator;
     private readonly UserManager _userManager;
     private readonly IEnumerable<string>? _expectedGoogleAudiences;
-    private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly Random _rnd;
     private readonly ILogger<LoginController> _logger;
   }

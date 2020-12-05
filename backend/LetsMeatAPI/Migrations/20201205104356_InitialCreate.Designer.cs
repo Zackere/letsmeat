@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LetsMeatAPI.Migrations
 {
     [DbContext(typeof(LMDbContext))]
-    [Migration("20201129101339_GroupOwner")]
-    partial class GroupOwner
+    [Migration("20201205104356_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -84,10 +84,14 @@ namespace LetsMeatAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CreatorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(128)");
+
                     b.Property<DateTime>("Deadline")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("GroupId")
+                    b.Property<Guid>("GroupId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
@@ -99,6 +103,8 @@ namespace LetsMeatAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
 
                     b.HasIndex("GroupId");
 
@@ -188,9 +194,7 @@ namespace LetsMeatAPI.Migrations
 
                     b.Property<string>("Prefs")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("{}");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -273,9 +277,21 @@ namespace LetsMeatAPI.Migrations
 
             modelBuilder.Entity("LetsMeatAPI.Models.Event", b =>
                 {
-                    b.HasOne("LetsMeatAPI.Models.Group", null)
+                    b.HasOne("LetsMeatAPI.Models.User", "Creator")
+                        .WithMany("CreatedEvents")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("LetsMeatAPI.Models.Group", "Group")
                         .WithMany("Events")
-                        .HasForeignKey("GroupId");
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("LetsMeatAPI.Models.Group", b =>
@@ -346,6 +362,8 @@ namespace LetsMeatAPI.Migrations
 
             modelBuilder.Entity("LetsMeatAPI.Models.User", b =>
                 {
+                    b.Navigation("CreatedEvents");
+
                     b.Navigation("DebtsForMe");
 
                     b.Navigation("DebtsForOthers");

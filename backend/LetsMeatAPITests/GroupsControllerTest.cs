@@ -4,6 +4,7 @@ using LetsMeatAPI.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -113,6 +114,11 @@ namespace LetsMeatAPITests {
         context,
         Mock.Of<ILogger<InvitationsController>>()
       );
+      var eventsController = new EventsController(
+        userManager,
+        context,
+        Mock.Of<ILogger<EventsController>>()
+      );
 
       var grp = await groupController.Create(token1, new() { name = "ASD" });
       var groupCreatedResponse = (GroupsController.GroupCreatedResponse)((OkObjectResult)grp.Result).Value;
@@ -121,9 +127,15 @@ namespace LetsMeatAPITests {
         group_id = groupCreatedResponse.id
       });
       await groupController.Join(token3, new() { id = groupCreatedResponse.id });
+      await eventsController.Create(token1, new() {
+        deadline = DateTime.Now,
+        group_id = groupCreatedResponse.id,
+        name = "ASD"
+      });
       var deleteRes = await groupController.Delete(token1, new() { id = groupCreatedResponse.id });
       Assert.IsType<OkResult>(deleteRes);
 
+      Assert.Empty(context.Events);
       Assert.Empty(context.Groups);
       var user1 = await context.Users.FindAsync(jwt1.Subject);
       Assert.Empty(user1.OwnedGroups);

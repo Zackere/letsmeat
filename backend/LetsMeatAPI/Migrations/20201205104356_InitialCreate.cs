@@ -5,63 +5,32 @@ namespace LetsMeatAPI.Migrations {
   public partial class InitialCreate : Migration {
     protected override void Up(MigrationBuilder migrationBuilder) {
       migrationBuilder.CreateTable(
-          name: "Groups",
-          columns: table => new {
-            Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-            Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false)
-          },
-          constraints: table => {
-            table.PrimaryKey("PK_Groups", x => x.Id);
-          });
-
-      migrationBuilder.CreateTable(
           name: "Users",
           columns: table => new {
             Id = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
             PictureUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
             Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
             Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-            Prefs = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: "{}")
+            Prefs = table.Column<string>(type: "nvarchar(max)", nullable: false)
           },
           constraints: table => {
             table.PrimaryKey("PK_Users", x => x.Id);
           });
 
       migrationBuilder.CreateTable(
-          name: "Events",
+          name: "Groups",
           columns: table => new {
             Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
             Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
-            CandidateTimes = table.Column<string>(type: "nvarchar(max)", nullable: false),
-            Deadline = table.Column<DateTime>(type: "datetime2", nullable: false),
-            Result = table.Column<string>(type: "nvarchar(max)", nullable: true),
-            GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+            OwnerId = table.Column<string>(type: "nvarchar(128)", nullable: false)
           },
           constraints: table => {
-            table.PrimaryKey("PK_Events", x => x.Id);
+            table.PrimaryKey("PK_Groups", x => x.Id);
             table.ForeignKey(
-                      name: "FK_Events_Groups_GroupId",
-                      column: x => x.GroupId,
-                      principalTable: "Groups",
-                      principalColumn: "Id",
-                      onDelete: ReferentialAction.Restrict);
-          });
-
-      migrationBuilder.CreateTable(
-          name: "Locations",
-          columns: table => new {
-            Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-            Info = table.Column<string>(type: "nvarchar(max)", nullable: false),
-            GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-          },
-          constraints: table => {
-            table.PrimaryKey("PK_Locations", x => x.Id);
-            table.ForeignKey(
-                      name: "FK_Locations_Groups_GroupId",
-                      column: x => x.GroupId,
-                      principalTable: "Groups",
-                      principalColumn: "Id",
-                      onDelete: ReferentialAction.Restrict);
+                      name: "FK_Groups_Users_OwnerId",
+                      column: x => x.OwnerId,
+                      principalTable: "Users",
+                      principalColumn: "Id");
           });
 
       migrationBuilder.CreateTable(
@@ -88,6 +57,32 @@ namespace LetsMeatAPI.Migrations {
             table.ForeignKey(
                       name: "FK_Debts_Users_ToId",
                       column: x => x.ToId,
+                      principalTable: "Users",
+                      principalColumn: "Id");
+          });
+
+      migrationBuilder.CreateTable(
+          name: "Events",
+          columns: table => new {
+            Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+            GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+            CreatorId = table.Column<string>(type: "nvarchar(128)", nullable: false),
+            Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+            CandidateTimes = table.Column<string>(type: "nvarchar(max)", nullable: false),
+            Deadline = table.Column<DateTime>(type: "datetime2", nullable: false),
+            Result = table.Column<string>(type: "nvarchar(max)", nullable: true)
+          },
+          constraints: table => {
+            table.PrimaryKey("PK_Events", x => x.Id);
+            table.ForeignKey(
+                      name: "FK_Events_Groups_GroupId",
+                      column: x => x.GroupId,
+                      principalTable: "Groups",
+                      principalColumn: "Id",
+                      onDelete: ReferentialAction.Cascade);
+            table.ForeignKey(
+                      name: "FK_Events_Users_CreatorId",
+                      column: x => x.CreatorId,
                       principalTable: "Users",
                       principalColumn: "Id");
           });
@@ -140,6 +135,23 @@ namespace LetsMeatAPI.Migrations {
                       column: x => x.ToId,
                       principalTable: "Users",
                       principalColumn: "Id");
+          });
+
+      migrationBuilder.CreateTable(
+          name: "Locations",
+          columns: table => new {
+            Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+            Info = table.Column<string>(type: "nvarchar(max)", nullable: false),
+            GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+          },
+          constraints: table => {
+            table.PrimaryKey("PK_Locations", x => x.Id);
+            table.ForeignKey(
+                      name: "FK_Locations_Groups_GroupId",
+                      column: x => x.GroupId,
+                      principalTable: "Groups",
+                      principalColumn: "Id",
+                      onDelete: ReferentialAction.Restrict);
           });
 
       migrationBuilder.CreateTable(
@@ -197,9 +209,19 @@ namespace LetsMeatAPI.Migrations {
           column: "EventsWithMeId");
 
       migrationBuilder.CreateIndex(
+          name: "IX_Events_CreatorId",
+          table: "Events",
+          column: "CreatorId");
+
+      migrationBuilder.CreateIndex(
           name: "IX_Events_GroupId",
           table: "Events",
           column: "GroupId");
+
+      migrationBuilder.CreateIndex(
+          name: "IX_Groups_OwnerId",
+          table: "Groups",
+          column: "OwnerId");
 
       migrationBuilder.CreateIndex(
           name: "IX_GroupUser_UsersId",
@@ -242,13 +264,13 @@ namespace LetsMeatAPI.Migrations {
           name: "Locations");
 
       migrationBuilder.DropTable(
-          name: "Users");
-
-      migrationBuilder.DropTable(
           name: "Events");
 
       migrationBuilder.DropTable(
           name: "Groups");
+
+      migrationBuilder.DropTable(
+          name: "Users");
     }
   }
 }
