@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.IO;
+using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Threading.Tasks;
@@ -16,7 +17,8 @@ namespace LetsMeatAPI.Utils {
       if(
         context.Request.Path.Value == "/index.html" ||
         context.Request.Path.Value.Contains("swagger") ||
-        context.Request.Path.Value == "/logs"
+        context.Request.Path.Value == "/logs" ||
+        context.Request.Path.Value == "/favicon.ico"
       ) {
         await _next(context);
         return;
@@ -32,7 +34,9 @@ namespace LetsMeatAPI.Utils {
       await using var requestStream = _recyclableMemoryStreamManager.GetStream();
       await context.Request.Body.CopyToAsync(requestStream);
       var ret = $"Http Request Information:\n" +
-                $"Schema:{context.Request.Scheme}\n" +
+                $"Time: {DateTime.Now}\n" +
+                $"Schema: {context.Request.Scheme}\n" +
+                $"Method: {context.Request.Method}\n" +
                 $"Host: {context.Request.Host}\n" +
                 $"Path: {context.Request.Path}\n" +
                 $"QueryString: {context.Request.QueryString}\n" +

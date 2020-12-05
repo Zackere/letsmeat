@@ -60,7 +60,6 @@ namespace LetsMeatAPI.Controllers {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
-      _context.Users.Include(u => u.Groups);
       var user = await _context.Users.FindAsync(userId);
       return new UserInformationResponse {
         id = user.Id,

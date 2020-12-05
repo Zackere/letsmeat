@@ -13,9 +13,6 @@ namespace LetsMeatAPI {
     public DbSet<Invitation> Invitations { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
       modelBuilder.Entity<User>()
-        .Property(u => u.Prefs)
-        .HasDefaultValue("{}");
-      modelBuilder.Entity<User>()
         .HasMany(user => user.DebtsForMe)
         .WithOne(debt => debt.To)
         .OnDelete(DeleteBehavior.NoAction);
@@ -30,6 +27,10 @@ namespace LetsMeatAPI {
       modelBuilder.Entity<User>()
         .HasMany(user => user.OwnedGroups)
         .WithOne(g => g.Owner)
+        .OnDelete(DeleteBehavior.NoAction);
+      modelBuilder.Entity<User>()
+        .HasMany(user => user.CreatedEvents)
+        .WithOne(ev => ev.Creator)
         .OnDelete(DeleteBehavior.NoAction);
       modelBuilder.Entity<Debt>()
         .HasKey(debt => new { debt.FromId, debt.ToId, debt.GroupId });
