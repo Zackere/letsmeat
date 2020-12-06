@@ -9,6 +9,6 @@ export default class Group extends Component {
   }
 
   render() {
-    return <div>{'group '+this.state.id}</div>
+    return <div>{'group ' + this.state.id}</div>
   }
 }
