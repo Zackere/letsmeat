@@ -14,13 +14,10 @@ pipelines:
             - dotnetcore
           deployment: production
           script:
-            - apt-get update && apt-get install -y zip 
-            - dotnet tool install --global dotnet-ef
+            - apt-get update && apt-get install -y zip
             - cd backend/LetsMeatAPI
             - dotnet restore
             - dotnet build --no-restore --configuration Release
-            - dotnet ef database update 0 --connection "${LETS_MEAT_DB_CONNECTION_STRING}" --configuration Release --no-build
-            - dotnet ef database update --connection "${LETS_MEAT_DB_CONNECTION_STRING}" --configuration Release --no-build
             - dotnet publish --no-restore --no-build --configuration Release
             - cd bin/Release/netcoreapp3.1/publish/
             - zip -r ../letsmeatapi.zip *
