@@ -37,10 +37,10 @@ namespace LetsMeatAPI.Controllers {
         return Unauthorized();
       var user = await _context.Users.FindAsync(userId);
       var grp = new Models.Group() {
+        CustomLocations = new List<Models.CustomLocation>(),
         Name = body.name,
         Owner = user,
         Users = new List<Models.User>() { user },
-        Locations = new List<Models.Location>(),
         Events = new List<Models.Event>()
       };
       await _context.Groups.AddAsync(grp);
@@ -50,10 +50,10 @@ namespace LetsMeatAPI.Controllers {
         _logger.LogError(ex.ToString());
         return Conflict();
       }
-      return Ok(new GroupCreatedResponse() {
+      return new GroupCreatedResponse() {
         id = grp.Id,
         name = grp.Name
-      });
+      };
     }
     public class GroupInformationResponse {
       public class UserInformation {
@@ -61,9 +61,12 @@ namespace LetsMeatAPI.Controllers {
         public string picture_url { get; set; }
         public string name { get; set; }
       }
-      public class LocationInformation {
+      public class CustomLocationInformation {
         public Guid id { get; set; }
-        public string info { get; set; }
+        public Guid created_for_id { get; set; }
+        public string address { get; set; }
+        public string name { get; set; }
+        public string rating { get; set; }
       }
       public class EventInformation {
         public Guid id { get; set; }
@@ -73,7 +76,7 @@ namespace LetsMeatAPI.Controllers {
       public Guid id { get; set; }
       public string name { get; set; }
       public IEnumerable<UserInformation> users { get; set; }
-      public IEnumerable<LocationInformation> locations { get; set; }
+      public IEnumerable<CustomLocationInformation> custom_locations { get; set; }
       public IEnumerable<EventInformation> events { get; set; }
     }
     [HttpGet]
@@ -88,27 +91,30 @@ namespace LetsMeatAPI.Controllers {
       var grp = await _context.Groups.FindAsync(id);
       if(grp == null)
         return NotFound();
-      return Ok(new GroupInformationResponse {
+      return new GroupInformationResponse {
         id = grp.Id,
         name = grp.Name,
         users = from user in grp.Users
                 select new GroupInformationResponse.UserInformation {
                   id = user.Id,
                   picture_url = user.PictureUrl,
-                  name = user.Name
+                  name = user.Name,
                 },
-        locations = from location in grp.Locations
-                    select new GroupInformationResponse.LocationInformation {
-                      id = location.Id,
-                      info = location.Info
-                    },
+        custom_locations = from location in grp.CustomLocations
+                           select new GroupInformationResponse.CustomLocationInformation {
+                             id = location.Id,
+                             address = location.Address,
+                             name = location.Name,
+                             created_for_id = location.CreatedForId,
+                             rating = location.Rating,
+                           },
         events = from evnt in grp.Events
                  select new GroupInformationResponse.EventInformation {
                    id = evnt.Id,
                    name = evnt.Name,
-                   deadline = evnt.Deadline
+                   deadline = evnt.Deadline,
                  }
-      });
+      };
     }
     public class GroupJoinBody {
       public Guid id { get; set; }
@@ -152,7 +158,9 @@ namespace LetsMeatAPI.Controllers {
         return NotFound();
       if(grp.OwnerId != userId)
         return Unauthorized();
-      _context.Remove(grp);
+      _context.Events.RemoveRange(grp.Events);
+      _context.CustomLocations.RemoveRange(grp.CustomLocations);
+      _context.Groups.Remove(grp);
       await _context.SaveChangesAsync();
       return Ok();
     }
