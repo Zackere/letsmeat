@@ -44,6 +44,7 @@ namespace LetsMeatAPI {
         var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
         var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
         config.IncludeXmlComments(xmlPath);
+        config.CustomSchemaIds(x => x.FullName);
       });
     }
 

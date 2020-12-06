@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LetsMeatAPI.Controllers {
@@ -43,7 +44,8 @@ namespace LetsMeatAPI.Controllers {
       if(!grp.Users.Any(u => u.Id == userId))
         return Unauthorized();
       var ev = new Event() {
-        CandidateLocations = new List<Location>(),
+        CandidateCustomLocations = new List<CustomLocation>(),
+        CandidateGoogleMapsLocations = new List<GoogleMapsLocation>(),
         CandidateTimes = "[]",
         CreatorId = userId,
         Deadline = body.deadline,
@@ -67,23 +69,67 @@ namespace LetsMeatAPI.Controllers {
       public Guid id { get; set; }
       public string? name { get; set; }
       public DateTime? deadline { get; set; }
+      public Guid[]? custom_locations_ids { get; set; }
+      public string[]? google_maps_locations_ids { get; set; }
+      public DateTime[]? candidate_times { get; set; }
     }
     [HttpPatch]
     [Route("update")]
-    public async Task<ActionResult> Update(
+    public async Task<ActionResult<EventInformationResponse>> Update(
       string token,
       [FromBody] EventUpdateBody body
     ) {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
-      if(body.name == null && body.deadline == null)
+      if(
+        body.name == null &&
+        body.deadline == null &&
+        body.candidate_times == null &&
+        body.custom_locations_ids == null &&
+        body.google_maps_locations_ids == null
+      ) {
         return new StatusCodeResult(418);
+      }
       var ev = await _context.Events.FindAsync(body.id);
+      if(ev == null)
+        return NotFound();
       if(body.name != null)
         ev.Name = body.name;
       if(body.deadline != null)
         ev.Deadline = (DateTime)body.deadline;
+      if(body.custom_locations_ids != null) {
+        var uids = body.custom_locations_ids.Distinct().ToArray();
+        var diff = from id in uids
+                   where !_context.CustomLocations.Any(l => l.Id == id)
+                   select id;
+        if(diff.Count() != 0)
+          return NotFound(diff);
+        var locs = from l in _context.CustomLocations
+                   where uids.Contains(l.Id) &&
+                         !ev.CandidateCustomLocations.Contains(l)
+                   select l;
+        foreach(var l in locs)
+          ev.CandidateCustomLocations.Add(l);
+      }
+      if(body.google_maps_locations_ids != null) {
+        var uids = body.google_maps_locations_ids.Distinct().ToArray();
+        var diff = from id in uids
+                   where !_context.GoogleMapsLocations.Any(l => l.Id == id)
+                   select id;
+        if(diff.Count() != 0)
+          return NotFound(diff);
+        var locs = from l in _context.GoogleMapsLocations
+                   where uids.Contains(l.Id) &&
+                         !ev.CandidateGoogleMapsLocations.Contains(l)
+                   select l;
+        foreach(var l in locs)
+          ev.CandidateGoogleMapsLocations.Add(l);
+      }
+      if(body.candidate_times != null) {
+        var arr = JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes);
+        ev.CandidateTimes = JsonSerializer.Serialize(arr.Union(body.candidate_times));
+      }
       _context.Entry(ev).State = EntityState.Modified;
       try {
         await _context.SaveChangesAsync();
@@ -91,7 +137,20 @@ namespace LetsMeatAPI.Controllers {
         _logger.LogError(ex.ToString());
         return Conflict();
       }
-      return Ok();
+      return new EventInformationResponse() {
+        candidate_custom_locations = (from location in ev.CandidateCustomLocations
+                                      select location.Id).ToArray(),
+        candidate_google_maps_locations = (from location in ev.CandidateGoogleMapsLocations
+                                           select location.Id).ToArray(),
+        candidate_times = JsonSerializer.Deserialize<DateTime[]>(ev.CandidateTimes),
+        creator_id = ev.CreatorId,
+        deadline = ev.Deadline,
+        group_id = ev.GroupId,
+        id = ev.Id,
+        locations_result = null,
+        name = ev.Name,
+        times_result = null,
+      };
     }
     public class EventInformationResponse {
       public Guid id { get; set; }
@@ -99,10 +158,11 @@ namespace LetsMeatAPI.Controllers {
       public string creator_id { get; set; }
       public string name { get; set; }
       public DateTime[] candidate_times { get; set; }
-      public Guid[] candidate_locations { get; set; }
+      public Guid[] candidate_custom_locations { get; set; }
+      public string[] candidate_google_maps_locations { get; set; }
       public DateTime deadline { get; set; }
-      public Guid[] locations_result { get; set; }
-      public DateTime[] times_result { get; set; }
+      public Guid[]? locations_result { get; set; }
+      public DateTime[]? times_result { get; set; }
     }
     [HttpGet]
     [Route("info")]
@@ -117,15 +177,18 @@ namespace LetsMeatAPI.Controllers {
       if(ev == null)
         return NotFound();
       return new EventInformationResponse() {
-        candidate_locations = new Guid[] { },
-        candidate_times = new DateTime[] { },
+        candidate_custom_locations = (from location in ev.CandidateCustomLocations
+                                      select location.Id).ToArray(),
+        candidate_google_maps_locations = (from location in ev.CandidateGoogleMapsLocations
+                                           select location.Id).ToArray(),
+        candidate_times = JsonSerializer.Deserialize<DateTime[]>(ev.CandidateTimes),
         creator_id = ev.CreatorId,
         deadline = ev.Deadline,
         group_id = ev.GroupId,
         id = ev.Id,
-        locations_result = new Guid[] { },
+        locations_result = null,
         name = ev.Name,
-        times_result = new DateTime[] { },
+        times_result = null,
       };
     }
     private readonly UserManager _userManager;

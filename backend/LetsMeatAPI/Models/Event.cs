@@ -15,9 +15,10 @@ namespace LetsMeatAPI.Models {
     [Required]
     public string Name { get; set; }
     public string CandidateTimes { get; set; }
-    public virtual ICollection<Location> CandidateLocations { get; set; }
     public DateTime Deadline { get; set; }
     public string? Result { get; set; }
     public virtual ICollection<Vote> Votes { get; set; }
+    public virtual ICollection<GoogleMapsLocation> CandidateGoogleMapsLocations { get; set; }
+    public virtual ICollection<CustomLocation> CandidateCustomLocations { get; set; }
   }
 }

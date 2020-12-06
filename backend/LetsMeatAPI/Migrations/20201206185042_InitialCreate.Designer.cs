@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LetsMeatAPI.Migrations
 {
     [DbContext(typeof(LMDbContext))]
-    [Migration("20201205104356_InitialCreate")]
+    [Migration("20201206185042_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,19 +21,34 @@ namespace LetsMeatAPI.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.0");
 
-            modelBuilder.Entity("EventLocation", b =>
+            modelBuilder.Entity("CustomLocationEvent", b =>
                 {
-                    b.Property<Guid>("CandidateLocationsId")
+                    b.Property<Guid>("CandidateCustomLocationsId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("EventsWithMeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("CandidateLocationsId", "EventsWithMeId");
+                    b.HasKey("CandidateCustomLocationsId", "EventsWithMeId");
 
                     b.HasIndex("EventsWithMeId");
 
-                    b.ToTable("EventLocation");
+                    b.ToTable("CustomLocationEvent");
+                });
+
+            modelBuilder.Entity("EventGoogleMapsLocation", b =>
+                {
+                    b.Property<string>("CandidateGoogleMapsLocationsId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("EventsWithMeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("CandidateGoogleMapsLocationsId", "EventsWithMeId");
+
+                    b.HasIndex("EventsWithMeId");
+
+                    b.ToTable("EventGoogleMapsLocation");
                 });
 
             modelBuilder.Entity("GroupUser", b =>
@@ -49,6 +64,36 @@ namespace LetsMeatAPI.Migrations
                     b.HasIndex("UsersId");
 
                     b.ToTable("GroupUser");
+                });
+
+            modelBuilder.Entity("LetsMeatAPI.Models.CustomLocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<Guid>("CreatedForId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Rating")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedForId");
+
+                    b.ToTable("CustomLocations");
                 });
 
             modelBuilder.Entity("LetsMeatAPI.Models.Debt", b =>
@@ -111,6 +156,34 @@ namespace LetsMeatAPI.Migrations
                     b.ToTable("Events");
                 });
 
+            modelBuilder.Entity("LetsMeatAPI.Models.GoogleMapsLocation", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float>("Latitude")
+                        .HasColumnType("real");
+
+                    b.Property<float>("Longitude")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Rating")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GoogleMapsLocations");
+                });
+
             modelBuilder.Entity("LetsMeatAPI.Models.Group", b =>
                 {
                     b.Property<Guid>("Id")
@@ -152,26 +225,6 @@ namespace LetsMeatAPI.Migrations
                     b.HasIndex("GroupId");
 
                     b.ToTable("Invitations");
-                });
-
-            modelBuilder.Entity("LetsMeatAPI.Models.Location", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("GroupId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Info")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
-
-                    b.ToTable("Locations");
                 });
 
             modelBuilder.Entity("LetsMeatAPI.Models.User", b =>
@@ -218,11 +271,26 @@ namespace LetsMeatAPI.Migrations
                     b.ToTable("Votes");
                 });
 
-            modelBuilder.Entity("EventLocation", b =>
+            modelBuilder.Entity("CustomLocationEvent", b =>
                 {
-                    b.HasOne("LetsMeatAPI.Models.Location", null)
+                    b.HasOne("LetsMeatAPI.Models.CustomLocation", null)
                         .WithMany()
-                        .HasForeignKey("CandidateLocationsId")
+                        .HasForeignKey("CandidateCustomLocationsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LetsMeatAPI.Models.Event", null)
+                        .WithMany()
+                        .HasForeignKey("EventsWithMeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EventGoogleMapsLocation", b =>
+                {
+                    b.HasOne("LetsMeatAPI.Models.GoogleMapsLocation", null)
+                        .WithMany()
+                        .HasForeignKey("CandidateGoogleMapsLocationsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -246,6 +314,16 @@ namespace LetsMeatAPI.Migrations
                         .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("LetsMeatAPI.Models.CustomLocation", b =>
+                {
+                    b.HasOne("LetsMeatAPI.Models.Group", "CreatedFor")
+                        .WithMany("CustomLocations")
+                        .HasForeignKey("CreatedForId")
+                        .IsRequired();
+
+                    b.Navigation("CreatedFor");
                 });
 
             modelBuilder.Entity("LetsMeatAPI.Models.Debt", b =>
@@ -332,13 +410,6 @@ namespace LetsMeatAPI.Migrations
                     b.Navigation("To");
                 });
 
-            modelBuilder.Entity("LetsMeatAPI.Models.Location", b =>
-                {
-                    b.HasOne("LetsMeatAPI.Models.Group", null)
-                        .WithMany("Locations")
-                        .HasForeignKey("GroupId");
-                });
-
             modelBuilder.Entity("LetsMeatAPI.Models.Vote", b =>
                 {
                     b.HasOne("LetsMeatAPI.Models.Event", null)
@@ -355,9 +426,9 @@ namespace LetsMeatAPI.Migrations
 
             modelBuilder.Entity("LetsMeatAPI.Models.Group", b =>
                 {
-                    b.Navigation("Events");
+                    b.Navigation("CustomLocations");
 
-                    b.Navigation("Locations");
+                    b.Navigation("Events");
                 });
 
             modelBuilder.Entity("LetsMeatAPI.Models.User", b =>

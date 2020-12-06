@@ -5,6 +5,20 @@ namespace LetsMeatAPI.Migrations {
   public partial class InitialCreate : Migration {
     protected override void Up(MigrationBuilder migrationBuilder) {
       migrationBuilder.CreateTable(
+          name: "GoogleMapsLocations",
+          columns: table => new {
+            Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+            Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+            Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+            Latitude = table.Column<float>(type: "real", nullable: false),
+            Longitude = table.Column<float>(type: "real", nullable: false),
+            Rating = table.Column<string>(type: "nvarchar(max)", nullable: false)
+          },
+          constraints: table => {
+            table.PrimaryKey("PK_GoogleMapsLocations", x => x.Id);
+          });
+
+      migrationBuilder.CreateTable(
           name: "Users",
           columns: table => new {
             Id = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
@@ -31,6 +45,25 @@ namespace LetsMeatAPI.Migrations {
                       column: x => x.OwnerId,
                       principalTable: "Users",
                       principalColumn: "Id");
+          });
+
+      migrationBuilder.CreateTable(
+          name: "CustomLocations",
+          columns: table => new {
+            Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+            CreatedForId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+            Address = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+            Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+            Rating = table.Column<string>(type: "nvarchar(max)", nullable: false)
+          },
+          constraints: table => {
+            table.PrimaryKey("PK_CustomLocations", x => x.Id);
+            table.ForeignKey(
+                      name: "FK_CustomLocations_Groups_CreatedForId",
+                      column: x => x.CreatedForId,
+                      principalTable: "Groups",
+                      principalColumn: "Id",
+                      onDelete: ReferentialAction.Restrict);
           });
 
       migrationBuilder.CreateTable(
@@ -138,20 +171,47 @@ namespace LetsMeatAPI.Migrations {
           });
 
       migrationBuilder.CreateTable(
-          name: "Locations",
+          name: "CustomLocationEvent",
           columns: table => new {
-            Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-            Info = table.Column<string>(type: "nvarchar(max)", nullable: false),
-            GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+            CandidateCustomLocationsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+            EventsWithMeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
           },
           constraints: table => {
-            table.PrimaryKey("PK_Locations", x => x.Id);
+            table.PrimaryKey("PK_CustomLocationEvent", x => new { x.CandidateCustomLocationsId, x.EventsWithMeId });
             table.ForeignKey(
-                      name: "FK_Locations_Groups_GroupId",
-                      column: x => x.GroupId,
-                      principalTable: "Groups",
+                      name: "FK_CustomLocationEvent_CustomLocations_CandidateCustomLocationsId",
+                      column: x => x.CandidateCustomLocationsId,
+                      principalTable: "CustomLocations",
                       principalColumn: "Id",
-                      onDelete: ReferentialAction.Restrict);
+                      onDelete: ReferentialAction.Cascade);
+            table.ForeignKey(
+                      name: "FK_CustomLocationEvent_Events_EventsWithMeId",
+                      column: x => x.EventsWithMeId,
+                      principalTable: "Events",
+                      principalColumn: "Id",
+                      onDelete: ReferentialAction.Cascade);
+          });
+
+      migrationBuilder.CreateTable(
+          name: "EventGoogleMapsLocation",
+          columns: table => new {
+            CandidateGoogleMapsLocationsId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+            EventsWithMeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+          },
+          constraints: table => {
+            table.PrimaryKey("PK_EventGoogleMapsLocation", x => new { x.CandidateGoogleMapsLocationsId, x.EventsWithMeId });
+            table.ForeignKey(
+                      name: "FK_EventGoogleMapsLocation_Events_EventsWithMeId",
+                      column: x => x.EventsWithMeId,
+                      principalTable: "Events",
+                      principalColumn: "Id",
+                      onDelete: ReferentialAction.Cascade);
+            table.ForeignKey(
+                      name: "FK_EventGoogleMapsLocation_GoogleMapsLocations_CandidateGoogleMapsLocationsId",
+                      column: x => x.CandidateGoogleMapsLocationsId,
+                      principalTable: "GoogleMapsLocations",
+                      principalColumn: "Id",
+                      onDelete: ReferentialAction.Cascade);
           });
 
       migrationBuilder.CreateTable(
@@ -171,27 +231,15 @@ namespace LetsMeatAPI.Migrations {
                       onDelete: ReferentialAction.Cascade);
           });
 
-      migrationBuilder.CreateTable(
-          name: "EventLocation",
-          columns: table => new {
-            CandidateLocationsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-            EventsWithMeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-          },
-          constraints: table => {
-            table.PrimaryKey("PK_EventLocation", x => new { x.CandidateLocationsId, x.EventsWithMeId });
-            table.ForeignKey(
-                      name: "FK_EventLocation_Events_EventsWithMeId",
-                      column: x => x.EventsWithMeId,
-                      principalTable: "Events",
-                      principalColumn: "Id",
-                      onDelete: ReferentialAction.Cascade);
-            table.ForeignKey(
-                      name: "FK_EventLocation_Locations_CandidateLocationsId",
-                      column: x => x.CandidateLocationsId,
-                      principalTable: "Locations",
-                      principalColumn: "Id",
-                      onDelete: ReferentialAction.Cascade);
-          });
+      migrationBuilder.CreateIndex(
+          name: "IX_CustomLocationEvent_EventsWithMeId",
+          table: "CustomLocationEvent",
+          column: "EventsWithMeId");
+
+      migrationBuilder.CreateIndex(
+          name: "IX_CustomLocations_CreatedForId",
+          table: "CustomLocations",
+          column: "CreatedForId");
 
       migrationBuilder.CreateIndex(
           name: "IX_Debts_GroupId",
@@ -204,8 +252,8 @@ namespace LetsMeatAPI.Migrations {
           column: "ToId");
 
       migrationBuilder.CreateIndex(
-          name: "IX_EventLocation_EventsWithMeId",
-          table: "EventLocation",
+          name: "IX_EventGoogleMapsLocation_EventsWithMeId",
+          table: "EventGoogleMapsLocation",
           column: "EventsWithMeId");
 
       migrationBuilder.CreateIndex(
@@ -237,19 +285,17 @@ namespace LetsMeatAPI.Migrations {
           name: "IX_Invitations_GroupId",
           table: "Invitations",
           column: "GroupId");
-
-      migrationBuilder.CreateIndex(
-          name: "IX_Locations_GroupId",
-          table: "Locations",
-          column: "GroupId");
     }
 
     protected override void Down(MigrationBuilder migrationBuilder) {
       migrationBuilder.DropTable(
+          name: "CustomLocationEvent");
+
+      migrationBuilder.DropTable(
           name: "Debts");
 
       migrationBuilder.DropTable(
-          name: "EventLocation");
+          name: "EventGoogleMapsLocation");
 
       migrationBuilder.DropTable(
           name: "GroupUser");
@@ -261,7 +307,10 @@ namespace LetsMeatAPI.Migrations {
           name: "Votes");
 
       migrationBuilder.DropTable(
-          name: "Locations");
+          name: "CustomLocations");
+
+      migrationBuilder.DropTable(
+          name: "GoogleMapsLocations");
 
       migrationBuilder.DropTable(
           name: "Events");

@@ -31,7 +31,7 @@ namespace LetsMeatAPI.Controllers {
       public IEnumerable<GroupInformation>? groups { get; set; }
     }
     public class UsersInfoBody {
-      public List<string> ids { get; set; }
+      public string[] ids { get; set; }
     }
     [HttpPost]
     [Route("info")]
@@ -42,9 +42,8 @@ namespace LetsMeatAPI.Controllers {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
-      body.ids.Sort();
       var ret = await (from user in _context.Users
-                       where body.ids.BinarySearch(user.Id) >= 0
+                       where body.ids.Contains(user.Id)
                        select new UserInformationResponse {
                          id = user.Id,
                          picture_url = user.PictureUrl,

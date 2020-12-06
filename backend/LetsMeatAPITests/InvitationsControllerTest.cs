@@ -1,7 +1,6 @@
 using Google.Apis.Auth;
 using LetsMeatAPI;
 using LetsMeatAPI.Controllers;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Linq;
@@ -39,7 +38,7 @@ namespace LetsMeatAPITests {
         context,
         Mock.Of<ILogger<InvitationsController>>()
       );
-      var groupCreatedResponse = (GroupsController.GroupCreatedResponse)((OkObjectResult)grp.Result).Value;
+      var groupCreatedResponse = grp.Value;
       await invitationController.Send(token2, new() {
         to_id = jwt1.Subject,
         group_id = groupCreatedResponse.id

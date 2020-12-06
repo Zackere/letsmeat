@@ -4,13 +4,14 @@ using Microsoft.EntityFrameworkCore;
 namespace LetsMeatAPI {
   public class LMDbContext : DbContext {
     public LMDbContext(DbContextOptions<LMDbContext> options) : base(options) { }
-    public DbSet<User> Users { get; set; }
-    public DbSet<Group> Groups { get; set; }
+    public DbSet<CustomLocation> CustomLocations { get; set; }
     public DbSet<Debt> Debts { get; set; }
-    public DbSet<Location> Locations { get; set; }
     public DbSet<Event> Events { get; set; }
-    public DbSet<Vote> Votes { get; set; }
+    public DbSet<GoogleMapsLocation> GoogleMapsLocations { get; set; }
+    public DbSet<Group> Groups { get; set; }
     public DbSet<Invitation> Invitations { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Vote> Votes { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
       modelBuilder.Entity<User>()
         .HasMany(user => user.DebtsForMe)
@@ -41,6 +42,16 @@ namespace LetsMeatAPI {
       modelBuilder.Entity<Group>()
         .HasMany(g => g.Users)
         .WithMany(u => u.Groups);
+      modelBuilder.Entity<Group>()
+        .HasMany(g => g.CustomLocations)
+        .WithOne(l => l.CreatedFor)
+        .OnDelete(DeleteBehavior.ClientSetNull);
+      modelBuilder.Entity<Event>()
+        .HasMany(e => e.CandidateCustomLocations)
+        .WithMany(l => l.EventsWithMe);
+      modelBuilder.Entity<Event>()
+        .HasMany(e => e.CandidateGoogleMapsLocations)
+        .WithMany(l => l.EventsWithMe);
     }
   }
 }

@@ -37,8 +37,7 @@ namespace LetsMeatAPITests {
         Mock.Of<ILogger<GroupsController>>()
       );
       var grp = await groupController.Create(token2, new() { name = "ASD" });
-      var grpOk = grp.Result as OkObjectResult;
-      var response = grpOk.Value as GroupsController.GroupCreatedResponse;
+      var response = grp.Value;
       await groupController.Join(token2, new() { id = response.id });
 
       Assert.Equal(1, context.Groups.Count());
@@ -66,12 +65,8 @@ namespace LetsMeatAPITests {
         Mock.Of<ILogger<GroupsController>>()
       );
       var createRes = await groupController.Create(token1, new() { name = "ASD" });
-      Assert.IsType<OkObjectResult>(createRes.Result);
-      var grpOk = createRes.Result as OkObjectResult;
-      Assert.IsType<GroupsController.GroupCreatedResponse>(
-        grpOk.Value
-      );
-      var grpCreated = grpOk.Value as GroupsController.GroupCreatedResponse;
+      Assert.IsType<GroupsController.GroupCreatedResponse>(createRes.Value);
+      var grpCreated = createRes.Value;
       Assert.Equal("ASD", grpCreated.name);
       var grp = context.Groups.Find(grpCreated.id);
       Assert.NotNull(grp);
@@ -124,20 +119,37 @@ namespace LetsMeatAPITests {
         context,
         Mock.Of<ILogger<DebtsController>>()
       );
+      var locationsController = new LocationsController(
+        userManager,
+        context,
+        Mock.Of<ILogger<LocationsController>>()
+      );
 
       var grp = await groupController.Create(token1, new() { name = "ASD" });
-      var groupCreatedResponse = (GroupsController.GroupCreatedResponse)((OkObjectResult)grp.Result).Value;
+      var groupCreatedResponse = grp.Value;
       await invitationController.Send(token1, new() {
         to_id = jwt2.Subject,
         group_id = groupCreatedResponse.id
       });
       await groupController.Join(token3, new() { id = groupCreatedResponse.id });
-      await eventsController.Create(token1, new() {
+      var ev = await eventsController.Create(token1, new() {
         deadline = DateTime.Now,
         group_id = groupCreatedResponse.id,
         name = "ASD"
       });
+      var eventCreatedResponse = ev.Value;
       Assert.Equal(1, context.Events.Count());
+      var loc = await locationsController.CreateCustom(token1, new() {
+        Address = "sesame street",
+        group_id = groupCreatedResponse.id,
+        Name = "mcdonalds",
+      });
+      Assert.Equal(1, context.CustomLocations.Count());
+      var locationCreatedResponse = loc.Value;
+      await eventsController.Update(token1, new EventsController.EventUpdateBody() {
+        custom_locations_ids = new[] { locationCreatedResponse.id },
+        id = eventCreatedResponse.id,
+      });
       await debtsController.Add(token1, new() {
         amount = 20,
         group_id = groupCreatedResponse.id,
@@ -148,6 +160,7 @@ namespace LetsMeatAPITests {
       var deleteRes = await groupController.Delete(token1, new() { id = groupCreatedResponse.id });
       Assert.IsType<OkResult>(deleteRes);
 
+      Assert.Empty(context.CustomLocations);
       Assert.Empty(context.Debts);
       Assert.Empty(context.Events);
       Assert.Empty(context.Groups);
