@@ -30,6 +30,7 @@ pipelines:
             changesets:
               includePaths:
                 - backend/LetsMeatAPI/**
+                - bitbucket-pipelines.yml
   default:
     - parallel:
         - step:
@@ -45,3 +46,4 @@ pipelines:
               changesets:
                 includePaths:
                   - backend/**
+                  - bitbucket-pipelines.yml
