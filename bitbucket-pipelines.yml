@@ -15,6 +15,7 @@ pipelines:
           deployment: production
           script:
             - apt-get update && apt-get install -y zip 
+            - dotnet tool install --global dotnet-ef
             - cd backend/LetsMeatAPI
             - dotnet restore
             - dotnet build --no-restore --configuration Release
