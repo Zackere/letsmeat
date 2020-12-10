@@ -5,15 +5,32 @@ import {
   statusCodes
 } from '@react-native-community/google-signin';
 import { View, StyleSheet, Text } from 'react-native';
+import { axios } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { store } from '../Store';
+// import { getAPIToken } from '../Requests';
+import { appendAPIToken, appendUserID } from '../Requests';
 
 function SignInScreen() {
-  const state = useContext(store);
-  const { dispatch } = state;
+  const { state, dispatch } = useContext(store);
   const [signingIn, setSigningIn] = useState(false);
 
   const setUser = (userInfo) => {
-    dispatch({ type: 'SET_USER', payload: userInfo });
+    console.log('setting user');
+    return appendAPIToken(userInfo)
+      .then(appendUserID)
+      .then((userInfo) => {
+        console.log(userInfo)
+        dispatch({ type: 'SET_USER', payload: userInfo });
+      });
+    // getAPIToken(userInfo.idToken).then((token) => {
+    //   dispatch({ type: 'SET_USER', payload: { ...userInfo, token: token.data } });
+    // console.log(token);
+    // AsyncStorage.setItem('token', token.data)
+    //   .then(() => {
+    //     dispatch({ type: 'SET_USER', payload: { ...userInfo } });
+    //   }).catch((err) => console.log(err));
+    // });
   };
 
   const isSignedIn = async () => {
@@ -39,6 +56,7 @@ function SignInScreen() {
       }
     }
   };
+
   const signOut = async () => {
     try {
       await GoogleSignin.revokeAccess();

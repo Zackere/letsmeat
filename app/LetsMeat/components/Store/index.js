@@ -12,6 +12,16 @@ const { Provider } = store;
 const StateProvider = ({ children }) => {
   const [state, dispatch] = useReducer((state, action) => {
     switch (action.type) {
+      case 'LOGOUT': {
+        const newState = {
+          ...state,
+          user: {
+            ...state.user,
+            signedIn: false
+          },
+        };
+        return newState;
+      }
       case 'SET_USER': {
         const newState = {
           ...state,
@@ -21,10 +31,11 @@ const StateProvider = ({ children }) => {
             name: action.payload.user.name,
             email: action.payload.user.email,
             photo: action.payload.user.photo,
-            googleToken: action.payload.idToken
+            googleToken: action.payload.idToken,
+            token: action.payload.token,
+            id: action.payload.id
           },
         };
-        // console.log(action.payload)
         return newState;
       }
       case 'SET_LOADING': {

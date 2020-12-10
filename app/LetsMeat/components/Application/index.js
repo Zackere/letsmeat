@@ -38,7 +38,7 @@ import {
 import SignInScreen from '../SignIn';
 import { StateProvider, store } from '../Store';
 import DrawerContent from '../DrawerContent';
-import Main from '../Main';
+import { Main } from '../Main';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();

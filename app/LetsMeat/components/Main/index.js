@@ -1,46 +1,43 @@
-import React, { useEffect, useContext } from 'react';
-import {
-  StyleSheet, View, Text, LogBox
-} from 'react-native';
-import { TouchableHighlight } from 'react-native-gesture-handler';
-import { store } from '../Store';
-import {
-  GoogleSignin,
-  GoogleSigninButton,
-  statusCodes,
-} from '@react-native-community/google-signin';
+import React from 'react';
+import { TouchableOpacity, Text } from 'react-native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { Appbar, Avatar } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from '@react-navigation/native';
+import Feed from '../Group/Feed';
+import { Settings as GroupSettings } from '../Group/Settings';
+import NewEvent from '../Group/NewEvent';
 
-function Main({ navigation }) {
-  const { state, dispatch } = useContext(store);
 
+export const Main = () => {
+  const Stack = createStackNavigator();
   return (
-    <>
-      <View style={styles.container}>
-        <TouchableHighlight
-          onPress={() => {
-            navigation.openDrawer();
-          }}
-        >
-          <View style={styles.button}>
-            <Text>Open Drawer</Text>
-          </View>
-        </TouchableHighlight>
-      </View>
-    </>
+    <Stack.Navigator
+      initialRouteName="Feed"
+      headerMode="screen"
+      screenOptions={{
+        header: ({ scene, previous, navigation }) => (
+          <Header scene={scene} previous={previous} navigation={navigation} />
+        ),
+      }}
+    >
+      <Stack.Screen
+        name="New Event"
+        component={NewEvent}
+        options={{ headerTitle: 'New Event' }}
+      />
+      <Stack.Screen
+        name="Feed"
+        component={Feed}
+        options={{ headerTitle: 'Feed' }}
+      />
+      <Stack.Screen
+        name="Group Settings"
+        component={GroupSettings}
+        options={{ headerTitle: 'Group Settings' }}
+      />
+    </Stack.Navigator>
   );
-}
-
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: '#DDDDDD',
-    alignItems: 'center',
-    padding: 10,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 10,
-    justifyContent: 'center',
-  },
-});
+};
 
 export default Main;

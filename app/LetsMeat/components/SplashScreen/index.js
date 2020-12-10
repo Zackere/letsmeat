@@ -11,7 +11,7 @@ function SplashScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Let&apos;s meat</Text>
-      {/* <Progress.Bar size={30} indeterminate={true} /> */}
+      <Progress.Bar size={30} indeterminate={true} />
     </View>
   );
 }
