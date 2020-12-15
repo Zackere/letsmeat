@@ -20,7 +20,7 @@ function SignInScreen() {
     return appendAPIToken(userInfo)
       .then(appendUserID)
       .then((userInfo) => {
-        console.log(userInfo)
+        console.log(userInfo);
         dispatch({ type: 'SET_USER', payload: userInfo });
       });
     // getAPIToken(userInfo.idToken).then((token) => {

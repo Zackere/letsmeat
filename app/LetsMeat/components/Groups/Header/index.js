@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { TouchableOpacity, Text } from 'react-native';
+import { TouchableOpacity, Text, RefreshControlBase } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import {
   Appbar, Avatar, DarkTheme, useTheme, DefaultTheme
@@ -9,6 +9,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 const Header = ({ scene, previous, navigation }) => {
   useEffect(() => console.log(DefaultTheme), []);
 
+  console.log(navigation.pop)
+  console.log(navigation)
   const { options } = scene.descriptor;
   const title = options.headerTitle !== undefined ? options.headerTitle
     : options.title !== undefined
@@ -20,7 +22,7 @@ const Header = ({ scene, previous, navigation }) => {
     >
       {previous ? (
         <Appbar.BackAction
-          onPress={navigation.pop}
+          onPress={navigation.goBack}
         />
       ) : (
         <TouchableOpacity

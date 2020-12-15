@@ -5,6 +5,7 @@ const initialState = {
   user: {
     signedIn: false,
   },
+  group: {}
 };
 const store = createContext(initialState);
 const { Provider } = store;
@@ -49,6 +50,13 @@ const StateProvider = ({ children }) => {
         const newState = {
           ...state,
           loading: false,
+        };
+        return newState;
+      }
+      case 'SET_GROUP': {
+        const newState = {
+          ...state,
+          group: action.payload,
         };
         return newState;
       }

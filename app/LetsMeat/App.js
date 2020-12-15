@@ -53,7 +53,8 @@ const Navigation = () => {
             console.log('logging out');
             dispatch({ type: 'LOGOUT' });
             GoogleSignin.signOut();
-          }).finally(() => dispatch({type: 'SET_LOADED'}));
+          })
+          .finally(() => dispatch({ type: 'SET_LOADED' }));
       } else {
         dispatch({ type: 'SET_LOADED' });
       }
