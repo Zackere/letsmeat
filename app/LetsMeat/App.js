@@ -34,14 +34,12 @@ const Stack = createStackNavigator();
 
 const Navigation = () => {
   const { state, dispatch } = useContext(store);
-  console.log('I pass thru app.js');
   useEffect(() => {
     GoogleSignin.configure({
       webClientId: '790166575655-222h23mpv6h7n7jhjkac6gj220e5kevt.apps.googleusercontent.com'
     });
     GoogleSignin.isSignedIn().then((signedIn) => {
       if (signedIn) {
-        console.log('yeah, signed in');
         GoogleSignin.getCurrentUser()
           .then(appendAPIToken)
           .then(appendUserID)
@@ -50,7 +48,6 @@ const Navigation = () => {
             dispatch({ type: 'SET_LOADED' });
           })
           .catch(() => {
-            console.log('logging out');
             dispatch({ type: 'LOGOUT' });
             GoogleSignin.signOut();
           })

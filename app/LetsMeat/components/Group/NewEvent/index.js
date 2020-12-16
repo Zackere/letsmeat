@@ -1,17 +1,61 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
-import { Surface, TextInput } from 'react-native-paper';
+import {
+  Surface, TextInput, Button, Card, Paragraph
+} from 'react-native-paper';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ScrollView } from 'react-native-gesture-handler';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Header } from '../Header';
 import { store } from '../../Store';
-import { getGroupInfo } from '../../Requests';
+import { createEvent } from '../../Requests';
 
 const Stack = createStackNavigator();
 
 const NewEventContent = ({ navigation }) => {
+  const { state, dispatch } = useContext(store);
+
   const [eventName, setName] = useState('');
-  const [eventDeadline, setDeadline] = useState('');
+  const [eventDeadline, setDeadline] = useState(null);
+  const [show, setShow] = useState(false);
+  const [mode, setMode] = useState('date');
+  const [timeLeftUntilDeadline, setTimeLeft] = useState('');
+  const [timeUpdater, setTimeUpdater] = useState(null);
+  const updateTimeLeft = () => {
+    console.log('timer tick tock')
+    if (!eventDeadline) return;
+    const msLeft = (eventDeadline - new Date());
+    const days = Math.floor(msLeft / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(msLeft / (1000 * 60 * 60)) - 24 * days;
+    const minutes = Math.floor(msLeft / (1000 * 60)) - 24 * 60 * days - 60 * hours;
+    const seconds = Math.floor(msLeft / 1000) - 24 * 60 * 60 * days - 60 * 60 * hours - 60 * minutes;
+    setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+  };
+
+  useEffect(() => () => {
+    console.log('cleanup')
+    if (timeUpdater) clearInterval(timeUpdater);
+  }, []);
+
+  const now = new Date();
+
+  const onSetDate = (event, date) => {
+    clearInterval(timeUpdater);
+    setShow(false);
+    if (event.type == 'dismissed') {
+      setMode('date');
+      return;
+    }
+    setDeadline(new Date(event.nativeEvent.timestamp));
+    if (mode === 'date') {
+      setMode('time');
+      setShow(true);
+    }
+    if (mode === 'time') {
+      setTimeUpdater(setInterval(updateTimeLeft, 1000));
+      setMode('date');
+    }
+  };
 
   return (
     <Surface style={styles.container}>
@@ -22,7 +66,47 @@ const NewEventContent = ({ navigation }) => {
         onChangeText={setName}
         value={eventName}
       />
-
+      <Card
+        style={styles.emptyCard}
+        elevation={3}
+        onPress={() => {
+          setShow(true);
+          setDeadline(new Date());
+        }}
+      >
+        <Card.Title title={eventDeadline ? eventDeadline.toString() : 'Click to set voting deadline'} />
+        <Card.Content>
+          <Paragraph>
+            {timeLeftUntilDeadline}
+          </Paragraph>
+        </Card.Content>
+      </Card>
+      <Button onPress={() => {
+        createEvent({ state }, state.group.id, eventName, eventDeadline).then(console.log).then(navigation.navigate('Feed'));
+      }}
+      >
+        Create Event
+      </Button>
+      {/* {`Voting Deadline : \n${eventDeadline || 'click to select'}` }
+      <Button
+        style={styles.dateButton}
+        contentStyle={styles.dateButton}
+        onPress={() => {
+          setShow(true);
+          setDeadline(new Date());
+        }}
+      /> */}
+      {show && (
+      <DateTimePicker
+        onChange={(event) => {
+          onSetDate(event);
+        }}
+        value={eventDeadline}
+        minimumDate={now}
+        mode={mode}
+        display="spinner"
+      />
+      )}
     </Surface>
   );
 };
@@ -56,6 +140,16 @@ const styles = StyleSheet.create({
   },
   textInput: {
     margin: 20
+  },
+  textInputDown: {
+    marginTop: '100%'
+  },
+  dateButton: {
+    height: 100
+  },
+  emptyCard: {
+    // width: '100%',
+    margin: 25
   }
 });
 

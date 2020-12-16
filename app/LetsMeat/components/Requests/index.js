@@ -75,8 +75,10 @@ const deleteGroup = ({ state }, id) => remove({ state }, '/Groups/delete/', { id
 
 const createEvent = ({ state }, groupId, name, deadline) => post({ state }, '/Events/create', { group_id: groupId, name, deadline });
 
+const getEventInfo = ({ state }, eventId) => get({ state }, '/Events/info', { id: eventId }).then((response) => response.data);
+
 export {
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups,
-  createEvent
+  createEvent, getEventInfo,
 };

@@ -1,11 +1,10 @@
-import React from 'react';
-import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
-
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { DefaultTheme, useTheme } from '@react-navigation/native';
+import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
+import React from 'react';
 import Feed from '../Feed';
 import NewEvent from '../NewEvent';
 import { Settings } from '../Settings';
+
 
 const Tab = createMaterialBottomTabNavigator();
 

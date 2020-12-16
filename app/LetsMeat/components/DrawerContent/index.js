@@ -25,7 +25,6 @@ import {
 
 function DrawerContent({ navigation }) {
   const { state, dispatch } = useContext(store);
-  // console.log(navigation)
   return (
     <View
       style={styles.drawer}

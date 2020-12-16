@@ -1,21 +1,19 @@
 import React, { useContext } from 'react';
-import {
-  Text, View, StyleSheet, ScrollView
-} from 'react-native';
-import {
-  Card, Surface, Paragraph, FlatList, Portal, Dialog, Button
-} from 'react-native-paper';
-import { createStackNavigator } from '@react-navigation/stack';
-import { TouchableHighlight } from 'react-native-gesture-handler';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Header } from '../Header';
+import { createStackNavigator } from '@react-navigation/stack';
+import { ScrollView, StyleSheet } from 'react-native';
+import {
+  Button, Card, Dialog, Paragraph, Portal, Surface
+} from 'react-native-paper';
+import { deleteGroup } from '../../Requests';
 import { store } from '../../Store';
-import { getGroupInfo, deleteGroup } from '../../Requests';
+import { Header } from '../Header';
+import Invite from './invite';
 
 const DeleteGroup = ({ onPress }) => (
   <Card
     style={styles.delete}
-    elevation={3}
+    // elevation={3}
     onPress={onPress}
   >
     <Card.Content>
@@ -29,34 +27,35 @@ const DeleteGroup = ({ onPress }) => (
   </Card>
 );
 
-const GroupMembers = ({ members, onPress }) => {
-  console.log('x');
-  return (
-    <Card
-      style={styles.emptyCard}
-      elevation={3}
-    >
-      <Card.Content>
-        {members.map((m) => (
-          <Card
-            key={m.id}
-            style={styles.user}
-          >
-            <Card.Content>
-              <Paragraph>
-                {' '}
-                {m.name}
-                {' '}
-              </Paragraph>
-            </Card.Content>
-          </Card>
-        ))}
-      </Card.Content>
-    </Card>
-  );
-};
+const GroupMembers = ({ members, navigation }) => (
+  <Card
+    style={styles.emptyCard}
+    // elevation={3}
+  >
+    <Card.Content>
+      {members.map((m) => (
+        <Card
+          key={m.id}
+          style={styles.user}
+        >
+          <Card.Content>
+            <Paragraph>
+              {' '}
+              {m.name}
+              {' '}
+            </Paragraph>
+          </Card.Content>
+        </Card>
+      ))}
+    </Card.Content>
+    <Card.Actions>
+      <Button onPress={() => navigation.navigate('Invite')}>Invite new members</Button>
+      <Button>See all members</Button>
+    </Card.Actions>
+  </Card>
+);
 
-const SettingsScroll = ({navigation}) => {
+const SettingsScroll = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
 
   const [visible, setVisible] = React.useState(false);
@@ -68,7 +67,7 @@ const SettingsScroll = ({navigation}) => {
   return (
     <Surface style={styles.groupsContainer}>
       <ScrollView>
-        <GroupMembers members={state.group.users || [1, 2, 3]} />
+        <GroupMembers members={state.group.users} navigation={navigation}/>
         <DeleteGroup onPress={
           showDialog
         }
@@ -85,7 +84,7 @@ const SettingsScroll = ({navigation}) => {
             <Button onPress={() => {
               deleteGroup({ state }, state.group.id);
               hideDialog();
-              navigation.navigate('SelectGroup')
+              navigation.navigate('SelectGroup');
             }}
             >
               Delete
@@ -119,6 +118,12 @@ const Settings = () => {
         component={SettingsScroll}
         options={{ headerTitle: state.group.name }}
       />
+      <Stack.Screen
+        name="Invite"
+        component={Invite}
+        options={{ headerTitle: state.group.name }}
+      />
+
     </Stack.Navigator>
   );
 };

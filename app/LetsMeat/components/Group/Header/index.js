@@ -7,7 +7,6 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const Header = ({ scene, previous, navigation }) => {
-  useEffect(() => console.log(DefaultTheme), []);
 
   const { options } = scene.descriptor;
   const title = options.headerTitle !== undefined ? options.headerTitle
@@ -20,7 +19,7 @@ const Header = ({ scene, previous, navigation }) => {
     >
       {previous ? (
         <Appbar.BackAction
-          onPress={navigation.pop}
+          onPress={navigation.goBack}
         />
       ) : (
         <TouchableOpacity

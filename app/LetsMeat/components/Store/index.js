@@ -5,7 +5,8 @@ const initialState = {
   user: {
     signedIn: false,
   },
-  group: {}
+  group: {},
+  event: {}
 };
 const store = createContext(initialState);
 const { Provider } = store;
@@ -57,6 +58,13 @@ const StateProvider = ({ children }) => {
         const newState = {
           ...state,
           group: action.payload,
+        };
+        return newState;
+      }
+      case 'SET_EVENT': {
+        const newState = {
+          ...state,
+          event: action.payload,
         };
         return newState;
       }

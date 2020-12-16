@@ -1,32 +1,17 @@
 import React, { useContext } from 'react';
-import { Text, View } from 'react-native';
+import {
+  Text, View, StyleSheet, ScrollView, RefreshControl
+} from 'react-native';
+import { Card, Surface } from 'react-native-paper';
 import { createStackNavigator } from '@react-navigation/stack';
-import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
+import { TouchableHighlight } from 'react-native-gesture-handler';
 import { Header } from '../Header';
 import { store } from '../../Store';
 import { getGroupInfo } from '../../Requests';
+import FeedContent from './feedContent';
+import EventView from './event';
 
 const Stack = createStackNavigator();
-
-const FeedScroll = () => {
-  const { state, dispatch } = useContext(store);
-  return (
-    <TouchableHighlight onPress={() =>
-    {
-      console.log(state)
-    }
-    }>
-      <Text>nanananana</Text>
-    </TouchableHighlight>
-  );
-};
-
-const loadGroup = (state, dispatch) => {
-  if (state.group.id) {
-    return getGroupInfo({ state }, state.group.id).then((group) => dispatch({ action: 'SET_GROUP', payload: group }));
-  }
-  return Promise.reject(new Error('No group ID in state'));
-};
 
 const Feed = () => {
   const { state, dispatch } = useContext(store);
@@ -43,10 +28,18 @@ const Feed = () => {
     >
       <Stack.Screen
         name="Feed"
-        component={FeedScroll}
+        component={FeedContent}
+        options={{ headerTitle: state.group.name }}
+      />
+      <Stack.Screen
+        name="Event"
+        component={EventView}
         options={{ headerTitle: state.group.name }}
       />
     </Stack.Navigator>
   );
 };
+
+
+
 export default Feed;
