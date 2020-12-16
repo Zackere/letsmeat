@@ -9,6 +9,8 @@ namespace LetsMeatAPI.Models {
     public string Email { get; set; }
     public string Name { get; set; }
     public string Prefs { get; set; }
+    [StringLength(Controllers.LoginController.TokenLength)]
+    public string? Token { get; set; }
     public virtual ICollection<Group> Groups { get; set; }
     public virtual ICollection<Debt> DebtsForOthers { get; set; }
     public virtual ICollection<Debt> DebtsForMe { get; set; }

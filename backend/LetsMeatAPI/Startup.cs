@@ -49,7 +49,11 @@ namespace LetsMeatAPI {
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
+    public void Configure(
+      IApplicationBuilder app,
+      IWebHostEnvironment env,
+      LMDbContext context
+    ) {
       app.UseMiddleware<Utils.RequestResponseLoggingMiddleware>();
       if(env.IsDevelopment()) {
         app.UseDeveloperExceptionPage();
@@ -64,6 +68,10 @@ namespace LetsMeatAPI {
         config.SwaggerEndpoint("swagger/v1/swagger.json", "LetsMeat API Documentation");
         config.RoutePrefix = string.Empty;
       });
+
+      UserManager.Init(from user in context.Users
+                       where user.Token != null
+                       select new ValueTuple<string, string>(user.Token!, user.Id));
     }
     private readonly IConfiguration _configuration;
     private readonly string _letsMeatAPIPolicy = "_letsMeatAPIPolicy";

@@ -2,7 +2,7 @@ import sys
 import os
 
 if len(sys.argv) != 2:
-    raise Exception('Wrong number of arguments')
+  raise Exception('Wrong number of arguments')
 
 controller_name = f'{sys.argv[1]}Controller'
 
@@ -33,7 +33,8 @@ namespace LetsMeatAPI.Controllers {{
     private readonly LMDbContext _context;
     private readonly ILogger<{controller_name}> _logger;
   }}
-}}"""
+}}
+"""
 filepath = f'{os.path.dirname(os.path.realpath(__file__))}/../LetsMeatAPI/Controllers/{controller_name}.cs'
 with open(filepath, 'w') as f:
   f.write(file_contents)

@@ -20,12 +20,14 @@ namespace LetsMeatAPI {
           PictureUrl = jwt.Picture,
           Email = jwt.Email,
           Name = jwt.Name,
-          Prefs = "{}"
+          Prefs = "{}",
+          Token = token,
         });
       } else {
         user.PictureUrl = jwt.Picture;
         user.Email = jwt.Email;
         user.Name = jwt.Name;
+        user.Token = token;
         _context.Entry(user).State = EntityState.Modified;
       }
       await _context.SaveChangesAsync();
@@ -59,6 +61,17 @@ namespace LetsMeatAPI {
         _mtx.ReleaseWriterLock();
       }
     }
+    public static void Init(IEnumerable<(string token, string id)> grantedTokens) {
+      try {
+        _mtx.AcquireWriterLock(_mtxTimeout);
+        foreach(var (token, id) in grantedTokens) {
+          _loggedUsersIdToToken[id] = token;
+          _loggedUsersTokenToId[token] = id;
+        }
+      } finally {
+        _mtx.ReleaseWriterLock();
+      }
+    }
     private void logUser(string token, string id) {
       try {
         _mtx.AcquireWriterLock(_mtxTimeout);
@@ -78,6 +91,6 @@ namespace LetsMeatAPI {
     private static readonly Dictionary<string, string> _loggedUsersIdToToken = new();
     private static readonly Dictionary<string, string> _loggedUsersTokenToId = new();
     private static readonly ReaderWriterLock _mtx = new();
-    private static readonly int _mtxTimeout = 500;
+    private const int _mtxTimeout = 500;
   }
 }

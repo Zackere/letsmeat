@@ -55,7 +55,7 @@ namespace LetsMeatAPI.Controllers {
         using var hasher = SHA256.Create();
         var hashBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(googlePayload.Subject));
         googlePayload.Subject = string.Concat(Array.ConvertAll(hashBytes, b => b.ToString("X2")));
-        var tokenBytes = new byte[TokenLength];
+        var tokenBytes = new byte[TokenLength / 2];
         _rnd.NextBytes(tokenBytes);
         var tokenHexString = string.Concat(Array.ConvertAll(tokenBytes, b => b.ToString("X2")));
         try {
@@ -75,7 +75,7 @@ namespace LetsMeatAPI.Controllers {
         return Unauthorized();
       }
     }
-    public uint TokenLength { get; set; } = 128;
+    public const int TokenLength = 128;
     private readonly GoogleTokenIdValidator _googleTokenIdValidator;
     private readonly UserManager _userManager;
     private readonly IEnumerable<string>? _expectedGoogleAudiences;
