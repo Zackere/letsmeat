@@ -75,6 +75,7 @@ namespace LetsMeatAPI.Controllers {
       }
       public Guid id { get; set; }
       public string name { get; set; }
+      public string owner_id { get; set; }
       public IEnumerable<UserInformation> users { get; set; }
       public IEnumerable<CustomLocationInformation> custom_locations { get; set; }
       public IEnumerable<EventInformation> events { get; set; }
@@ -94,6 +95,7 @@ namespace LetsMeatAPI.Controllers {
       return new GroupInformationResponse {
         id = grp.Id,
         name = grp.Name,
+        owner_id = grp.OwnerId,
         users = from user in grp.Users
                 select new GroupInformationResponse.UserInformation {
                   id = user.Id,
@@ -133,6 +135,11 @@ namespace LetsMeatAPI.Controllers {
         return NotFound();
       var user = await _context.Users.FindAsync(userId);
       grp.Users.Add(user);
+      foreach(var inv in from inv in _context.Invitations
+                         where inv.ToId == userId
+                         select inv) {
+        _context.Entry(inv).State = EntityState.Deleted;
+      }
       try {
         await _context.SaveChangesAsync();
       } catch(DbUpdateException ex) {
@@ -162,6 +169,52 @@ namespace LetsMeatAPI.Controllers {
       _context.CustomLocations.RemoveRange(grp.CustomLocations);
       _context.Groups.Remove(grp);
       await _context.SaveChangesAsync();
+      return Ok();
+    }
+    public class GroupLeaveBody {
+      public Guid id { get; set; }
+    }
+    [HttpPost]
+    [Route("leave")]
+    public async Task<ActionResult> Leave(
+      string token,
+      [FromBody] GroupLeaveBody body
+    ) {
+      var userId = _userManager.IsLoggedIn(token);
+      if(userId == null)
+        return Unauthorized();
+      var grp = await _context.Groups.FindAsync(body.id);
+      if(grp == null)
+        return NotFound();
+      var user = await _context.Users.FindAsync(userId);
+      if(user.Id == grp.OwnerId) {
+        // Try to transfer ownership of the group
+        var candidateOwner = grp.Users.FirstOrDefault();
+        if(candidateOwner == null)
+          return await Delete(token, new() { id = grp.Id });
+        grp.OwnerId = candidateOwner.Id;
+      }
+      grp.Users.Remove(user);
+      foreach(var debt in from debt in _context.Debts
+                          where debt.GroupId == grp.Id &&
+                          (debt.FromId == user.Id ||
+                          debt.ToId == user.Id)
+                          select debt) {
+        _context.Entry(debt).State = EntityState.Deleted;
+      }
+      foreach(var inv in from inv in _context.Invitations
+                         where inv.GroupId == grp.Id &&
+                         (inv.FromId == user.Id ||
+                         inv.ToId == user.Id)
+                         select inv) {
+        _context.Entry(inv).State = EntityState.Deleted;
+      }
+      try {
+        await _context.SaveChangesAsync();
+      } catch(DbUpdateConcurrencyException ex) {
+        _logger.LogError(ex.ToString());
+        return Conflict();
+      }
       return Ok();
     }
     private readonly UserManager _userManager;

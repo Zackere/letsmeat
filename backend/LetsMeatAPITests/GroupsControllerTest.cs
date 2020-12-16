@@ -128,10 +128,15 @@ namespace LetsMeatAPITests {
       var grp = await groupController.Create(token1, new() { name = "ASD" });
       var groupCreatedResponse = grp.Value;
       await invitationController.Send(token1, new() {
-        to_id = jwt2.Subject,
+        to_id = jwt3.Subject,
         group_id = groupCreatedResponse.id
       });
       await groupController.Join(token3, new() { id = groupCreatedResponse.id });
+      Assert.Empty(context.Invitations);
+      await invitationController.Send(token1, new() {
+        to_id = jwt2.Subject,
+        group_id = groupCreatedResponse.id
+      });
       var ev = await eventsController.Create(token1, new() {
         deadline = DateTime.Now,
         group_id = groupCreatedResponse.id,
@@ -168,6 +173,108 @@ namespace LetsMeatAPITests {
       Assert.Empty(user1.OwnedGroups);
       Assert.Empty(user1.Groups);
       Assert.Empty(context.Invitations);
+      var user3 = await context.Users.FindAsync(jwt3.Subject);
+      Assert.Empty(user3.Groups);
+
+      context.Dispose();
+      connection.Dispose();
+    }
+    [Fact]
+    public async Task UsersCanLeaveGroupsTheyAreIn() {
+      var (context, connection) = GetDb();
+      var userManager = new UserManager(
+        context,
+        Mock.Of<ILogger<UserManager>>()
+      );
+      var data = UsersWithTokens(643, 3).First();
+      var token1 = (data[0] as object[])[0] as string;
+      var jwt1 = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
+      var token2 = (data[0] as object[])[1] as string;
+      var jwt2 = (data[1] as object[])[1] as GoogleJsonWebSignature.Payload;
+      var token3 = (data[0] as object[])[2] as string;
+      var jwt3 = (data[1] as object[])[2] as GoogleJsonWebSignature.Payload;
+
+      await Task.WhenAll(
+        userManager.OnTokenGranted(token1, jwt1),
+        userManager.OnTokenGranted(token2, jwt2),
+        userManager.OnTokenGranted(token3, jwt3)
+      );
+      Assert.Equal(3, context.Users.Count());
+
+      var groupController = new GroupsController(
+        userManager,
+        context,
+        Mock.Of<ILogger<GroupsController>>()
+      );
+      var invitationController = new InvitationsController(
+        userManager,
+        context,
+        Mock.Of<ILogger<InvitationsController>>()
+      );
+      var eventsController = new EventsController(
+        userManager,
+        context,
+        Mock.Of<ILogger<EventsController>>()
+      );
+      var debtsController = new DebtsController(
+        userManager,
+        context,
+        Mock.Of<ILogger<DebtsController>>()
+      );
+      var locationsController = new LocationsController(
+        userManager,
+        context,
+        Mock.Of<ILogger<LocationsController>>()
+      );
+
+      var grp = await groupController.Create(token1, new() { name = "ASD" });
+      var groupCreatedResponse = grp.Value;
+      await invitationController.Send(token1, new() {
+        to_id = jwt3.Subject,
+        group_id = groupCreatedResponse.id
+      });
+      await groupController.Join(token3, new() { id = groupCreatedResponse.id });
+      Assert.Empty(context.Invitations);
+      await invitationController.Send(token1, new() {
+        to_id = jwt2.Subject,
+        group_id = groupCreatedResponse.id
+      });
+      var ev = await eventsController.Create(token1, new() {
+        deadline = DateTime.Now,
+        group_id = groupCreatedResponse.id,
+        name = "ASD"
+      });
+      var eventCreatedResponse = ev.Value;
+      Assert.Equal(1, context.Events.Count());
+      var loc = await locationsController.CreateCustom(token1, new() {
+        Address = "sesame street",
+        group_id = groupCreatedResponse.id,
+        Name = "mcdonalds",
+      });
+      Assert.Equal(1, context.CustomLocations.Count());
+      var locationCreatedResponse = loc.Value;
+      await eventsController.Update(token1, new EventsController.EventUpdateBody() {
+        custom_locations_ids = new[] { locationCreatedResponse.id },
+        id = eventCreatedResponse.id,
+      });
+      await debtsController.Add(token1, new() {
+        amount = 20,
+        group_id = groupCreatedResponse.id,
+        from_id = jwt1.Subject,
+        to_id = jwt3.Subject,
+      });
+      Assert.Equal(1, context.Debts.Count());
+      var leaveRes = await groupController.Leave(token3, new() { id = groupCreatedResponse.id });
+      Assert.IsType<OkResult>(leaveRes);
+
+      Assert.NotEmpty(context.CustomLocations);
+      Assert.Empty(context.Debts);
+      Assert.NotEmpty(context.Events);
+      Assert.NotEmpty(context.Groups);
+      var user1 = await context.Users.FindAsync(jwt1.Subject);
+      Assert.NotEmpty(user1.OwnedGroups);
+      Assert.NotEmpty(user1.Groups);
+      Assert.NotEmpty(context.Invitations);
       var user3 = await context.Users.FindAsync(jwt3.Subject);
       Assert.Empty(user3.Groups);
 
