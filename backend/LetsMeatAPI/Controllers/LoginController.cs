@@ -75,6 +75,41 @@ namespace LetsMeatAPI.Controllers {
         return Unauthorized();
       }
     }
+    public class FakeUserInfo {
+      public string id { get; set; }
+      public string picture_url { get; set; }
+      public string email { get; set; }
+      public string name { get; set; }
+      public string token { get; set; }
+    }
+    [HttpPost]
+    [Route("fake")]
+    public async Task<ActionResult<FakeUserInfo>> Fake([FromBody] FakeUserInfo body) {
+      using var hasher = SHA256.Create();
+      var hashIdBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes("fake-id" + body.id));
+      body.id = string.Concat(Array.ConvertAll(hashIdBytes, b => b.ToString("X2")));
+      var hashTokenBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(body.token));
+      body.token = string.Concat(Array.ConvertAll(hashTokenBytes, b => b.ToString("X2")));
+      body.token += body.token;
+      if(_userManager.IsLoggedIn(body.token) != null)
+        return Conflict();
+      var jwt = new GoogleJsonWebSignature.Payload {
+        Subject = body.id,
+        Picture = body.picture_url,
+        Email = body.email,
+        Name = body.name
+      };
+      try {
+        await _userManager.OnTokenGranted(body.token, jwt);
+      } catch(Exception ex)
+        when(ex is DbUpdateConcurrencyException ||
+             ex is DbUpdateException
+      ) {
+        _logger.LogError(ex.ToString());
+        return Conflict();
+      }
+      return body;
+    }
     public const int TokenLength = 128;
     private readonly GoogleTokenIdValidator _googleTokenIdValidator;
     private readonly UserManager _userManager;
