@@ -63,7 +63,6 @@ const appendUserID = (userInfo) => {
   const axiosConfig = { baseURL, params: { token: userInfo.token } };
   return axios.get('/Users/info', axiosConfig).then((response) => ({ ...userInfo, ...response.data }));
 };
-// const getMyUserInfo = () => get('/Users/info', undefined, )
 
 const getGroups = ({ state }) => get({ state }, '/Users/info').then((response) => response.data.groups);
 
@@ -77,8 +76,14 @@ const createEvent = ({ state }, groupId, name, deadline) => post({ state }, '/Ev
 
 const getEventInfo = ({ state }, eventId) => get({ state }, '/Events/info', { id: eventId }).then((response) => response.data);
 
+const searchUsers = ({ state }, name) => get({ state }, '/Users/search', { name }).then((response) => response.data);
+
+const sendInvite = ({ state }, userId, groupId) => post({ state }, '/Invitations/send', { to_id: userId, group_id: groupId });
+
 export {
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups,
   createEvent, getEventInfo,
+  searchUsers,
+  sendInvite
 };

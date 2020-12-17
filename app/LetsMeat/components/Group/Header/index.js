@@ -27,7 +27,7 @@ const Header = ({ scene, previous, navigation }) => {
             navigation.openDrawer();
           }}
         >
-          <MaterialCommunityIcons name="dots-horizontal" size={40} />
+          <MaterialCommunityIcons name="menu" size={30} />
         </TouchableOpacity>
       )}
       <Appbar.Content
