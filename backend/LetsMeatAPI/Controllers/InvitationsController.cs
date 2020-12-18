@@ -76,6 +76,25 @@ namespace LetsMeatAPI.Controllers {
       }
       return Ok();
     }
+    public class InvitationRejectBody {
+      public Guid group_id { get; set; }
+    }
+    [HttpDelete]
+    [Route("reject")]
+    public async Task<ActionResult> Reject(
+      string token,
+      [FromBody] InvitationRejectBody body
+    ) {
+      var userId = _userManager.IsLoggedIn(token);
+      if(userId == null)
+        return Unauthorized();
+      var inv = _context.Invitations.FindAsync(userId, body.group_id);
+      if(inv == null)
+        return NotFound();
+      _context.Entry(inv).State = EntityState.Deleted;
+      await _context.SaveChangesAsync();
+      return Ok();
+    }
     private readonly UserManager _userManager;
     private readonly LMDbContext _context;
     private readonly ILogger<InvitationsController> _logger;
