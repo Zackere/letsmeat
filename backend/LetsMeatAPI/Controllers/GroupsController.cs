@@ -138,7 +138,7 @@ namespace LetsMeatAPI.Controllers {
       foreach(var inv in from inv in _context.Invitations
                          where inv.ToId == userId
                          select inv) {
-        _context.Entry(inv).State = EntityState.Deleted;
+        _context.Invitations.Remove(inv);
       }
       try {
         await _context.SaveChangesAsync();

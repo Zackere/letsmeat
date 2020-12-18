@@ -53,14 +53,14 @@ namespace LetsMeatAPI.Controllers {
       var grp = await _context.Groups.FindAsync(body.group_id);
       if(grp == null)
         return NotFound();
-      if(!grp.Users.Contains(await _context.Users.FindAsync(userId)))
+      if(!grp.Users.Any(u => u.Id == userId))
         return Unauthorized();
-      if(grp.Users.Contains(await _context.Users.FindAsync(body.to_id)))
+      if(grp.Users.Any(u => u.Id == body.to_id))
         return Conflict();
-      var inv = await _context.Invitations.FindAsync(new object[] {
+      var inv = await _context.Invitations.FindAsync(
         body.to_id,
         body.group_id
-      });
+      );
       if(inv != null)
         return Conflict();
       await _context.Invitations.AddAsync(new Models.Invitation() {
@@ -88,10 +88,10 @@ namespace LetsMeatAPI.Controllers {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
-      var inv = _context.Invitations.FindAsync(userId, body.group_id);
+      var inv = await _context.Invitations.FindAsync(userId, body.group_id);
       if(inv == null)
         return NotFound();
-      _context.Entry(inv).State = EntityState.Deleted;
+      _context.Invitations.Remove(inv);
       await _context.SaveChangesAsync();
       return Ok();
     }
