@@ -187,14 +187,21 @@ namespace LetsMeatAPI.Controllers {
       if(grp == null)
         return NotFound();
       var user = await _context.Users.FindAsync(userId);
+      grp.Users.Remove(user);
       if(user.Id == grp.OwnerId) {
         // Try to transfer ownership of the group
         var candidateOwner = grp.Users.FirstOrDefault();
         if(candidateOwner == null)
           return await Delete(token, new() { id = grp.Id });
         grp.OwnerId = candidateOwner.Id;
+        _context.Entry(grp).State = EntityState.Modified;
+        foreach(var ev in from ev in grp.Events
+                          where ev.CreatorId == userId
+                          select ev) {
+          ev.CreatorId = candidateOwner.Id;
+          _context.Entry(ev).State = EntityState.Modified;
+        }
       }
-      grp.Users.Remove(user);
       foreach(var debt in from debt in _context.Debts
                           where debt.GroupId == grp.Id &&
                           (debt.FromId == user.Id ||

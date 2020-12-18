@@ -92,6 +92,13 @@ namespace LetsMeatAPI.Controllers {
         return new StatusCodeResult(418);
       }
       var ev = await _context.Events.FindAsync(body.id);
+      if(
+        (body.name != null ||
+        body.deadline != null) &&
+        userId != ev.CreatorId
+      ) {
+        return Unauthorized();
+      }
       if(ev == null)
         return NotFound();
       if(body.name != null)
@@ -190,6 +197,28 @@ namespace LetsMeatAPI.Controllers {
         name = ev.Name,
         times_result = null,
       };
+    }
+    public class EventDeleteBody {
+      public Guid id { get; set; }
+    }
+    [HttpDelete]
+    [Route("delete")]
+    public async Task<ActionResult> Delete(
+      string token,
+      [FromBody] EventDeleteBody body
+      ) {
+      var userId = _userManager.IsLoggedIn(token);
+      if(userId == null)
+        return Unauthorized();
+      var ev = await _context.Events.FindAsync(body.id);
+      if(ev == null)
+        return NotFound();
+      if(ev.CreatorId != userId)
+        return Unauthorized();
+      _context.Votes.RemoveRange(ev.Votes);
+      _context.Entry(ev).State = EntityState.Deleted;
+      await _context.SaveChangesAsync();
+      return Ok();
     }
     private readonly UserManager _userManager;
     private readonly LMDbContext _context;

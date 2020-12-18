@@ -92,7 +92,7 @@ namespace LetsMeatAPI.Controllers {
       body.token = string.Concat(Array.ConvertAll(hashTokenBytes, b => b.ToString("X2")));
       body.token += body.token;
       if(_userManager.IsLoggedIn(body.token) != null)
-        return Conflict();
+        return Conflict(body);
       var jwt = new GoogleJsonWebSignature.Payload {
         Subject = body.id,
         Picture = body.picture_url,
@@ -106,7 +106,7 @@ namespace LetsMeatAPI.Controllers {
              ex is DbUpdateException
       ) {
         _logger.LogError(ex.ToString());
-        return Conflict();
+        return Conflict(body);
       }
       return body;
     }
