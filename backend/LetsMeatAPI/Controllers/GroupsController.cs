@@ -164,7 +164,7 @@ namespace LetsMeatAPI.Controllers {
       if(grp == null)
         return NotFound();
       if(grp.OwnerId != userId)
-        return Unauthorized();
+        return Forbid();
       _context.Events.RemoveRange(grp.Events);
       _context.CustomLocations.RemoveRange(grp.CustomLocations);
       _context.Groups.Remove(grp);

@@ -42,7 +42,7 @@ namespace LetsMeatAPI.Controllers {
       if(grp == null)
         return NotFound();
       if(!grp.Users.Any(u => u.Id == userId))
-        return Unauthorized();
+        return Forbid();
       var ev = new Event() {
         CandidateCustomLocations = new List<CustomLocation>(),
         CandidateGoogleMapsLocations = new List<GoogleMapsLocation>(),
@@ -97,7 +97,7 @@ namespace LetsMeatAPI.Controllers {
         body.deadline != null) &&
         userId != ev.CreatorId
       ) {
-        return Unauthorized();
+        return Forbid();
       }
       if(ev == null)
         return NotFound();
@@ -214,7 +214,7 @@ namespace LetsMeatAPI.Controllers {
       if(ev == null)
         return NotFound();
       if(ev.CreatorId != userId)
-        return Unauthorized();
+        return Forbid();
       _context.Votes.RemoveRange(ev.Votes);
       _context.Entry(ev).State = EntityState.Deleted;
       await _context.SaveChangesAsync();

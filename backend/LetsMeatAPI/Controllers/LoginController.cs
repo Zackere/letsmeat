@@ -69,7 +69,7 @@ namespace LetsMeatAPI.Controllers {
         }
         if(_userManager.IsLoggedIn(tokenHexString) == googlePayload.Subject)
           return Ok(tokenHexString);
-        return StatusCode(StatusCodes.Status500InternalServerError);
+        return new StatusCodeResult(StatusCodes.Status500InternalServerError);
       } catch(Exception ex) {
         _logger.LogError(ex.ToString());
         return Unauthorized();

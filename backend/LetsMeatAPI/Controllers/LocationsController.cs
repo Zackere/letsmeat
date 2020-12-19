@@ -45,7 +45,7 @@ namespace LetsMeatAPI.Controllers {
       if(grp == null)
         return NotFound();
       if(!grp.Users.Any(u => u.Id == userId))
-        return Unauthorized();
+        return Forbid();
       var location = new CustomLocation() {
         Address = body.Address,
         CreatedForId = body.group_id,

@@ -39,9 +39,9 @@ namespace LetsMeatAPI.Controllers {
       if(grp == null)
         return NotFound();
       if(!grp!.Users.Any(u => u.Id == userId))
-        return Unauthorized();
+        return Forbid();
       if(!grp!.Users.Any(u => u.Id == body.from_id) || !grp!.Users.Any(u => u.Id == body.to_id))
-        return NotFound();
+        return Forbid();
       if(body.to_id == body.from_id)
         return new StatusCodeResult(418);
       if(body.from_id.CompareTo(body.to_id) < 0)
@@ -85,7 +85,7 @@ namespace LetsMeatAPI.Controllers {
       if(grp == null)
         return NotFound();
       if(!grp.Users.Any(u => u.Id == userId))
-        return Unauthorized();
+        return Forbid();
       var debts = from debt in _context.Debts
                   where debt.GroupId == id
                   select new { debt.Amount, debt.FromId, debt.ToId };

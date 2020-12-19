@@ -57,7 +57,7 @@ namespace LetsMeatAPI.Controllers {
       if(grp == null)
         return NotFound();
       if(!grp.Users.Any(u => u.Id == userId))
-        return Unauthorized();
+        return Forbid();
       if(grp.Users.Any(u => u.Id == body.to_id))
         return Conflict();
       var inv = await _context.Invitations.FindAsync(
