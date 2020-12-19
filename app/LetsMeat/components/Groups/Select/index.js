@@ -3,11 +3,12 @@ import {
   Text, View, StyleSheet, FlatList
 } from 'react-native';
 import {
-  FAB, Card, Paragraph, Surface, IconButton
+  FAB, Card, Paragraph, Surface, IconButton, Badge
 } from 'react-native-paper';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import * as Progress from 'react-native-progress';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getGroups, getGroupInfo } from '../../Requests';
 import { store } from '../../Store';
 
@@ -38,9 +39,8 @@ const RenderGroup = ({
   return (
     <Card
       style={styles.emptyCard}
-      elevation={3}
       onPress={() => {
-        console.log('wating')
+        console.log('wating');
         getGroupInfo({ state }, item.id)
           .then((group) => {
             dispatch({ type: 'SET_GROUP', payload: group });
@@ -50,9 +50,9 @@ const RenderGroup = ({
     >
       <Card.Title title={item.name} />
       <Card.Content>
-        <Paragraph>
-          Some kind of description
-        </Paragraph>
+        <View style={{width: '100%', alignItems: 'flex-start', margin: 5}}>
+          <MaterialCommunityIcons size={20} name="emoticon"/>
+        </View>
       </Card.Content>
     </Card>
   );
@@ -103,7 +103,6 @@ export const Groups = ({ navigation, route }) => {
               ListEmptyComponent={() => (
                 <Card
                   style={styles.emptyCard}
-                  elevation={10}
                 >
                   <Card.Title title="Nothing to show" />
                   <Card.Cover source={{ uri: 'https://images.unsplash.com/photo-1577460551100-907ba84418ce?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1274&q=80' }} />

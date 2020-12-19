@@ -1,21 +1,28 @@
-import React, { useContext, useState, useCallback, useEffect } from 'react';
-import {
-  Text, View, StyleSheet, ScrollView, RefreshControl
-} from 'react-native';
-import { Card, Surface, Title } from 'react-native-paper';
-import { createStackNavigator } from '@react-navigation/stack';
-import { TouchableHighlight } from 'react-native-gesture-handler';
-import { Header } from '../Header';
+import { useScrollToTop } from '@react-navigation/native';
+import React, { useContext, useEffect, useState } from 'react';
+import { StyleSheet, Text } from 'react-native';
+import { Surface, Title, ActivityIndicator } from 'react-native-paper';
+import { getEventInfo, getUsersInfo } from '../../Requests';
 import { store } from '../../Store';
-import { getEventInfo, getGroupInfo } from '../../Requests';
+import UserCard from '../../User';
 
-const Creator = ({ user }) =>
-  // placeholder
-  (
-    <Text>
-      {user}
-    </Text>
+const Creator = ({ userId }) => {
+  const { state } = useContext(store);
+  const [userInfo, setUserInfo] = useState(null);
+
+  useEffect(() => {
+    getUsersInfo({ state }, userId).then((users) => {
+      console.log(users);
+      setUserInfo(users[0]);
+    });
+  }, []);
+
+  return (
+    userInfo
+      ? <UserCard user={userInfo} />
+      : <ActivityIndicator />
   );
+};
 
 const Deadline = ({ time }) =>
   // placeholder
@@ -25,9 +32,14 @@ const Deadline = ({ time }) =>
     </Text>
   );
 
+const Locations = () => {
+
+}
+
 const EventView = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
-  const [eventDetails, setEventDetails] = useState({ ...state.event });
+  const [eventDetails, setEventDetails] = useState(null);
+  console.log(eventDetails);
 
   useEffect(() => {
     console.log('using callback xD');
@@ -39,9 +51,18 @@ const EventView = ({ navigation }) => {
 
   return (
     <Surface style={styles.container}>
-      <Title>{state.event.name}</Title>
-      <Creator user={eventDetails.creator_id} />
-      <Deadline time={eventDetails.deadline} />
+      { eventDetails
+        ? (
+          <>
+            <Title>{state.event.name}</Title>
+            <Creator userId={eventDetails.creator_id} />
+            <Deadline time={eventDetails.deadline} />
+            <Title>Candidate Locations</Title>
+            <Locations googleLocations={eventDetails.candidate_google_maps_locations}
+              customLocations={eventDetails.candidate_custom_locations}></Locations>
+          </>
+        )
+        : (<ActivityIndicator />)}
     </Surface>
   );
 };

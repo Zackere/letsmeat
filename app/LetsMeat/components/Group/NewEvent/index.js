@@ -68,7 +68,6 @@ const NewEventContent = ({ navigation }) => {
       />
       <Card
         style={styles.emptyCard}
-        elevation={3}
         onPress={() => {
           setShow(true);
           setDeadline(new Date());
@@ -82,7 +81,7 @@ const NewEventContent = ({ navigation }) => {
         </Card.Content>
       </Card>
       <Button onPress={() => {
-        createEvent({ state }, state.group.id, eventName, eventDeadline).then(console.log).then(navigation.navigate('Feed'));
+        createEvent({ state }, state.group.id, eventName, eventDeadline).then(navigation.navigate('Feed'));
       }}
       >
         Create Event

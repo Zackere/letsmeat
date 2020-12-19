@@ -42,10 +42,12 @@ const post = ({ state }, endpoint, data) => {
   return axios.post(endpoint, data, axiosConfig);
 };
 
-// remove and not delete
-// because delete is a js keyword
-const remove = ({ state }, endpoint, data) => {
+// _delete because delete is a JS keyword
+// eslint-disable-next-line no-underscore-dangle
+const _delete = ({ state }, endpoint, data) => {
   const axiosConfig = { baseURL, data, params: { token: state.user.token } };
+  console.log('DELETING');
+  console.log(axiosConfig);
   return axios.delete(endpoint, axiosConfig);
 };
 
@@ -64,26 +66,40 @@ const appendUserID = (userInfo) => {
   return axios.get('/Users/info', axiosConfig).then((response) => ({ ...userInfo, ...response.data }));
 };
 
-const getGroups = ({ state }) => get({ state }, '/Users/info').then((response) => response.data.groups);
+const extractData = (response) => response.data;
 
-const getGroupInfo = ({ state }, id) => get({ state }, '/Groups/info', { id }).then((response) => response.data);
+const getGroups = ({ state }) => get({ state }, '/Users/info').then(extractData).then((data) => data.groups);
+
+const getGroupInfo = ({ state }, id) => get({ state }, '/Groups/info', { id }).then(extractData);
 
 const createGroup = ({ state }, name) => post({ state }, '/Groups/create/', { name });
 
-const deleteGroup = ({ state }, id) => remove({ state }, '/Groups/delete/', { id });
+const deleteGroup = ({ state }, id) => _delete({ state }, '/Groups/delete/', { id });
+
+const leaveGroup = ({ state }, id) => post({ state }, '/Groups/leave/', { id });
 
 const createEvent = ({ state }, groupId, name, deadline) => post({ state }, '/Events/create', { group_id: groupId, name, deadline });
 
-const getEventInfo = ({ state }, eventId) => get({ state }, '/Events/info', { id: eventId }).then((response) => response.data);
+const getEventInfo = ({ state }, eventId) => get({ state }, '/Events/info', { id: eventId }).then(extractData);
 
-const searchUsers = ({ state }, name) => get({ state }, '/Users/search', { name }).then((response) => response.data);
+const searchUsers = ({ state }, name) => get({ state }, '/Users/search', { name }).then(extractData);
 
-const sendInvite = ({ state }, userId, groupId) => post({ state }, '/Invitations/send', { to_id: userId, group_id: groupId });
+const getUsersInfo = ({ state }, ids) => post({ state }, '/Users/info', { ids: (Array.isArray(ids) ? ids : [ids]) }).then(extractData);
+
+const sendInvitation = ({ state }, userId, groupId) => post({ state }, '/Invitations/send', { to_id: userId, group_id: groupId });
+
+const getInvitations = ({ state }) => get({ state }, '/Invitations/get').then(extractData);
+
+const rejectInvitation = ({ state }, groupId) => _delete({ state }, '/Invitations/reject', { group_id: groupId }).catch(console.log);
+
+const joinGroup = ({ state }, groupId) => post({ state }, '/Groups/join', { id: groupId });
+
+const acceptInvitation = joinGroup;
 
 export {
   getAPIToken, appendAPIToken, appendUserID,
-  createGroup, getGroupInfo, deleteGroup, getGroups,
+  createGroup, getGroupInfo, deleteGroup, getGroups, leaveGroup, joinGroup,
   createEvent, getEventInfo,
-  searchUsers,
-  sendInvite
+  searchUsers, getUsersInfo,
+  sendInvitation, getInvitations, rejectInvitation, acceptInvitation
 };

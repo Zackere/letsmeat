@@ -6,7 +6,8 @@ const initialState = {
     signedIn: false,
   },
   group: {},
-  event: {}
+  event: {},
+  invitations: []
 };
 const store = createContext(initialState);
 const { Provider } = store;
@@ -65,6 +66,20 @@ const StateProvider = ({ children }) => {
         const newState = {
           ...state,
           event: action.payload,
+        };
+        return newState;
+      }
+      case 'SET_INVITATIONS': {
+        const newState = {
+          ...state,
+          invitations: action.payload,
+        };
+        return newState;
+      }
+      case 'REMOVE_INVITATION': {
+        const newState = {
+          ...state,
+          invitations: state.invitations.filter((i) => i.group_id !== action.groupId),
         };
         return newState;
       }

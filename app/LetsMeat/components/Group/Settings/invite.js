@@ -1,5 +1,6 @@
 import React, {
-  useCallback, useContext, useState, useRef
+  useCallback, useContext, useState, useRef,
+  useEffect
 } from 'react';
 import { debounce } from 'debounce';
 import {
@@ -9,8 +10,9 @@ import { ScrollView } from 'react-native-gesture-handler';
 import {
   Card, Chip, Searchbar, Surface, Button, Avatar, FAB
 } from 'react-native-paper';
-import { searchUsers, sendInvite } from '../../Requests';
+import { searchUsers, sendInvitation } from '../../Requests';
 import { store } from '../../Store';
+import UserCard from '../../User';
 
 const SelectedUsers = ({ users, onClose }) =>
 // placeholder
@@ -22,7 +24,6 @@ const SelectedUsers = ({ users, onClose }) =>
         {users ? users.map((user) => (
           <Chip
             key={user.id}
-            // TODO: learn how to add ana avatar
             avatar={<Avatar.Image source={{ uri: user.picture_url }} size={24} />}
             onClose={onClose}
           >
@@ -44,6 +45,9 @@ const Invite = ({ navigation }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const persistentSearchQuery = useRef('');
+
+  useEffect(() => navigation.setOptions({ tabBarVisible: false }), []);
+
   let debounceResult = null;
 
   const getSearchResults = useCallback(() => {
@@ -74,17 +78,14 @@ const Invite = ({ navigation }) => {
       />
       <ScrollView>
         {searchResults && searchResults.map((result) => (
-          <Card key={result.id} style={styles.searchResult}>
-            <Card.Title title={result.name} />
-            <Card.Content>
-              <Avatar.Image source={{ uri: result.picture_url }} />
-            </Card.Content>
-            <Card.Actions>
+          <UserCard
+            user={result}
+            actions={(
               <Button onPress={invite(result)}>
                 Invite
               </Button>
-            </Card.Actions>
-          </Card>
+            )}
+          />
         ))}
       </ScrollView>
       <FAB
@@ -94,7 +95,7 @@ const Invite = ({ navigation }) => {
         disabled={!selectedUsers || selectedUsers.length === 0}
         onPress={() => {
           selectedUsers.forEach((user) => {
-            sendInvite({ state }, user.id, state.group.id);
+            sendInvitation({ state }, user.id, state.group.id);
           });
           navigation.goBack();
         }}
