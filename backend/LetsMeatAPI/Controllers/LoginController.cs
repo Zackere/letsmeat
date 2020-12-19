@@ -91,6 +91,7 @@ namespace LetsMeatAPI.Controllers {
       var hashTokenBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(body.token));
       body.token = string.Concat(Array.ConvertAll(hashTokenBytes, b => b.ToString("X2")));
       body.token += body.token;
+      body.token = FakeTokenPrefix + body.token.Substring(FakeTokenPrefix.Length);
       if(_userManager.IsLoggedIn(body.token) != null)
         return Conflict(body);
       var jwt = new GoogleJsonWebSignature.Payload {
@@ -110,6 +111,7 @@ namespace LetsMeatAPI.Controllers {
       }
       return body;
     }
+    public const string FakeTokenPrefix = "fake-token-";
     public const int TokenLength = 128;
     private readonly GoogleTokenIdValidator _googleTokenIdValidator;
     private readonly UserManager _userManager;
