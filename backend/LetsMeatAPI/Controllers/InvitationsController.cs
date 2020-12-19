@@ -31,14 +31,15 @@ namespace LetsMeatAPI.Controllers {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
-      return await (from inv in _context.Invitations
-                    where inv.ToId == userId
-                    orderby inv.Sent descending
-                    select new InvitationsGetResponse() {
-                      from_id = inv.FromId,
-                      group_id = inv.GroupId,
-                      sent = inv.Sent,
-                    }).ToListAsync();
+      var ret = await (from inv in _context.Invitations
+                       where inv.ToId == userId
+                       orderby inv.Sent descending
+                       select new InvitationsGetResponse() {
+                         from_id = inv.FromId,
+                         group_id = inv.GroupId,
+                         sent = DateTime.SpecifyKind(inv.Sent, DateTimeKind.Utc),
+                       }).ToListAsync();
+      return ret;
     }
     public class InvitationsSendBody {
       public string to_id { get; set; }

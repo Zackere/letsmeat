@@ -48,7 +48,7 @@ namespace LetsMeatAPI.Controllers {
         CandidateGoogleMapsLocations = new List<GoogleMapsLocation>(),
         CandidateTimes = "[]",
         CreatorId = userId,
-        Deadline = body.deadline,
+        Deadline = body.deadline.ToUniversalTime(),
         GroupId = grp.Id,
         Name = body.name,
         Votes = new List<Vote>(),
@@ -104,7 +104,7 @@ namespace LetsMeatAPI.Controllers {
       if(body.name != null)
         ev.Name = body.name;
       if(body.deadline != null)
-        ev.Deadline = (DateTime)body.deadline;
+        ev.Deadline = ((DateTime)body.deadline).ToUniversalTime();
       if(body.custom_locations_ids != null) {
         var uids = body.custom_locations_ids.Distinct().ToArray();
         var diff = from id in uids
@@ -134,8 +134,11 @@ namespace LetsMeatAPI.Controllers {
           ev.CandidateGoogleMapsLocations.Add(l);
       }
       if(body.candidate_times != null) {
-        var arr = JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes);
-        ev.CandidateTimes = JsonSerializer.Serialize(arr.Union(body.candidate_times));
+        var arr = JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes)
+                  .Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc));
+        ev.CandidateTimes = JsonSerializer.Serialize(
+          arr.Union(body.candidate_times.Select(t => t.ToUniversalTime()))
+        );
       }
       _context.Entry(ev).State = EntityState.Modified;
       try {
@@ -149,9 +152,10 @@ namespace LetsMeatAPI.Controllers {
                                       select location.Id).ToArray(),
         candidate_google_maps_locations = (from location in ev.CandidateGoogleMapsLocations
                                            select location.Id).ToArray(),
-        candidate_times = JsonSerializer.Deserialize<DateTime[]>(ev.CandidateTimes),
+        candidate_times = JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes)
+                          .Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc)).ToArray(),
         creator_id = ev.CreatorId,
-        deadline = ev.Deadline,
+        deadline = DateTime.SpecifyKind(ev.Deadline, DateTimeKind.Utc),
         group_id = ev.GroupId,
         id = ev.Id,
         locations_result = null,
@@ -188,9 +192,10 @@ namespace LetsMeatAPI.Controllers {
                                       select location.Id).ToArray(),
         candidate_google_maps_locations = (from location in ev.CandidateGoogleMapsLocations
                                            select location.Id).ToArray(),
-        candidate_times = JsonSerializer.Deserialize<DateTime[]>(ev.CandidateTimes),
+        candidate_times = JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes)
+                          .Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc)).ToArray(),
         creator_id = ev.CreatorId,
-        deadline = ev.Deadline,
+        deadline = DateTime.SpecifyKind(ev.Deadline, DateTimeKind.Utc),
         group_id = ev.GroupId,
         id = ev.Id,
         locations_result = null,
