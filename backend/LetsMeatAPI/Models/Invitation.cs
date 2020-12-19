@@ -8,5 +8,6 @@ namespace LetsMeatAPI.Models {
     public virtual User To { get; set; }
     public Guid GroupId { get; set; }
     public virtual Group Group { get; set; }
+    public DateTime Sent { get; set; }
   }
 }

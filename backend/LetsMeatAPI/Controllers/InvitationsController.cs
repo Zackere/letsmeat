@@ -21,6 +21,7 @@ namespace LetsMeatAPI.Controllers {
     public class InvitationsGetResponse {
       public string from_id { get; set; }
       public Guid group_id { get; set; }
+      public DateTime sent { get; set; }
     }
     [HttpGet]
     [Route("get")]
@@ -32,9 +33,11 @@ namespace LetsMeatAPI.Controllers {
         return Unauthorized();
       return await (from inv in _context.Invitations
                     where inv.ToId == userId
+                    orderby inv.Sent descending
                     select new InvitationsGetResponse() {
                       from_id = inv.FromId,
-                      group_id = inv.GroupId
+                      group_id = inv.GroupId,
+                      sent = inv.Sent,
                     }).ToListAsync();
     }
     public class InvitationsSendBody {
@@ -66,6 +69,7 @@ namespace LetsMeatAPI.Controllers {
       await _context.Invitations.AddAsync(new Models.Invitation() {
         FromId = userId,
         GroupId = body.group_id,
+        Sent = DateTime.UtcNow,
         ToId = body.to_id
       });
       try {
