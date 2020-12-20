@@ -41,7 +41,8 @@ namespace LetsMeatAPI.Controllers {
         Name = body.name,
         Owner = user,
         Users = new List<Models.User>() { user },
-        Events = new List<Models.Event>()
+        Events = new List<Models.Event>(),
+        Images = new List<Models.Image>(),
       };
       await _context.Groups.AddAsync(grp);
       try {
@@ -79,6 +80,7 @@ namespace LetsMeatAPI.Controllers {
       public IEnumerable<UserInformation> users { get; set; }
       public IEnumerable<CustomLocationInformation> custom_locations { get; set; }
       public IEnumerable<EventInformation> events { get; set; }
+      public IEnumerable<Guid> images { get; set; }
     }
     [HttpGet]
     [Route("info")]
@@ -94,6 +96,8 @@ namespace LetsMeatAPI.Controllers {
         return NotFound();
       return new GroupInformationResponse {
         id = grp.Id,
+        images = from image in grp.Images
+                 select image.Id,
         name = grp.Name,
         owner_id = grp.OwnerId,
         users = from user in grp.Users
@@ -167,6 +171,7 @@ namespace LetsMeatAPI.Controllers {
         return Forbid();
       _context.Events.RemoveRange(grp.Events);
       _context.CustomLocations.RemoveRange(grp.CustomLocations);
+      _context.Images.RemoveRange(grp.Images);
       _context.Groups.Remove(grp);
       await _context.SaveChangesAsync();
       return Ok();

@@ -50,6 +50,7 @@ namespace LetsMeatAPI.Controllers {
         CreatorId = userId,
         Deadline = body.deadline.ToUniversalTime(),
         GroupId = grp.Id,
+        Images = new List<Image>(),
         Name = body.name,
         Votes = new List<Vote>(),
       };
@@ -174,6 +175,7 @@ namespace LetsMeatAPI.Controllers {
       public DateTime deadline { get; set; }
       public Guid[]? locations_result { get; set; }
       public DateTime[]? times_result { get; set; }
+      public Guid[] images { get; set; }
     }
     [HttpGet]
     [Route("info")]
@@ -197,6 +199,8 @@ namespace LetsMeatAPI.Controllers {
         creator_id = ev.CreatorId,
         deadline = DateTime.SpecifyKind(ev.Deadline, DateTimeKind.Utc),
         group_id = ev.GroupId,
+        images = (from image in ev.Images
+                  select image.Id).ToArray(),
         id = ev.Id,
         locations_result = null,
         name = ev.Name,

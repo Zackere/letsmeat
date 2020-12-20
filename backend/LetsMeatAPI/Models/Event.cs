@@ -20,5 +20,6 @@ namespace LetsMeatAPI.Models {
     public virtual ICollection<Vote> Votes { get; set; }
     public virtual ICollection<GoogleMapsLocation> CandidateGoogleMapsLocations { get; set; }
     public virtual ICollection<CustomLocation> CandidateCustomLocations { get; set; }
+    public virtual ICollection<Image> Images { get; set; }
   }
 }

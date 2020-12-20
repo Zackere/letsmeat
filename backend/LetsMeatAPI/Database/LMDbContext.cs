@@ -12,6 +12,7 @@ namespace LetsMeatAPI {
     public DbSet<Invitation> Invitations { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Vote> Votes { get; set; }
+    public DbSet<Image> Images { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
       modelBuilder.Entity<User>()
         .HasMany(user => user.DebtsForMe)
@@ -46,12 +47,20 @@ namespace LetsMeatAPI {
         .HasMany(g => g.CustomLocations)
         .WithOne(l => l.CreatedFor)
         .OnDelete(DeleteBehavior.ClientSetNull);
+      modelBuilder.Entity<Group>()
+        .HasMany(g => g.Images)
+        .WithOne(i => i.Group)
+        .OnDelete(DeleteBehavior.ClientSetNull);
       modelBuilder.Entity<Event>()
         .HasMany(e => e.CandidateCustomLocations)
         .WithMany(l => l.EventsWithMe);
       modelBuilder.Entity<Event>()
         .HasMany(e => e.CandidateGoogleMapsLocations)
         .WithMany(l => l.EventsWithMe);
+      modelBuilder.Entity<Event>()
+        .HasMany(e => e.Images)
+        .WithOne(i => i.Event)
+        .OnDelete(DeleteBehavior.SetNull);
     }
   }
 }

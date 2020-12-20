@@ -17,5 +17,6 @@ namespace LetsMeatAPI.Models {
     public virtual ICollection<Invitation> Invitations { get; set; }
     public virtual ICollection<Group> OwnedGroups { get; set; }
     public virtual ICollection<Event> CreatedEvents { get; set; }
+    public virtual ICollection<Image> UploadedImages { get; set; }
   }
 }

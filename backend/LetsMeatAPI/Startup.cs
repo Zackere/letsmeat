@@ -32,6 +32,11 @@ namespace LetsMeatAPI {
                where aud != null
                select aud
       });
+      services.AddScoped(_ => new BlobClientFactory(
+        _configuration.GetConnectionString("LMBlobStorage") ??
+        Environment.GetEnvironmentVariable("LMBlobStorage") ??
+        throw new ArgumentNullException("Could not retrieve LMBlobStorage conn string")
+      ));
       services.AddControllers();
       services.AddCors(cors => cors.AddPolicy(
         _letsMeatAPIPolicy,
