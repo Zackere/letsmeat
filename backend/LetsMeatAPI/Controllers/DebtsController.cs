@@ -46,7 +46,7 @@ namespace LetsMeatAPI.Controllers {
         return new StatusCodeResult(418);
       if(body.from_id.CompareTo(body.to_id) < 0)
         (body.from_id, body.to_id, body.amount) = (body.to_id, body.from_id, -body.amount);
-      var debt = await _context.Debts.FindAsync(body.to_id, body.from_id, body.group_id);
+      var debt = await _context.Debts.FindAsync(body.from_id, body.to_id, body.group_id);
       if(debt == null) {
         await _context.Debts.AddAsync(new Debt() {
           Amount = body.amount,
