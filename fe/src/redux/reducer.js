@@ -26,7 +26,7 @@ export default (state = initialState, action) => {
         isAuthenticated: false,
         user: null,
       }
-
+      
     default:
       return state
   }

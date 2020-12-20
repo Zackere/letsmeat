@@ -1,41 +1,21 @@
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { setUser, setUserToken } from '../../redux/actions'
-import { withRouter } from 'react-router-dom'
-import { GoogleLogin } from 'react-google-login'
-import { getUserToken } from '../../services/userServices'
-import { Container } from 'react-bootstrap'
-import Bar from '../../common/bar/Bar'
-import './Home.css'
+import Groups from './components/groups/Groups'
+import Notifications from './components/notifications/Notifications'
 
-class Home extends Component {
-  responseGoogle = response => {
-    this.props.setUser(response.profileObj)
+import 'bootstrap/dist/css/bootstrap.min.css'
+import '../../common/styles/styles.css'
 
-    getUserToken(response.tokenObj.id_token)
-      .then(token => this.props.setUserToken(token))
-      .then(() => this.props.history.push('/groups'))
-  }
-
+export default class Home extends Component {
   render() {
     return (
-      <Container>
-        <Bar />
-        <div className="centralizedContainer">
-          <GoogleLogin
-            clientId="1093858916900-rrqh9ehvffdtqblj6shfc7l8bbne08ih.apps.googleusercontent.com"
-            onSuccess={this.responseGoogle}
-            cookiePolicy={'single_host_origin'}
-          />
+      <div className="row mx-0" style={{ height: '94vh' }}>
+        <div className="col-3 px-0">
+          <Notifications />
         </div>
-      </Container>
+        <div className="col-9 border-left">
+          <Groups />
+        </div>
+      </div>
     )
   }
 }
-
-const mapDispatchToProps = dispatch => ({
-  setUser: user => dispatch(setUser(user)),
-  setUserToken: token => dispatch(setUserToken(token)),
-})
-
-export default withRouter(connect(null, mapDispatchToProps)(Home))
