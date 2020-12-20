@@ -49,8 +49,22 @@ namespace LetsMeatAPI.Controllers {
       if(ev == null)
         return NotFound();
       var vote = await _context.Votes.FindAsync(event_id, userId);
-      if(vote == null)
-        return NotFound();
+      if(vote == null) {
+        return new VoteInformation {
+          locations = ev.CandidateGoogleMapsLocations
+                        .Select(l => new VoteInformation.LocationInformation {
+                          google_maps_location_id = l.Id,
+                        })
+                        .Union(ev.CandidateCustomLocations
+                        .Select(l => new VoteInformation.LocationInformation {
+                          custom_location_id = l.Id,
+                        }))
+                        .ToArray(),
+          times = JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes)
+                  .Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc))
+                  .ToArray(),
+        };
+      }
       var ret = JsonSerializer.Deserialize<VoteInformation>(vote.Order);
       // Union guarantees to preserve order
       ret.locations = ret.locations
@@ -127,6 +141,10 @@ namespace LetsMeatAPI.Controllers {
         .Any(l => !_context.GoogleMapsLocations.Any(c => c.Id == l.google_maps_location_id))) {
         return NotFound();
       }
+      var candidateTimes = JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes);
+      var timesDiff = body.vote_information.times.Except(candidateTimes);
+      if(timesDiff.Count() > 0)
+        return NotFound(timesDiff);
       body.vote_information.locations =
         body.vote_information.locations
         .Distinct()
@@ -138,7 +156,7 @@ namespace LetsMeatAPI.Controllers {
         .ToArray();
       var vote = await _context.Votes.FindAsync(body.event_id, userId);
       if(vote == null) {
-        vote = new Models.Vote() {
+        vote = new() {
           EventId = body.event_id,
           Order = JsonSerializer.Serialize(body.vote_information),
           UserId = userId,
