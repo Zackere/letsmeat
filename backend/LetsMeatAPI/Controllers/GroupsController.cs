@@ -139,11 +139,8 @@ namespace LetsMeatAPI.Controllers {
         return NotFound();
       var user = await _context.Users.FindAsync(userId);
       grp.Users.Add(user);
-      foreach(var inv in from inv in _context.Invitations
-                         where inv.ToId == userId
-                         select inv) {
-        _context.Invitations.Remove(inv);
-      }
+      _context.Entry(await _context.Invitations.FindAsync(userId, grp.Id)).State
+        = EntityState.Deleted;
       try {
         await _context.SaveChangesAsync();
       } catch(DbUpdateException ex) {
