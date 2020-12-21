@@ -81,8 +81,7 @@ namespace LetsMeatAPITests {
       Assert.Equal(1, context.Users.Count());
       var user = context.Users.First();
       VerifyUserInformation(user, jwt);
-      var newPrefs = "{likes:\"food\"}";
-      user.Prefs = newPrefs;
+      ++user.PricePref;
       context.Users.Update(user);
       await context.SaveChangesAsync();
 
@@ -90,7 +89,7 @@ namespace LetsMeatAPITests {
 
       Assert.Equal(1, context.Users.Count());
       user = context.Users.First();
-      VerifyUserInformation(user, jwt2, newPrefs);
+      VerifyUserInformation(user, jwt2);
       Assert.Equal(jwt.Subject, userManager.IsLoggedIn(token2));
       Assert.Null(userManager.IsLoggedIn(token));
 
@@ -162,7 +161,10 @@ namespace LetsMeatAPITests {
         PictureUrl = jwt1.Picture,
         Email = jwt1.Email,
         Name = jwt1.Name,
-        Prefs = "{}"
+        PricePref = 12,
+        AmountOfFoodPref = 31,
+        TastePref = 56,
+        WaitingTimePref = 89,
       });
       await context2.SaveChangesAsync();
       var genuineUsers = context1.Users;
@@ -194,14 +196,12 @@ namespace LetsMeatAPITests {
     }
     private void VerifyUserInformation(
       User user,
-      GoogleJsonWebSignature.Payload jwt,
-      string prefs = "{}"
+      GoogleJsonWebSignature.Payload jwt
     ) {
       Assert.Equal(jwt.Subject, user.Id);
       Assert.Equal(jwt.Picture, user.PictureUrl);
       Assert.Equal(jwt.Email, user.Email);
       Assert.Equal(jwt.Name, user.Name);
-      Assert.Equal(prefs, user.Prefs);
     }
   }
 }

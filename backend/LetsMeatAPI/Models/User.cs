@@ -8,7 +8,10 @@ namespace LetsMeatAPI.Models {
     public string PictureUrl { get; set; }
     public string Email { get; set; }
     public string Name { get; set; }
-    public string Prefs { get; set; }
+    public int TastePref { get; set; }
+    public int PricePref { get; set; }
+    public int AmountOfFoodPref { get; set; }
+    public int WaitingTimePref { get; set; }
     [StringLength(Controllers.LoginController.TokenLength)]
     public string? Token { get; set; }
     public virtual ICollection<Group> Groups { get; set; }
