@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import {
   ActivityIndicator, Button, Card, Subheading, Surface, Title
 } from 'react-native-paper';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { getEventInfo, getUsersInfo } from '../../Requests';
 import { store } from '../../Store';
 import UserCard from '../../User';
@@ -39,9 +40,14 @@ const Locations = ({ locations }) => (
     {locations.map((l) => {
       <Card>{l}</Card>;
     })}
-    <Button style={styles.addButton}>
-      <Text>Add location</Text>
-    </Button>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
+      <Button style={styles.addButton}>
+        <Icon name="plus" size={25} />
+      </Button>
+      <Button style={styles.addButton}>
+        <Icon name="vote" size={25} />
+      </Button>
+    </View>
   </>
 );
 
@@ -54,6 +60,12 @@ const Times = ({ times }) => (
       <Text>Add time</Text>
     </Button>
   </>
+);
+
+const Debts = ({}) => (
+  <Card style={styles.section}>
+    <Card.Title title="Debts" />
+  </Card>
 );
 
 const EventView = ({ navigation }) => {
@@ -74,12 +86,12 @@ const EventView = ({ navigation }) => {
       { eventDetails
         ? (
           <>
-            <Card style={{ margin: 10 }}>
+            <Card style={styles.section}>
               <Title style={{ fontSize: 30, marginHorizontal: 20, marginTop: 20 }}>{state.event.name}</Title>
               <Deadline time={eventDetails.deadline} />
               <Creator userId={eventDetails.creator_id} />
             </Card>
-            <Card style={{ margin: 10 }}>
+            <Card style={styles.section}>
               <Card.Title title="Candidate Locations" />
               <Locations
                 locations={[...eventDetails.candidate_google_maps_locations, ...eventDetails.candidate_custom_locations]}
@@ -87,12 +99,13 @@ const EventView = ({ navigation }) => {
                 customLocations={eventDetails.candidate_custom_locations}
               />
             </Card>
-            <Card style={{ margin: 10 }}>
+            <Card style={styles.section}>
               <Card.Title title="Candidate Times" />
               <Times
                 times={eventDetails.candidate_times}
               />
             </Card>
+            <Debts />
           </>
         )
         : (<ActivityIndicator />)}
@@ -104,6 +117,9 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     height: '100%'
+  },
+  section: {
+    margin: 10
   },
   card: {
     margin: 25

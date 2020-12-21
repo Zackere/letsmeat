@@ -42,7 +42,7 @@ const NewEventContent = ({ navigation }) => {
   const onSetDate = (event, date) => {
     clearInterval(timeUpdater);
     setShow(false);
-    if (event.type == 'dismissed') {
+    if (event.type === 'dismissed') {
       setMode('date');
       return;
     }
