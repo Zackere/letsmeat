@@ -34,6 +34,7 @@ namespace LetsMeatAPITests {
       var groupController = new GroupsController(
         userManager,
         context,
+        Mock.Of<BlobClientFactory>(),
         Mock.Of<ILogger<GroupsController>>()
       );
       var grp = await groupController.Create(token2, new() { name = "ASD" });
@@ -62,6 +63,7 @@ namespace LetsMeatAPITests {
       var groupController = new GroupsController(
         userManager,
         context,
+        Mock.Of<BlobClientFactory>(),
         Mock.Of<ILogger<GroupsController>>()
       );
       var createRes = await groupController.Create(token1, new() { name = "ASD" });
@@ -102,6 +104,7 @@ namespace LetsMeatAPITests {
       var groupController = new GroupsController(
         userManager,
         context,
+        Mock.Of<BlobClientFactory>(),
         Mock.Of<ILogger<GroupsController>>()
       );
       var invitationController = new InvitationsController(
@@ -204,6 +207,7 @@ namespace LetsMeatAPITests {
       var groupController = new GroupsController(
         userManager,
         context,
+        Mock.Of<BlobClientFactory>(),
         Mock.Of<ILogger<GroupsController>>()
       );
       var invitationController = new InvitationsController(

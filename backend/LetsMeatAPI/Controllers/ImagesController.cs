@@ -69,6 +69,8 @@ namespace LetsMeatAPI.Controllers {
         return Unauthorized();
       if(token.StartsWith(LoginController.FakeTokenPrefix))
         return Forbid();
+      if(file.Length > MaxFilesize)
+        return new StatusCodeResult(418);
       var ev = await _context.Events.FindAsync(event_id);
       if(ev == null)
         return NotFound();
@@ -102,6 +104,7 @@ namespace LetsMeatAPI.Controllers {
         uploaded_time = DateTime.SpecifyKind(image.UploadTime, DateTimeKind.Utc),
       };
     }
+    public const int MaxFilesize = (int)10e+6; // 10Mb
     private readonly UserManager _userManager;
     private readonly LMDbContext _context;
     private readonly BlobClientFactory _blobClientFactory;

@@ -1,3 +1,4 @@
+using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -13,10 +14,12 @@ namespace LetsMeatAPI.Controllers {
     public GroupsController(
       UserManager userManager,
       LMDbContext context,
+      BlobClientFactory blobClientFactory,
       ILogger<GroupsController> logger
     ) {
       _userManager = userManager;
       _context = context;
+      _blobClientFactory = blobClientFactory;
       _logger = logger;
     }
     public class GroupCreatedResponse {
@@ -169,6 +172,14 @@ namespace LetsMeatAPI.Controllers {
         return Forbid();
       _context.Events.RemoveRange(grp.Events);
       _context.CustomLocations.RemoveRange(grp.CustomLocations);
+      foreach(var image in grp.Images) {
+        var client = _blobClientFactory.GetClientFromUri(new Uri(image.Url));
+        try {
+          await client.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+        } catch(Azure.RequestFailedException ex) {
+          _logger.LogError(ex.ToString());
+        }
+      }
       _context.Images.RemoveRange(grp.Images);
       _context.Groups.Remove(grp);
       await _context.SaveChangesAsync();
@@ -229,6 +240,7 @@ namespace LetsMeatAPI.Controllers {
     }
     private readonly UserManager _userManager;
     private readonly LMDbContext _context;
+    private readonly BlobClientFactory _blobClientFactory;
     private readonly ILogger<GroupsController> _logger;
   }
 }
