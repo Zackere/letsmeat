@@ -1,38 +1,40 @@
 import React, { useState, useContext } from 'react';
 import { StyleSheet } from 'react-native';
 import { Button, Surface, TextInput } from 'react-native-paper';
-import { store } from '../../Store'
-import { createGroup } from '../../Requests'
+import { store } from '../../Store';
+import { createGroup } from '../../Requests';
 
-export const Create = ({navigation}) => {
+export const Create = ({ navigation }) => {
   const [name, setName] = useState('');
-  const [nameValid, setNameValid] = useState(null)
+  const [nameValid, setNameValid] = useState(null);
   const { state, dispatch } = useContext(store);
 
-
   const validateName = (name: string) => {
-    setNameValid(name && name.length <= 256)
-  }
+    setNameValid(name && name.length <= 256);
+  };
 
   const setAndValidateName = (text) => {
-    validateName(text)
-    setName(text)
-  }
+    validateName(text);
+    setName(text);
+  };
 
   const createNewGroup = () => {
-    createGroup({state}, name).then(()=>{
-      setName('')
-      setNameValid(null)
-      navigation.navigate('SelectGroup')
-    })
-  }
+    // console.log('let's try)
+    createGroup({ state }, name).then((group) => {
+      console.log(group)
+      setName('');
+      setNameValid(null);
+      dispatch({ type: 'ADD_GROUP', group });
+      navigation.navigate('SelectGroup');
+    });
+  };
 
   return (
     <Surface style={styles.container}>
       <TextInput
         style={styles.textInput}
         mode="outlined"
-        label={"New Group Name"}
+        label="New Group Name"
         value={name}
         error={nameValid !== null && !nameValid}
         onChangeText={setAndValidateName}

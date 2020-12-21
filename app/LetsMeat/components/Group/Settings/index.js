@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ScrollView, StyleSheet } from 'react-native';
@@ -10,42 +10,43 @@ import { store } from '../../Store';
 import { Header } from '../Header';
 import Invite from './invite';
 
-const DeleteGroup = () => {
-  const { state, dispatch } = useContext(store);
-
-  const [visible, setVisible] = React.useState(false);
+const ModalButton = ({
+  style, modalText, confirmAction, confirmText, icon, buttonText
+}) => {
+  const [visible, setVisible] = useState(false);
   const showDialog = () => setVisible(true);
   const hideDialog = () => setVisible(false);
 
   return (
     <>
       <Card
-        style={{ ...styles.delete, ...styles.cardButton }}
+        style={{ ...styles.cardButton, ...style }}
         onPress={showDialog}
       >
-        <Card.Content>
+        <Card.Content style={{ flexDirection: 'row', height: '100%', alignItems: 'center' }}>
           <MaterialCommunityIcons
-            name="delete"
+            name={icon}
             size={20}
           />
-          <Paragraph> DELETE </Paragraph>
+          <Paragraph>
+            {buttonText}
+          </Paragraph>
         </Card.Content>
       </Card>
       <Portal>
         <Dialog visible={visible} onDismiss={hideDialog}>
           <Dialog.Title>Warning</Dialog.Title>
           <Dialog.Content>
-            <Paragraph>Are you sure you want to delete the group?</Paragraph>
+            <Paragraph>{modalText}</Paragraph>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={hideDialog}>Abort</Button>
             <Button onPress={() => {
-              deleteGroup({ state }, state.group.id);
+              confirmAction();
               hideDialog();
-              navigation.navigate('SelectGroup');
             }}
             >
-              Delete
+              {confirmText}
             </Button>
           </Dialog.Actions>
         </Dialog>
@@ -54,54 +55,29 @@ const DeleteGroup = () => {
   );
 };
 
-const LeaveGroup = () => {
-  const { state, dispatch } = useContext(store);
+const DeleteGroup = ({ confirmAction }) => (
+  <ModalButton
+    style={styles.delete}
+    modalText="Are you sure you want to delete the group?"
+    icon="delete"
+    buttonText="DELETE"
+    confirmAction={confirmAction}
+    confirmText="Delete"
+  />
+);
 
-  const [visible, setVisible] = React.useState(false);
-  const showDialog = () => setVisible(true);
-  const hideDialog = () => setVisible(false);
-
-  return (
-    <>
-      <Card
-        style={styles.cardButton}
-        onPress={showDialog}
-      >
-        <Card.Content>
-          <MaterialCommunityIcons
-            name="logout-variant"
-            size={20}
-          />
-          <Paragraph> LEAVE </Paragraph>
-        </Card.Content>
-      </Card>
-      <Portal>
-        <Dialog visible={visible} onDismiss={hideDialog}>
-          <Dialog.Title>Warning</Dialog.Title>
-          <Dialog.Content>
-            <Paragraph>Are you sure you want to leave the group?</Paragraph>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={hideDialog}>Abort</Button>
-            <Button onPress={() => {
-              leaveGroup({ state }, state.group.id);
-              hideDialog();
-              navigation.navigate('SelectGroup');
-            }}
-            >
-              Leave
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
-    </>
-  );
-};
-
+const LeaveGroup = ({ confirmAction }) => (
+  <ModalButton
+    modalText="Are you sure you want to leave the group?"
+    icon="logout-variant"
+    buttonText="LEAVE"
+    confirmAction={confirmAction}
+    confirmText="Leave"
+  />
+);
 const GroupMembers = ({ members, navigation }) => (
   <Card
     style={styles.emptyCard}
-    // elevation={3}
   >
     <Card.Content>
       {members.map((m) => (
@@ -133,8 +109,18 @@ const SettingsScroll = ({ navigation }) => {
     <Surface style={styles.groupsContainer}>
       <ScrollView>
         <GroupMembers members={state.group.users} navigation={navigation} />
-        <LeaveGroup />
-        <DeleteGroup />
+        <LeaveGroup confirmAction={() => {
+          leaveGroup({ state }, state.group.id)
+            .then(() => dispatch({ type: 'REMOVE_GROUP', groupId: state.group.id }))
+            .then(() => navigation.navigate('SelectGroup'));
+        }}
+        />
+        <DeleteGroup confirmAction={() => {
+          deleteGroup({ state }, state.group.id)
+            .then(() => dispatch({ type: 'REMOVE_GROUP', groupId: state.group.id }))
+            .then(() => navigation.navigate('SelectGroup'));
+        }}
+        />
       </ScrollView>
     </Surface>
   );

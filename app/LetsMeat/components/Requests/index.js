@@ -72,7 +72,7 @@ const getGroups = ({ state }) => get({ state }, '/Users/info').then(extractData)
 
 const getGroupInfo = ({ state }, id) => get({ state }, '/Groups/info', { id }).then(extractData);
 
-const createGroup = ({ state }, name) => post({ state }, '/Groups/create/', { name });
+const createGroup = ({ state }, name) => post({ state }, '/Groups/create/', { name }).then(extractData);
 
 const deleteGroup = ({ state }, id) => _delete({ state }, '/Groups/delete/', { id });
 

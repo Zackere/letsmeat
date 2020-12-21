@@ -1,15 +1,15 @@
-import React, { useEffect, useState, useContext } from 'react';
-import {
-  Text, View, StyleSheet, FlatList
-} from 'react-native';
-import {
-  FAB, Card, Paragraph, Surface, IconButton, Badge
-} from 'react-native-paper';
-import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
-import * as Progress from 'react-native-progress';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getGroups, getGroupInfo } from '../../Requests';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useContext, useEffect, useState } from 'react';
+import {
+  FlatList, StyleSheet, Text, View
+} from 'react-native';
+import { TouchableHighlight } from 'react-native-gesture-handler';
+import {
+  Card, FAB, Paragraph, Surface, Badge
+} from 'react-native-paper';
+import * as Progress from 'react-native-progress';
+import { getGroupInfo, getGroups } from '../../Requests';
 import { store } from '../../Store';
 
 const GroupButton = (group, navigation) => (
@@ -33,50 +33,81 @@ const CreateGroupButton = ({ onPress }) => (
 );
 
 const RenderGroup = ({
-  item, separators, navigation, dispatch, state
+  groupId, navigation,
 }) => {
-  const [additionalGroupInfo, setAdditionalGroupInfo] = useState(null);
+  const { state, dispatch } = useContext(store);
+  const group = state.groups && state.groups.find((g) => g.id === groupId);
+
+  useEffect(() => {
+    if (group && !group.custom_locations) getGroupInfo({ state }, groupId).then((info) => dispatch({ type: 'UPDATE_GROUP_INFO', groupId, groupInfo: info }));
+  }, []);
+
   return (
     <Card
       style={styles.emptyCard}
       onPress={() => {
-        console.log('wating');
-        getGroupInfo({ state }, item.id)
+        getGroupInfo({ state }, groupId)
           .then((group) => {
             dispatch({ type: 'SET_GROUP', payload: group });
             navigation.navigate('Home');
           }).catch(console.log);
       }}
     >
-      <Card.Title title={item.name} />
+      <Card.Title title={group && group.name} />
       <Card.Content>
-        <View style={{width: '100%', alignItems: 'flex-start', margin: 5}}>
-          <MaterialCommunityIcons size={20} name="emoticon"/>
+        <View style={{
+          width: '100%', alignItems: 'flex-start', margin: 0, flexDirection: 'row'
+        }}
+        >
+          <MaterialCommunityIcons size={30} name="emoticon-outline" />
+          <Badge
+            size={20}
+            style={{ marginLeft: -10, marginTop: 10, fontSize: 15 }}
+          >
+            {group.users && group.users.length}
+            {/* {additionalGroupInfostate && additionalGroupInfo.users.length} */}
+          </Badge>
+          <MaterialCommunityIcons size={30} name="map-marker-outline" />
+          <Badge
+            size={20}
+            style={{ marginLeft: -10, marginTop: 10, fontSize: 15 }}
+          >
+            {group.custom_locations && group.custom_locations.length}
+          </Badge>
         </View>
       </Card.Content>
     </Card>
   );
 };
 
-export const Groups = ({ navigation, route }) => {
-  const load = () => {
-    setLoadingGroups(true);
-    getGroups({ state, dispatch }).catch(console.log).then(onGetGroups);
-  };
-
-  navigation.addListener('focus', load);
-
-  const [groups, setGroups] = useState([]);
+export const Groups = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
+  const groupsLoaded = state.groups;
+  // const load = () => {
+  //   setLoadingGroups(true);
+  //   getGroups({ state, dispatch }).then(onGetGroups);
+  // };
+
+  // navigation.addListener('focus', ());
+
+  // const [groups, setGroups] = useState([]);
+  useFocusEffect(() => {
+    if (groupsLoaded) setLoadingGroups(false);
+  });
   const [loadingGroups, setLoadingGroups] = useState(true);
 
   const onGetGroups = (groups) => {
-    setGroups(groups || []);
+    // groups.foreach(g => getGroupInfo({state}, g.id))
+    // setGroups(groups);
+    // Promise.all(groups.map(g => getGroupInfo({state}, g.id)))
+    console.log(groups);
+    dispatch({ type: 'SET_GROUPS', payload: groups });
     setLoadingGroups(false);
   };
 
   useEffect(() => {
-    getGroups({ state, dispatch }).catch(console.log).then(onGetGroups);
+    if (!groupsLoaded) getGroups({ state, dispatch }).then(onGetGroups);
+    else setLoadingGroups(false);
   }, []);
 
   return (
@@ -90,14 +121,15 @@ export const Groups = ({ navigation, route }) => {
         <>
           <Surface style={styles.groupsContainer}>
             <FlatList
-              data={groups}
+              data={state.groups}
               renderItem={({ item, separators }) => (
                 <RenderGroup
-                  item={item}
+                  // item={item}
+                  groupId={item.id}
                   separators={separators}
                   navigation={navigation}
-                  dispatch={dispatch}
-                  state={state}
+                  // dispatch={dispatch}
+                  // state={state}
                 />
               )}
               ListEmptyComponent={() => (
@@ -121,8 +153,8 @@ export const Groups = ({ navigation, route }) => {
             icon="plus"
             label="Create new group"
             onPress={() => {
-              navigation.navigate('CreateGroup');
               setLoadingGroups(true);
+              navigation.navigate('CreateGroup');
             }}
           />
         </>

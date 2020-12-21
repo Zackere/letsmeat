@@ -19,7 +19,7 @@ const UserCard = ({ user, style, actions }) => (
 
 const styles = StyleSheet.create({
   userCard: {
-    margin: 5
+    margin: 20
   }
 });
 

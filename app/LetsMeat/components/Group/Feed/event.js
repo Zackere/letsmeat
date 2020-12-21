@@ -1,7 +1,8 @@
-import { useScrollToTop } from '@react-navigation/native';
 import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
-import { Surface, Title, ActivityIndicator } from 'react-native-paper';
+import {
+  ActivityIndicator, Button, Card, Subheading, Surface, Title
+} from 'react-native-paper';
 import { getEventInfo, getUsersInfo } from '../../Requests';
 import { store } from '../../Store';
 import UserCard from '../../User';
@@ -24,17 +25,36 @@ const Creator = ({ userId }) => {
   );
 };
 
-const Deadline = ({ time }) =>
-  // placeholder
-  (
-    <Text>
+const Deadline = ({ time }) => (
+  <Card style={{ margin: 20 }}>
+
+    <Subheading>
       {time}
-    </Text>
-  );
+    </Subheading>
+  </Card>
+);
 
-const Locations = () => {
+const Locations = ({ locations }) => (
+  <>
+    {locations.map((l) => {
+      <Card>{l}</Card>;
+    })}
+    <Button style={styles.addButton}>
+      <Text>Add location</Text>
+    </Button>
+  </>
+);
 
-}
+const Times = ({ times }) => (
+  <>
+    {times.map((t) => {
+      <Card>{t}</Card>;
+    })}
+    <Button style={styles.addButton}>
+      <Text>Add time</Text>
+    </Button>
+  </>
+);
 
 const EventView = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
@@ -54,12 +74,25 @@ const EventView = ({ navigation }) => {
       { eventDetails
         ? (
           <>
-            <Title>{state.event.name}</Title>
-            <Creator userId={eventDetails.creator_id} />
-            <Deadline time={eventDetails.deadline} />
-            <Title>Candidate Locations</Title>
-            <Locations googleLocations={eventDetails.candidate_google_maps_locations}
-              customLocations={eventDetails.candidate_custom_locations}></Locations>
+            <Card style={{ margin: 10 }}>
+              <Title style={{ fontSize: 30, marginHorizontal: 20, marginTop: 20 }}>{state.event.name}</Title>
+              <Deadline time={eventDetails.deadline} />
+              <Creator userId={eventDetails.creator_id} />
+            </Card>
+            <Card style={{ margin: 10 }}>
+              <Card.Title title="Candidate Locations" />
+              <Locations
+                locations={[...eventDetails.candidate_google_maps_locations, ...eventDetails.candidate_custom_locations]}
+                googleLocations={eventDetails.candidate_google_maps_locations}
+                customLocations={eventDetails.candidate_custom_locations}
+              />
+            </Card>
+            <Card style={{ margin: 10 }}>
+              <Card.Title title="Candidate Times" />
+              <Times
+                times={eventDetails.candidate_times}
+              />
+            </Card>
           </>
         )
         : (<ActivityIndicator />)}
@@ -74,6 +107,9 @@ const styles = StyleSheet.create({
   },
   card: {
     margin: 25
+  },
+  addButton: {
+    marginBottom: 10
   }
 });
 

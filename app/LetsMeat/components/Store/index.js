@@ -5,6 +5,7 @@ const initialState = {
   user: {
     signedIn: false,
   },
+  groups: null,
   group: {},
   event: {},
   invitations: []
@@ -80,6 +81,38 @@ const StateProvider = ({ children }) => {
         const newState = {
           ...state,
           invitations: state.invitations.filter((i) => i.group_id !== action.groupId),
+        };
+        return newState;
+      }
+      case 'SET_GROUPS': {
+        const newState = {
+          ...state,
+          groups: action.payload,
+        };
+        return newState;
+      }
+      case 'REMOVE_GROUP': {
+        const newState = {
+          ...state,
+          groups: state.groups.filter((g) => g.id !== action.groupId),
+        };
+        return newState;
+      }
+      case 'UPDATE_GROUP_INFO': {
+        const groups = [...state.groups];
+        const groupIndex = state.groups.findIndex((g) => g.id === action.groupId);
+        const group = { ...groups[groupIndex], ...action.groupInfo };
+        groups[groupIndex] = group;
+        const newState = {
+          ...state,
+          groups,
+        };
+        return newState;
+      }
+      case 'ADD_GROUP': {
+        const newState = {
+          ...state,
+          groups: [action.group, ...state.groups],
         };
         return newState;
       }
