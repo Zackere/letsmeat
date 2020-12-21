@@ -3,9 +3,6 @@ import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 
 class Unauthorized extends Component {
-  componentDidMount() {
-    console.log(this.props)
-  }
   render() {
     return (
       <div>

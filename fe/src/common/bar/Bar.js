@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Navbar, Form, Button } from 'react-bootstrap'
 import { connect } from 'react-redux'
-import { IoIosLogOut } from 'react-icons/io'
+import { HiLogout } from 'react-icons/hi'
 import { IconContext } from 'react-icons'
 import { logOut } from '../../redux/actions'
 import { withRouter } from 'react-router-dom'
@@ -23,28 +23,14 @@ class Bar extends Component {
 
   render() {
     return (
-      <Navbar bg="dark" variant="dark" expand="lg">
-        <Navbar.Brand href="home">Let's vomeat</Navbar.Brand>
+      <Navbar bg="dark" variant="dark" expand="lg" className="px-5">
+        <Navbar.Brand href="/">Let's vomeat</Navbar.Brand>
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">
-          <Navbar.Text>
-            <a>
-              {this.props.isAuth ? (
-                <img
-                  src={this.props.user.imageUrl}
-                  width="36px"
-                  className="mr-3 rounded-circle"
-                />
-              ) : (
-                <></>
-              )}
-              {this.props.isAuth ? this.toUpper(this.props.user.givenName) : ''}
-            </a>
-          </Navbar.Text>
           <Form inline>
             <Button variant="link" onClick={() => this.onLogOut()}>
               <IconContext.Provider value={{ size: '30px', color: 'white' }}>
-                <IoIosLogOut />
+                <HiLogout />
               </IconContext.Provider>
             </Button>
           </Form>

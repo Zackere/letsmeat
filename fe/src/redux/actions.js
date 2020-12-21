@@ -17,3 +17,4 @@ export const logOut = () => dispatch => {
     type: 'LOG_OUT',
   })
 }
+
