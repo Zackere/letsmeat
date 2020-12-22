@@ -2,7 +2,9 @@ import React, { useContext } from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GoogleSignin } from '@react-native-community/google-signin';
+// import FormData from 'form-data';
 import { store } from '../Store';
+// import { forScaleFromCenterAndroid } from '@react-navigation/stack/lib/typescript/src/TransitionConfigs/CardStyleInterpolators';
 
 const baseURL = 'https://letsmeatapi.azurewebsites.net/';
 
@@ -37,8 +39,8 @@ const get = ({ state }, endpoint, params = undefined) => {
   return axios.get(endpoint, axiosConfig);
 };
 
-const post = ({ state }, endpoint, data) => {
-  const axiosConfig = { baseURL, params: { token: state.user.token } };
+const post = ({ state }, endpoint, data, params) => {
+  const axiosConfig = { baseURL, params: { token: state.user.token, ...params } };
   return axios.post(endpoint, data, axiosConfig);
 };
 
@@ -96,10 +98,31 @@ const joinGroup = ({ state }, groupId) => post({ state }, '/Groups/join', { id: 
 
 const acceptInvitation = joinGroup;
 
+const uploadImage = ({ state }, eventId, image) => {
+  const getNameFromPath = (path) => {
+    const parts = path.split('/');
+    return parts[parts.length - 1];
+  };
+  const form = new FormData();
+  form.append('file', { uri: image.path, type: image.mime, name: getNameFromPath(image.path) });
+  fetch(`${baseURL}Images/upload?${new URLSearchParams({ token: state.user.token, event_id: eventId })}`, {
+    method: 'POST',
+    headers: {
+      Accept: 'text/',
+      'Content-Type': 'multipart/form-data',
+      // Authorization: `Token ${Token}`
+    },
+    body: form
+  }).then((response) => response.json());
+};
+
+const getImagesInfo = ({ state }, ids) => post({ state }, '/Images/info', { image_ids: (Array.isArray(ids) ? ids : [ids]) }).then(extractData);
+
 export {
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups, leaveGroup, joinGroup,
   createEvent, getEventInfo,
   searchUsers, getUsersInfo,
-  sendInvitation, getInvitations, rejectInvitation, acceptInvitation
+  sendInvitation, getInvitations, rejectInvitation, acceptInvitation,
+  uploadImage, getImagesInfo
 };

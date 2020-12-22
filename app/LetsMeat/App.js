@@ -12,17 +12,17 @@ import { createStackNavigator } from '@react-navigation/stack';
 import 'react-native-gesture-handler';
 import { DefaultTheme as PaperDefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import DrawerContent from './components/DrawerContent';
-// import Main from './components/Main';
 import BottomTabs from './components/Group/BottomTabs';
 import Groups from './components/Groups';
+import Preferences from './components/Preferences';
 import { appendAPIToken, appendUserID } from './components/Requests';
-// import CreateGroup from './components/Groups/CreateGroup';
 import SignInScreen from './components/SignIn';
 import SplashScreen from './components/SplashScreen';
 import { StateProvider, store } from './components/Store';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
+const PERSISTENCE_KEY = 'NAVIGATION_STATE';
 
 const Navigation = () => {
   const { state, dispatch } = useContext(store);
@@ -65,6 +65,7 @@ const Navigation = () => {
       >
         <Drawer.Screen name="Home" component={BottomTabs} />
         <Drawer.Screen name="Groups" component={Groups} />
+        <Drawer.Screen name="Preferences" component={Preferences} />
       </Drawer.Navigator>
     );
   } else {

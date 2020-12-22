@@ -96,7 +96,6 @@ const Notifications = ({ navigation }) => {
           style={{ position: 'absolute', top: -9, right: 0 }}
           onPress={() => {
             getInvitations({ state }).then((invitations) => {
-              console.log(invitations);
               dispatch({ type: 'SET_INVITATIONS', payload: invitations });
             });
           }}
@@ -138,6 +137,13 @@ function DrawerContent({ navigation }) {
           <Caption style={styles.caption}>{state.user.email}</Caption>
         </View>
       </View>
+      <Drawer.Section style={styles.drawerSection}>
+        <DrawerButton
+          icon="settings"
+          label="Preferences"
+          onPress={() => navigation.navigate('Preferences')}
+        />
+      </Drawer.Section>
       <Drawer.Section style={styles.drawerSection}>
         {state.group && state.group.id && (
         <DrawerButton
