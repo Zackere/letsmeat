@@ -24,6 +24,7 @@ namespace LetsMeatAPI.Controllers {
       public class GroupInformation {
         public Guid id { get; set; }
         public string name { get; set; }
+        public string owner_id { get; set; }
       }
       public class Prefs {
         [Range(0, 100)]
@@ -80,7 +81,8 @@ namespace LetsMeatAPI.Controllers {
         groups = from grp in user.Groups
                  select new UserInformationResponse.GroupInformation {
                    id = grp.Id,
-                   name = grp.Name
+                   name = grp.Name,
+                   owner_id = grp.OwnerId,
                  },
         prefs = new() {
           amount_of_food = user.AmountOfFoodPref,
