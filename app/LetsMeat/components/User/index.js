@@ -1,6 +1,26 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Avatar, Card } from 'react-native-paper';
+import { StyleSheet, View, Text } from 'react-native';
+import { Avatar, Card, Caption } from 'react-native-paper';
+import Preferences from '../Preferences';
+
+const createPrefStyle = (value) => ({ ...styles.bar, width: value + 10, opacity: 0.8 + value / 500 });
+
+const Prefs = ({ prefs }) => (
+  <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between' }}>
+    <View style={{ width: '50%' }}>
+      <Caption>Price</Caption>
+      <View style={createPrefStyle(prefs.price)} />
+      <Caption>Waiting Time</Caption>
+      <View style={createPrefStyle(prefs.waiting_time)} />
+    </View>
+    <View style={{ width: '50%' }}>
+      <Caption>Portion Size</Caption>
+      <View style={createPrefStyle(prefs.amount_of_food)} />
+      <Caption>Taste</Caption>
+      <View style={createPrefStyle(prefs.taste)} />
+    </View>
+  </View>
+);
 
 const UserCard = ({ user, style, actions }) => (
   <Card key={user.id} style={{ ...styles.userCard, ...style }}>
@@ -9,7 +29,9 @@ const UserCard = ({ user, style, actions }) => (
       <View style={styles.leftContent}>
         <Avatar.Image source={{ uri: user.picture_url }} />
       </View>
-      <View style={styles.rightContent} />
+      <View style={styles.rightContent}>
+        <Prefs prefs={user.prefs} />
+      </View>
     </Card.Content>
     {actions
     && (
@@ -33,14 +55,20 @@ const styles = StyleSheet.create({
   leftContent: {
     marginLeft: 5,
     flexGrow: 1,
-    backgroundColor: 'red'
+    // backgroundColor: 'red'
   },
   rightContent: {
-    marginLeft: 5,
+    marginTop: -15,
+    marginLeft: 30,
+    marginRight: 0,
     flexGrow: 3,
-    backgroundColor: 'black',
+    maxWidth: '70%',
+    // backgroundColor: 'black',
     display: 'flex',
     flexDirection: 'column'
+  },
+  bar: {
+    borderRadius: 5, backgroundColor: '#4287f5', height: 20
   }
 
 });

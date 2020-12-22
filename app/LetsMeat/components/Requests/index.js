@@ -65,7 +65,10 @@ const appendAPIToken = (userInfo) => {
 
 const appendUserID = (userInfo) => {
   const axiosConfig = { baseURL, params: { token: userInfo.token } };
-  return axios.get('/Users/info', axiosConfig).then((response) => ({ ...userInfo, ...response.data }));
+  return axios.get('/Users/info', axiosConfig).then((response) => {
+    console.log(response.data)
+    return ({ ...userInfo, ...response.data })
+  });
 };
 
 const extractData = (response) => response.data;

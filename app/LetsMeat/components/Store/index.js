@@ -37,7 +37,8 @@ const StateProvider = ({ children }) => {
             photo: action.payload.user.photo,
             googleToken: action.payload.idToken,
             token: action.payload.token,
-            id: action.payload.id
+            id: action.payload.id,
+            prefs: action.payload.prefs
           },
         };
         return newState;

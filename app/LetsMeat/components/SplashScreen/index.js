@@ -5,13 +5,13 @@ import {
   statusCodes
 } from '@react-native-community/google-signin';
 import { View, StyleSheet, Text } from 'react-native';
-import * as Progress from 'react-native-progress';
+import { ActivityIndicator } from 'react-native-paper';
 
 function SplashScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Let&apos;s meat</Text>
-      <Progress.Bar size={30} indeterminate={true} />
+      <ActivityIndicator />
     </View>
   );
 }

@@ -6,9 +6,8 @@ import {
 } from 'react-native';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import {
-  Card, FAB, Paragraph, Surface, Badge
+  Card, FAB, Paragraph, Surface, Badge, ActivityIndicator
 } from 'react-native-paper';
-import * as Progress from 'react-native-progress';
 import { getGroupInfo, getGroups } from '../../Requests';
 import { store } from '../../Store';
 
@@ -114,7 +113,7 @@ export const Groups = ({ navigation }) => {
     loadingGroups
       ? (
         <View style={styles.progressBar}>
-          <Progress.Bar size={30} indeterminate />
+          <ActivityIndicator />
         </View>
       )
       : (
