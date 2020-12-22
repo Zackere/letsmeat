@@ -55,14 +55,13 @@ namespace LetsMeatAPI.Controllers {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
-      var ret = from user in _context.Users
+      return Ok(from user in _context.Users
                 where body.ids.Contains(user.Id)
-                select new UserInformationResponse() {
+                select new UserInformationResponse {
                   id = user.Id,
                   picture_url = user.PictureUrl,
                   name = user.Name
-                };
-      return Ok(ret.AsEnumerable());
+                });
     }
     [HttpGet]
     [Route("info")]
@@ -96,19 +95,19 @@ namespace LetsMeatAPI.Controllers {
     [Route("search")]
     public async Task<ActionResult<IEnumerable<UserInformationResponse>>> Search(
       string token,
-      string name
+      [MinLength(3)] string name
     ) {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
-      return Ok((from user in _context.Users
-                 where user.Name.Contains(name) &&
-                           user.Id != userId
-                 select new UserInformationResponse {
-                   id = user.Id,
-                   picture_url = user.PictureUrl,
-                   name = user.Name
-                 }).AsEnumerable());
+      return Ok(from user in _context.Users
+                where user.Name.Contains(name) &&
+                      user.Id != userId
+                select new UserInformationResponse {
+                  id = user.Id,
+                  picture_url = user.PictureUrl,
+                  name = user.Name
+                });
     }
     public class UserUpdatePrefsBody {
       [Range(0, 100)]

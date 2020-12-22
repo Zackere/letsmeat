@@ -115,7 +115,6 @@ namespace LetsMeatAPI.Controllers {
                              address = location.Address,
                              name = location.Name,
                              created_for_id = location.CreatedForId,
-                             rating = location.Rating,
                            },
         events = from evnt in grp.Events
                  select new GroupInformationResponse.EventInformation {
