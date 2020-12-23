@@ -60,7 +60,13 @@ namespace LetsMeatAPI.Controllers {
                 select new UserInformationResponse {
                   id = user.Id,
                   picture_url = user.PictureUrl,
-                  name = user.Name
+                  name = user.Name,
+                  prefs = new() {
+                    amount_of_food = user.AmountOfFoodPref,
+                    price = user.PricePref,
+                    taste = user.TastePref,
+                    waiting_time = user.WaitingTimePref,
+                  },
                 });
     }
     [HttpGet]
@@ -106,7 +112,13 @@ namespace LetsMeatAPI.Controllers {
                 select new UserInformationResponse {
                   id = user.Id,
                   picture_url = user.PictureUrl,
-                  name = user.Name
+                  name = user.Name,
+                  prefs = new() {
+                    amount_of_food = user.AmountOfFoodPref,
+                    price = user.PricePref,
+                    taste = user.TastePref,
+                    waiting_time = user.WaitingTimePref,
+                  },
                 });
     }
     public class UserUpdatePrefsBody {
