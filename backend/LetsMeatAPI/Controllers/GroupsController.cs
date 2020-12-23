@@ -76,6 +76,7 @@ namespace LetsMeatAPI.Controllers {
         public Guid id { get; set; }
         public string name { get; set; }
         public DateTime deadline { get; set; }
+        public string creator_id { get; set; }
       }
       public Guid id { get; set; }
       public string name { get; set; }
@@ -121,6 +122,7 @@ namespace LetsMeatAPI.Controllers {
                    id = evnt.Id,
                    name = evnt.Name,
                    deadline = evnt.Deadline,
+                   creator_id = evnt.CreatorId,
                  }
       };
     }
