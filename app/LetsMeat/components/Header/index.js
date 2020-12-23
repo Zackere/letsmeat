@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react';
-import { TouchableOpacity, Text } from 'react-native';
-import { createStackNavigator } from '@react-navigation/stack';
-import {
-  Appbar, Avatar, DarkTheme, useTheme, DefaultTheme
-} from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React from 'react';
+import { Text, TouchableOpacity } from 'react-native';
+import {
+  Appbar
+} from 'react-native-paper';
 
 const Header = ({ scene, previous, navigation }) => {
 
@@ -33,11 +32,6 @@ const Header = ({ scene, previous, navigation }) => {
       <Appbar.Content
         title={<Text>{title}</Text>}
       />
-      {/* <Appbar.Content
-        title={
-          previous ? title : <MaterialCommunityIcons name="twitter" size={40} />
-        }
-      /> */}
     </Appbar.Header>
   );
 };

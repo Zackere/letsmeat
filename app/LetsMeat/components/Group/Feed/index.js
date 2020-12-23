@@ -1,15 +1,9 @@
-import React, { useContext } from 'react';
-import {
-  Text, View, StyleSheet, ScrollView, RefreshControl
-} from 'react-native';
-import { Card, Surface } from 'react-native-paper';
 import { createStackNavigator } from '@react-navigation/stack';
-import { TouchableHighlight } from 'react-native-gesture-handler';
-import { Header } from '../Header';
+import React, { useContext } from 'react';
 import { store } from '../../Store';
-import { getGroupInfo } from '../../Requests';
-import FeedContent from './feedContent';
+import { Header } from '../../Header';
 import EventView from './event';
+import FeedContent from './feedContent';
 
 const Stack = createStackNavigator();
 
@@ -39,7 +33,5 @@ const Feed = () => {
     </Stack.Navigator>
   );
 };
-
-
 
 export default Feed;

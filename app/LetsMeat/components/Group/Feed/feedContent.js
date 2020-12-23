@@ -1,13 +1,8 @@
 import React, { useContext } from 'react';
-import {
-  Text, View, StyleSheet, ScrollView, RefreshControl
-} from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text } from 'react-native';
 import { Card, Surface } from 'react-native-paper';
-import { createStackNavigator } from '@react-navigation/stack';
-import { TouchableHighlight } from 'react-native-gesture-handler';
-import { Header } from '../Header';
-import { store } from '../../Store';
 import { getGroupInfo } from '../../Requests';
+import { store } from '../../Store';
 
 const Event = ({ event, onPress }) => (
   <Card

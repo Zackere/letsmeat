@@ -1,13 +1,13 @@
-import React, { useContext, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createStackNavigator } from '@react-navigation/stack';
+import React, { useContext, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import {
   Button, Card, Dialog, Paragraph, Portal, Surface
 } from 'react-native-paper';
 import { deleteGroup, leaveGroup } from '../../Requests';
 import { store } from '../../Store';
-import { Header } from '../Header';
+import { Header } from '../../Header';
 import Invite from './invite';
 
 const ModalButton = ({

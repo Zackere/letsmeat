@@ -5,40 +5,22 @@
  * @format
  * @flow strict-local
  */
-import 'react-native-gesture-handler';
-import React, { useContext, useEffect } from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  StatusBar,
-} from 'react-native';
-
-import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
-
-import { NavigationContainer, StackActions } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import React, { useContext } from 'react';
 import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
+  StyleSheet
+} from 'react-native';
+import 'react-native-gesture-handler';
+import { Provider as PaperProvider } from 'react-native-paper';
+import {
+  Colors
 } from 'react-native/Libraries/NewAppScreen';
-
-import {
-  GoogleSignin,
-  GoogleSigninButton,
-  statusCodes,
-} from '@react-native-community/google-signin';
-import SignInScreen from '../SignIn';
-import { StateProvider, store } from '../Store';
 import DrawerContent from '../DrawerContent';
-import { Main } from '../Main';
+// import { Main } from '../Main';
+import SignInScreen from '../SignIn';
+import { store } from '../Store';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();

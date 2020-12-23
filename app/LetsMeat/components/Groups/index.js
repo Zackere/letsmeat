@@ -1,10 +1,8 @@
-import React from 'react';
-import { Text, View } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { ScrollView } from 'react-native-gesture-handler';
-import { Header } from './Header';
-import { Groups as SelectGroup } from './Select';
+import React from 'react';
 import { Create } from './Create';
+import { Header } from '../Header';
+import { Groups as SelectGroup } from './Select';
 
 const Stack = createStackNavigator();
 

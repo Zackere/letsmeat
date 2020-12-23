@@ -1,14 +1,11 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
-import {
-  Surface, TextInput, Button, Card, Paragraph
-} from 'react-native-paper';
-import { createStackNavigator } from '@react-navigation/stack';
-import { ScrollView } from 'react-native-gesture-handler';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Header } from '../Header';
-import { store } from '../../Store';
+import { createStackNavigator } from '@react-navigation/stack';
+import React, { useContext, useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
+import { Button, Card, Paragraph, Surface, TextInput } from 'react-native-paper';
 import { createEvent } from '../../Requests';
+import { store } from '../../Store';
+import { Header } from '../../Header';
 
 const Stack = createStackNavigator();
 
