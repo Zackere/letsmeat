@@ -216,7 +216,6 @@ dependencies {
         implementation jscFlavor
     }
 
-    implementation project(':@react-native-community_datetimepicker')
 }
 
 // Run this once to be able to run the application with BUCK

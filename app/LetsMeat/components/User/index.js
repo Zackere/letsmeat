@@ -3,7 +3,9 @@ import { StyleSheet, View, Text } from 'react-native';
 import { Avatar, Card, Caption } from 'react-native-paper';
 import Preferences from '../Preferences';
 
-const createPrefStyle = (value) => ({ ...styles.bar, width: value + 10, opacity: 0.8 + value / 500 });
+const MIN_OPACITY = 0.3;
+
+const createPrefStyle = (value) => ({ ...styles.bar, width: value + 10, opacity: MIN_OPACITY + (value * (1 - MIN_OPACITY)) / 100 });
 
 const Prefs = ({ prefs }) => (
   <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -22,25 +24,31 @@ const Prefs = ({ prefs }) => (
   </View>
 );
 
-const UserCard = ({ user, style, actions }) => (
-  <Card key={user.id} style={{ ...styles.userCard, ...style }}>
-    <Card.Title title={user.name} subtitle={user.email} />
-    <Card.Content style={styles.content}>
-      <View style={styles.leftContent}>
-        <Avatar.Image source={{ uri: user.picture_url }} />
-      </View>
+const UserCard = ({ user, style, actions }) => {
+  console.log(user);
+  return (
+    <Card key={user.id} style={{ ...styles.userCard, ...style }}>
+      <Card.Title title={user.name} subtitle={user.email} />
+      <Card.Content style={styles.content}>
+        <View style={styles.leftContent}>
+          <Avatar.Image source={{ uri: user.picture_url }} />
+        </View>
+        {user.prefs
+      && (
       <View style={styles.rightContent}>
         <Prefs prefs={user.prefs} />
       </View>
-    </Card.Content>
-    {actions
+      )}
+      </Card.Content>
+      {actions
     && (
     <Card.Actions>
       {actions}
     </Card.Actions>
     )}
-  </Card>
-);
+    </Card>
+  );
+};
 
 const styles = StyleSheet.create({
   userCard: {
@@ -68,7 +76,9 @@ const styles = StyleSheet.create({
     flexDirection: 'column'
   },
   bar: {
-    borderRadius: 5, backgroundColor: '#4287f5', height: 20
+    borderRadius: 5,
+    backgroundColor: '#0a54c9',
+    height: 20
   }
 
 });
