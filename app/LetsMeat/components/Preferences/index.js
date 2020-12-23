@@ -2,10 +2,12 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   View, StyleSheet, Text
 } from 'react-native';
-import { Surface, Card } from 'react-native-paper';
+import { Surface, Card, Button } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
+import { createStackNavigator } from '@react-navigation/stack';
 import { store } from '../Store';
 import UserCard from '../User';
+import { Header } from '../Header';
 
 const PrefSetter = ({
   prefName, displayName, setPrefs, prefs
@@ -24,12 +26,20 @@ const PrefSetter = ({
   </Card>
 );
 
-const Preferences = ({ navigation }) => {
+const PreferencesContent = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
   useEffect(() => { console.log(<UserCard user={state.user} />); }, [state.user]);
   const [prefs, setPrefs] = useState(state.user.prefs);
 
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      rightIcon: 'content-save',
+      rightAction: () => console.log('press')
+    });
+  }, [navigation]);
+
   return (
+
     <Surface style={styles.container}>
       <UserCard user={{ ...state.user, picture_url: state.user.photo, prefs }} />
       <Card style={styles.card}>
@@ -42,6 +52,26 @@ const Preferences = ({ navigation }) => {
     </Surface>
   );
 };
+
+const Stack = createStackNavigator();
+
+const Preferences = () => (
+  <Stack.Navigator
+    initialRouteName="PreferencesContent"
+    headerMode="screen"
+    screenOptions={{
+      header: ({ scene, previous, navigation }) => (
+        <Header scene={scene} previous={previous} navigation={navigation} />
+      ),
+    }}
+  >
+    <Stack.Screen
+      name="PreferencesContent"
+      component={PreferencesContent}
+      options={{ headerTitle: 'Preferences' }}
+    />
+  </Stack.Navigator>
+);
 
 const styles = StyleSheet.create({
   container: {

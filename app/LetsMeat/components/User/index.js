@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { Avatar, Card, Caption } from 'react-native-paper';
-import Preferences from '../Preferences';
 
 const MIN_OPACITY = 0.3;
 

@@ -5,8 +5,9 @@ import {
   Appbar
 } from 'react-native-paper';
 
-const Header = ({ scene, previous, navigation }) => {
-
+const Header = ({
+  scene, previous, navigation
+}) => {
   const { options } = scene.descriptor;
   const title = options.headerTitle !== undefined ? options.headerTitle
     : options.title !== undefined
@@ -14,24 +15,19 @@ const Header = ({ scene, previous, navigation }) => {
       : scene.route.name;
 
   return (
-    <Appbar.Header
-    >
+    <Appbar.Header>
       {previous ? (
         <Appbar.BackAction
           onPress={navigation.goBack}
         />
       ) : (
-        <TouchableOpacity
-          onPress={() => {
-            navigation.openDrawer();
-          }}
-        >
-          <MaterialCommunityIcons name="menu" size={30} />
-        </TouchableOpacity>
+        <Appbar.Action onPress={() => navigation.openDrawer()} icon="menu" />
       )}
       <Appbar.Content
-        title={<Text>{title}</Text>}
+        title={title}
       />
+      { options.rightAction
+      && <Appbar.Action icon={options.rightIcon} onPress={options.rightAction} />}
     </Appbar.Header>
   );
 };
