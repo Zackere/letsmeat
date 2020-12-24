@@ -8,6 +8,7 @@ import Login from './pages/login/Login'
 import Unauthorized from './pages/unauthorized/Unauthorized'
 import Home from './pages/home/Home'
 import Group from './pages/group/Group'
+import Event from './pages/event/Event'
 
 import { createStore, applyMiddleware, compose } from 'redux'
 import reducer, { initialState } from './redux/reducer'
@@ -35,6 +36,7 @@ function App() {
             <Route exact path="/unauthorized" component={Unauthorized} />
             <ProtectedRoute exact path="/home" component={Home} />
             <ProtectedRoute exact path="/group:id" component={Group} />
+            <ProtectedRoute exact path="/event:id" component={Event} />
             <Route component={Login} />
           </Switch>
         </ToastProvider>

@@ -37,7 +37,7 @@ class ShowBalance extends Component {
       >
         <Modal.Header closeButton>
           <Modal.Title id="contained-modal-title-vcenter">
-            {(debt >= 0 ? 'You own ' + user.name : user.name + ' owns you') +
+            {(debt >= 0 ? 'You owe ' + user.name : user.name + ' owes you') +
               ' ' +
               Math.abs(debt) +
               'zł'}

@@ -21,3 +21,16 @@ export const getInvitations = token => {
 
   return fetch(url, { method: 'get' }).then(res => res.json())
 }
+
+export const rejectInvitation = (token, group_id) => {
+  const url = base + '/Invitations/reject?token=' + token
+  const body = { group_id }
+
+  return fetch(url, {
+    method: 'delete',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+}

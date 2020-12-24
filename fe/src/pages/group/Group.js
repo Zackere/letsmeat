@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Container } from 'react-bootstrap'
+import { Container, Button } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { withToastManager } from 'react-toast-notifications'
 
@@ -17,6 +17,7 @@ class Group extends Component {
     super(props)
     this.state = {
       id: props.match.params.id.substring(1),
+      ownerId: 0,
       group: {},
       users: [],
       allUsers: [],
@@ -34,25 +35,26 @@ class Group extends Component {
         users: group.users,
         allEvents: group.events,
         events: group.events,
+        ownerId: group.owner_id,
         group,
       })
     })
   }
 
   userSearchAction = e => {
-    const modifiedUsers = this.state.allUsers.filter(u =>
+    const users = this.state.allUsers.filter(u =>
       u.name.startsWith(e.target.value)
     )
 
-    this.setState({ users: modifiedUsers })
+    this.setState({ users })
   }
 
   eventSearchAction = e => {
-    const modifiedEvents = this.state.allEvents.filter(event =>
+    const events = this.state.allEvents.filter(event =>
       event.name.startsWith(e.target.value)
     )
 
-    this.setState({ events: modifiedEvents })
+    this.setState({ events })
   }
 
   addEvent = event => {
@@ -61,7 +63,21 @@ class Group extends Component {
 
     this.setState({ allEvents, events })
   }
-  userButtonAction = () => this.setState({ invModalOpen: true })
+
+  deleteEvent = id => {
+    const events = [...this.state.events]
+    const allEvents = [...this.state.allEvents]
+
+    let index = events.findIndex(event => event.id === id)
+    events.splice(index, 1)
+
+    index = allEvents.findIndex(event => event.id === id)
+    allEvents.splice(index, 1)
+
+    this.setState({ allEvents, events })
+  }
+
+  openInvitationModal = () => this.setState({ invModalOpen: true })
 
   eventButtonAction = () => this.setState({ eventModalOpen: true })
 
@@ -71,7 +87,7 @@ class Group extends Component {
 
   render() {
     return (
-      <Container fluid={true}>
+      <>
         <InviteUser
           show={this.state.invModalOpen}
           closeModal={this.closeInvModal}
@@ -83,32 +99,48 @@ class Group extends Component {
           closeModal={this.closeEventModal}
           groupId={this.state.group.id}
         />
-        <div className="row mt-2">
-          <div className="col-4">
-            <h2>{this.state.group.name}</h2>
+        <div className="row mx-0" style={{ height: '94vh'}}>
+          <div
+            className="col-3 pt-3 px-0 border border-right"
+            style={{ background: 'white' }}
+          >
+            <div className="h-25 py-5 flex-column border-bottom">
+              <div className="d-flex justify-content-center h-75 align-items-center">
+                <h4>{this.state.group.name}</h4>
+              </div>
+              <div className="d-flex justify-content-center">
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={this.openInvitationModal}
+                >
+                  Add new member
+                </Button>
+              </div>
+            </div>
+            <div className="flex-column h-75 p-5 mx-0 border-top">
+              <h5 className="mb-4">Members</h5>
+              <UsersList
+                users={this.state.users}
+                groupId={this.state.id}
+                ownerId={this.state.owner_id}
+              />
+            </div>
           </div>
-        </div>
-        <div className="row" style={{ height: '89vh' }}>
-          <div className="col-4 border-dark border-top border-right py-2">
-            <h4>Members</h4>
-            <ControlPanel
-              buttonAction={this.userButtonAction}
-              searchName="Find user"
-              searchAction={this.userSearchAction}
-            />
-            <UsersList users={this.state.users} groupId={this.state.id} />
-          </div>
-          <div className="col-8 border-dark border-top py-2">
+          <div className="col-9 p-5">
             <h4>Events</h4>
             <ControlPanel
               buttonAction={this.eventButtonAction}
               searchName="Find event"
               searchAction={this.eventSearchAction}
             />
-            <EventsList events={this.state.events} />
+            <EventsList
+              events={this.state.events}
+              deleteEvent={this.deleteEvent}
+            />
           </div>
         </div>
-      </Container>
+      </>
     )
   }
 }

@@ -17,6 +17,7 @@ export default class AddGroup extends Component {
   addGroup = () => {
     this.props.addGroup(this.state.name)
     this.closeModal()
+    //toast
   }
 
   closeModal = () => {

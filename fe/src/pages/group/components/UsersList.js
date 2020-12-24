@@ -32,6 +32,8 @@ class UsersList extends Component {
   closeBalanceModal = () => this.setState({ balanceModalOpened: false })
   render() {
     const users = this.props.users
+    const ownerId = this.props.ownerId
+    const me = this.props.me
     return (
       <>
         <ShowBalance
@@ -41,11 +43,11 @@ class UsersList extends Component {
           debt={0}
           closeModal={this.closeBalanceModal}
         />
-        <ListGroup className="list-scroll">
+        <ListGroup className="list-scroll" style={{ height: '50vh'}}>
           {users &&
             users.map(user => (
               <ListGroup.Item key={user.id} action>
-                <div className="row align-items-center">
+                <div className="row align-items-center rounded-0 border-left-0">
                   <div
                     className="col-9 mx-auto"
                     onClick={() =>
@@ -64,22 +66,21 @@ class UsersList extends Component {
                     <span>{user.name}</span>
                   </div>
                   <div className="col-3">
-                    <Dropdown>
+                    <Dropdown >
                       <Dropdown.Toggle as={Toggle} />
                       <Dropdown.Menu size="sm" title="">
-                        <Dropdown.Item
-                          onClick={() =>
-                            this.setState({
-                              balanceModalOpened: true,
-                              activeUser: user,
-                            })
-                          }
-                        >
-                          Show balance
-                        </Dropdown.Item>
-                        <Dropdown.Item onClick={event => console.log(event)}>
-                          Delete
-                        </Dropdown.Item>
+                          <Dropdown.Item
+                            disabled={me.id === user.id}
+                            onClick={() =>
+                              this.setState({
+                                balanceModalOpened: true,
+                                activeUser: user,
+                              })
+                            }
+                          >
+                            Show balance
+                          </Dropdown.Item>
+
                       </Dropdown.Menu>
                     </Dropdown>
                   </div>
