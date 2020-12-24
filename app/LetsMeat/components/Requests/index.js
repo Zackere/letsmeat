@@ -44,6 +44,11 @@ const post = ({ state }, endpoint, data, params) => {
   return axios.post(endpoint, data, axiosConfig);
 };
 
+const patch = ({ state }, endpoint, data, params) => {
+  const axiosConfig = { baseURL, params: { token: state.user.token, ...params } };
+  return axios.patch(endpoint, data, axiosConfig);
+};
+
 // _delete because delete is a JS keyword
 // eslint-disable-next-line no-underscore-dangle
 const _delete = ({ state }, endpoint, data) => {
@@ -66,8 +71,8 @@ const appendAPIToken = (userInfo) => {
 const appendUserID = (userInfo) => {
   const axiosConfig = { baseURL, params: { token: userInfo.token } };
   return axios.get('/Users/info', axiosConfig).then((response) => {
-    console.log(response.data)
-    return ({ ...userInfo, ...response.data })
+    console.log(response.data);
+    return ({ ...userInfo, ...response.data });
   });
 };
 
@@ -87,9 +92,13 @@ const createEvent = ({ state }, groupId, name, deadline) => post({ state }, '/Ev
 
 const getEventInfo = ({ state }, eventId) => get({ state }, '/Events/info', { id: eventId }).then(extractData);
 
+const updateEvent = ({ state }, event) => patch({ state }, '/Events/update', event).then(extractData);
+
 const searchUsers = ({ state }, name) => get({ state }, '/Users/search', { name }).then(extractData);
 
 const getUsersInfo = ({ state }, ids) => post({ state }, '/Users/info', { ids: (Array.isArray(ids) ? ids : [ids]) }).then(extractData);
+
+const updatePrefs = ({ state }, prefs) => post({ state }, '/Users/update_prefs', { ...prefs });
 
 const sendInvitation = ({ state }, userId, groupId) => post({ state }, '/Invitations/send', { to_id: userId, group_id: groupId });
 
@@ -124,8 +133,8 @@ const getImagesInfo = ({ state }, ids) => post({ state }, '/Images/info', { imag
 export {
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups, leaveGroup, joinGroup,
-  createEvent, getEventInfo,
-  searchUsers, getUsersInfo,
+  createEvent, getEventInfo, updateEvent,
+  searchUsers, getUsersInfo, updatePrefs,
   sendInvitation, getInvitations, rejectInvitation, acceptInvitation,
   uploadImage, getImagesInfo
 };

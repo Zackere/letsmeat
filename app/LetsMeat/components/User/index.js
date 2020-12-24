@@ -24,7 +24,6 @@ const Prefs = ({ prefs }) => (
 );
 
 const UserCard = ({ user, style, actions }) => {
-  console.log(user);
   return (
     <Card key={user.id} style={{ ...styles.userCard, ...style }}>
       <Card.Title title={user.name} subtitle={user.email} />
@@ -32,12 +31,12 @@ const UserCard = ({ user, style, actions }) => {
         <View style={styles.leftContent}>
           <Avatar.Image source={{ uri: user.picture_url }} />
         </View>
-        {user.prefs
-      && (
-      <View style={styles.rightContent}>
-        <Prefs prefs={user.prefs} />
-      </View>
-      )}
+        <View style={styles.rightContent}>
+          {user.prefs
+            ? (
+              <Prefs prefs={user.prefs} />
+            ) : <Caption style={{ fontStyle: 'italic', alignSelf: 'center', marginTop: 20 }}>User Preferences not available</Caption>}
+        </View>
       </Card.Content>
       {actions
     && (

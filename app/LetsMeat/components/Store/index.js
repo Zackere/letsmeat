@@ -43,6 +43,16 @@ const StateProvider = ({ children }) => {
         };
         return newState;
       }
+      case 'UPDATE_PREFS': {
+        const newState = {
+          ...state,
+          user: {
+            ...state.user,
+            prefs: action.newPrefs
+          },
+        };
+        return newState;
+      }
       case 'SET_LOADING': {
         const newState = {
           ...state,

@@ -139,7 +139,7 @@ function DrawerContent({ navigation }) {
       </View>
       <Drawer.Section style={styles.drawerSection}>
         <DrawerButton
-          icon="settings"
+          icon="settings-outline"
           label="Preferences"
           onPress={() => navigation.navigate('Preferences')}
         />

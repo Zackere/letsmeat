@@ -1,13 +1,12 @@
-import React, { useContext, useEffect, useState } from 'react';
-import {
-  View, StyleSheet, Text
-} from 'react-native';
-import { Surface, Card, Button } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { createStackNavigator } from '@react-navigation/stack';
+import React, { useContext, useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
+import { Card, Surface } from 'react-native-paper';
+import { Header } from '../Header';
 import { store } from '../Store';
 import UserCard from '../User';
-import { Header } from '../Header';
+import { updatePrefs } from '../Requests';
 
 const PrefSetter = ({
   prefName, displayName, setPrefs, prefs
@@ -28,25 +27,28 @@ const PrefSetter = ({
 
 const PreferencesContent = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
-  useEffect(() => { console.log(<UserCard user={state.user} />); }, [state.user]);
   const [prefs, setPrefs] = useState(state.user.prefs);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
       rightIcon: 'content-save',
-      rightAction: () => console.log('press')
+      rightAction: () => {
+        updatePrefs({ state }, prefs).then(
+          () => dispatch({ type: 'UPDATE_PREFS', prefs })
+        ).catch(console.log);
+      }
     });
-  }, [navigation]);
+  }, [navigation, prefs, state, dispatch]);
 
   return (
 
     <Surface style={styles.container}>
       <UserCard user={{ ...state.user, picture_url: state.user.photo, prefs }} />
       <Card style={styles.card}>
-        <Card.Title title="Set Preferences" />
-        <PrefSetter prefName="price" displayName="Price" setPrefs={setPrefs} prefs={prefs} />
-        <PrefSetter prefName="amount_of_food" displayName="Portion Size" setPrefs={setPrefs} prefs={prefs} />
+        <Card.Title title="What's important to you?" />
+        <PrefSetter prefName="price" displayName="Low Price" setPrefs={setPrefs} prefs={prefs} />
         <PrefSetter prefName="waiting_time" displayName="Waiting Time" setPrefs={setPrefs} prefs={prefs} />
+        <PrefSetter prefName="amount_of_food" displayName="Portion Size" setPrefs={setPrefs} prefs={prefs} />
         <PrefSetter prefName="taste" displayName="Taste" setPrefs={setPrefs} prefs={prefs} />
       </Card>
     </Surface>
