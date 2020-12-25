@@ -12,9 +12,9 @@ namespace LetsMeatAPI.Controllers {
   [ApiController]
   public class GroupsController : ControllerBase {
     public GroupsController(
-      UserManager userManager,
+      IUserManager userManager,
       LMDbContext context,
-      BlobClientFactory blobClientFactory,
+      IBlobClientFactory blobClientFactory,
       ILogger<GroupsController> logger
     ) {
       _userManager = userManager;
@@ -182,6 +182,7 @@ namespace LetsMeatAPI.Controllers {
         }
       }
       _context.Images.RemoveRange(grp.Images);
+      _context.PendingDebts.RemoveRange(grp.PendingDebts);
       _context.Groups.Remove(grp);
       await _context.SaveChangesAsync();
       return Ok();
@@ -202,7 +203,9 @@ namespace LetsMeatAPI.Controllers {
       if(grp == null)
         return NotFound();
       var user = await _context.Users.FindAsync(userId);
+      var c = grp.Users.Count();
       grp.Users.Remove(user);
+      var d = grp.Users.Count();
       if(user.Id == grp.OwnerId) {
         // Try to transfer ownership of the group
         var candidateOwner = grp.Users.FirstOrDefault();
@@ -217,20 +220,21 @@ namespace LetsMeatAPI.Controllers {
           _context.Entry(ev).State = EntityState.Modified;
         }
       }
-      foreach(var debt in from debt in _context.Debts
-                          where debt.GroupId == grp.Id &&
-                          (debt.FromId == user.Id ||
-                          debt.ToId == user.Id)
-                          select debt) {
-        _context.Entry(debt).State = EntityState.Deleted;
-      }
-      foreach(var inv in from inv in _context.Invitations
-                         where inv.GroupId == grp.Id &&
-                         (inv.FromId == user.Id ||
-                         inv.ToId == user.Id)
-                         select inv) {
-        _context.Entry(inv).State = EntityState.Deleted;
-      }
+      _context.RemoveRange(from debt in _context.PendingDebts
+                           where debt.GroupId == grp.Id &&
+                           (debt.FromId == user.Id ||
+                           debt.ToId == user.Id)
+                           select debt);
+      _context.RemoveRange(from debt in _context.Debts
+                           where debt.GroupId == grp.Id &&
+                           (debt.FromId == user.Id ||
+                           debt.ToId == user.Id)
+                           select debt);
+      _context.RemoveRange(from inv in _context.Invitations
+                           where inv.GroupId == grp.Id &&
+                           (inv.FromId == user.Id ||
+                           inv.ToId == user.Id)
+                           select inv);
       try {
         await _context.SaveChangesAsync();
       } catch(DbUpdateConcurrencyException ex) {
@@ -239,9 +243,9 @@ namespace LetsMeatAPI.Controllers {
       }
       return Ok();
     }
-    private readonly UserManager _userManager;
+    private readonly IUserManager _userManager;
     private readonly LMDbContext _context;
-    private readonly BlobClientFactory _blobClientFactory;
+    private readonly IBlobClientFactory _blobClientFactory;
     private readonly ILogger<GroupsController> _logger;
   }
 }

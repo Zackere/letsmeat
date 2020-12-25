@@ -1,4 +1,5 @@
-using Google.Apis.Auth;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using LetsMeatAPI;
 using LetsMeatAPI.Controllers;
 using Microsoft.AspNetCore.Mvc;
@@ -15,275 +16,133 @@ namespace LetsMeatAPITests {
     public GroupsControllerTest(ITestOutputHelper output) : base(output) { }
     [Fact]
     public async Task UsersCanJoinOtherGroups() {
-      var (context, connection) = GetDb();
-      var userManager = new UserManager(
-        context,
-        Mock.Of<ILogger<UserManager>>()
+      var connection = GetDb();
+      var users = CreateUsers(777, 2);
+      var group = CreateGroups(890, 1)[0];
+      group.OwnerId = users[0].Id;
+      group.Users.Add(users[0]);
+      using(var contextSetup = CreateContextForConnection(connection)) {
+        await contextSetup.Users.AddRangeAsync(users);
+        await contextSetup.Groups.AddAsync(group);
+        await contextSetup.SaveChangesAsync();
+      }
+      var userManager = UserManagerMock(users);
+      using(var context = CreateContextForConnection(connection)) {
+        var controller = new GroupsController(
+          userManager.Object,
+          context,
+          Mock.Of<IBlobClientFactory>(),
+          Mock.Of<ILogger<GroupsController>>()
+        );
+        var res = await controller.Join(users[1].Token, new() { id = group.Id });
+        Assert.IsType<OkResult>(res);
+      }
+      userManager.Verify(m => m.IsLoggedIn(users[1].Token), Times.Once);
+      using var contextVerify = CreateContextForConnection(connection);
+      group = await contextVerify.Groups.FindAsync(group.Id);
+      Assert.Equal(
+        group.Users.Select(u => u.Id).OrderBy(i => i).ToArray(),
+        users.Select(u => u.Id).OrderBy(i => i).ToArray()
       );
-      var data = UsersWithTokens(643, 2).First();
-      var token1 = (data[0] as object[])[0] as string;
-      var jwt1 = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
-      var token2 = (data[0] as object[])[1] as string;
-      var jwt2 = (data[1] as object[])[1] as GoogleJsonWebSignature.Payload;
-
-      await Task.WhenAll(
-        userManager.OnTokenGranted(token1, jwt1),
-        userManager.OnTokenGranted(token2, jwt2)
-      );
-
-      var groupController = new GroupsController(
-        userManager,
-        context,
-        Mock.Of<BlobClientFactory>(),
-        Mock.Of<ILogger<GroupsController>>()
-      );
-      var grp = await groupController.Create(token2, new() { name = "ASD" });
-      var response = grp.Value;
-      await groupController.Join(token2, new() { id = response.id });
-
-      Assert.Equal(1, context.Groups.Count());
-      Assert.Equal(2, context.Groups.First().Users.Count());
-
-      context.Dispose();
-      connection.Dispose();
     }
     [Fact]
     public async Task UsersCanCreateGroups() {
-      var (context, connection) = GetDb();
-      var userManager = new UserManager(
-        context,
-        Mock.Of<ILogger<UserManager>>()
-      );
-      var data = UsersWithTokens(643, 1).First();
-      var token1 = (data[0] as object[])[0] as string;
-      var jwt1 = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
-
-      await userManager.OnTokenGranted(token1, jwt1);
-
-      var groupController = new GroupsController(
-        userManager,
-        context,
-        Mock.Of<BlobClientFactory>(),
-        Mock.Of<ILogger<GroupsController>>()
-      );
-      var createRes = await groupController.Create(token1, new() { name = "ASD" });
-      Assert.IsType<GroupsController.GroupCreatedResponse>(createRes.Value);
-      var grpCreated = createRes.Value;
-      Assert.Equal("ASD", grpCreated.name);
-      var grp = context.Groups.Find(grpCreated.id);
-      Assert.NotNull(grp);
-      Assert.Equal(grpCreated.name, grp.Name);
-      Assert.Equal(jwt1.Subject, grp.OwnerId);
-      Assert.Collection(grp.Users, user => Assert.Equal(jwt1.Subject, user.Id));
-
-      context.Dispose();
-      connection.Dispose();
+      var connection = GetDb();
+      var user = CreateUsers(564, 1)[0];
+      using(var contextSetup = CreateContextForConnection(connection)) {
+        await contextSetup.AddAsync(user);
+        await contextSetup.SaveChangesAsync();
+      }
+      var userManager = UserManagerMock(new[] { user });
+      GroupsController.GroupCreatedResponse groupResponse;
+      using(var context = CreateContextForConnection(connection)) {
+        var controller = new GroupsController(
+          userManager.Object,
+          context,
+          Mock.Of<IBlobClientFactory>(),
+          Mock.Of<ILogger<GroupsController>>()
+        );
+        var res = await controller.Create(user.Token, new() {
+          name = "dhushdw"
+        });
+        groupResponse = res.Value;
+      }
+      Assert.NotNull(groupResponse);
+      userManager.Verify(m => m.IsLoggedIn(user.Token), Times.Once);
+      using var contextVerify = CreateContextForConnection(connection);
+      var group = await contextVerify.Groups.FindAsync(groupResponse.id);
+      Assert.NotNull(group);
+      Assert.Equal("dhushdw", group.Name);
+      Assert.Equal(user.Id, group.OwnerId);
+      Assert.Equal(new[] { user.Id }, group.Users.Select(u => u.Id).ToArray());
     }
     [Fact]
     public async Task UsersCanDeleteGroupTheyOwn() {
-      var (context, connection) = GetDb();
-      var userManager = new UserManager(
-        context,
-        Mock.Of<ILogger<UserManager>>()
-      );
-      var data = UsersWithTokens(643, 3).First();
-      var token1 = (data[0] as object[])[0] as string;
-      var jwt1 = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
-      var token2 = (data[0] as object[])[1] as string;
-      var jwt2 = (data[1] as object[])[1] as GoogleJsonWebSignature.Payload;
-      var token3 = (data[0] as object[])[2] as string;
-      var jwt3 = (data[1] as object[])[2] as GoogleJsonWebSignature.Payload;
-
-      await Task.WhenAll(
-        userManager.OnTokenGranted(token1, jwt1),
-        userManager.OnTokenGranted(token2, jwt2),
-        userManager.OnTokenGranted(token3, jwt3)
-      );
-      Assert.Equal(3, context.Users.Count());
-
-      var groupController = new GroupsController(
-        userManager,
-        context,
-        Mock.Of<BlobClientFactory>(),
-        Mock.Of<ILogger<GroupsController>>()
-      );
-      var invitationController = new InvitationsController(
-        userManager,
-        context,
-        Mock.Of<ILogger<InvitationsController>>()
-      );
-      var eventsController = new EventsController(
-        userManager,
-        context,
-        Mock.Of<ILogger<EventsController>>()
-      );
-      var debtsController = new DebtsController(
-        userManager,
-        context,
-        Mock.Of<ILogger<DebtsController>>()
-      );
-      var locationsController = new LocationsController(
-        userManager,
-        context,
-        Mock.Of<ILogger<LocationsController>>()
-      );
-
-      var grp = await groupController.Create(token1, new() { name = "ASD" });
-      var groupCreatedResponse = grp.Value;
-      await invitationController.Send(token1, new() {
-        to_id = jwt3.Subject,
-        group_id = groupCreatedResponse.id
-      });
-      await groupController.Join(token3, new() { id = groupCreatedResponse.id });
-      Assert.Empty(context.Invitations);
-      await invitationController.Send(token1, new() {
-        to_id = jwt2.Subject,
-        group_id = groupCreatedResponse.id
-      });
-      var ev = await eventsController.Create(token1, new() {
-        deadline = DateTime.Now,
-        group_id = groupCreatedResponse.id,
-        name = "ASD"
-      });
-      var eventCreatedResponse = ev.Value;
-      Assert.Equal(1, context.Events.Count());
-      var loc = await locationsController.CreateCustom(token1, new() {
-        Address = "sesame street",
-        group_id = groupCreatedResponse.id,
-        Name = "mcdonalds",
-      });
-      Assert.Equal(1, context.CustomLocations.Count());
-      var locationCreatedResponse = loc.Value;
-      await eventsController.Update(token1, new EventsController.EventUpdateBody() {
-        custom_locations_ids = new[] { locationCreatedResponse.id },
-        id = eventCreatedResponse.id,
-      });
-      await debtsController.Add(token1, new() {
-        amount = 20,
-        group_id = groupCreatedResponse.id,
-        from_id = jwt1.Subject,
-        to_id = jwt3.Subject,
-      });
-      Assert.Equal(1, context.Debts.Count());
-      var deleteRes = await groupController.Delete(token1, new() { id = groupCreatedResponse.id });
-      Assert.IsType<OkResult>(deleteRes);
-
-      Assert.Empty(context.CustomLocations);
-      Assert.Empty(context.Debts);
-      Assert.Empty(context.Events);
-      Assert.Empty(context.Groups);
-      var user1 = await context.Users.FindAsync(jwt1.Subject);
-      Assert.Empty(user1.OwnedGroups);
-      Assert.Empty(user1.Groups);
-      Assert.Empty(context.Invitations);
-      var user3 = await context.Users.FindAsync(jwt3.Subject);
-      Assert.Empty(user3.Groups);
-
-      context.Dispose();
-      connection.Dispose();
+      var connection = GetDb();
+      var (users, group, events, customLocations, googleMapsLocations, invitations, images, debts, pendingDebts)
+        = await SeedDbWithOneGroup(connection);
+      var userManager = UserManagerMock(users);
+      var blobClient = new Mock<BlobClient>(MockBehavior.Strict);
+      var blobClientFactory = new Mock<IBlobClientFactory>(MockBehavior.Strict);
+      foreach(var image in images) {
+        blobClientFactory
+          .Setup(b => b.GetClientFromUri(new Uri(image.Url)))
+          .Returns(blobClient.Object);
+        blobClient
+          .Setup(b => b.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, null, default))
+          .Returns(Task.FromResult(Mock.Of<Azure.Response<bool>>()));
+      }
+      using(var context = CreateContextForConnection(connection)) {
+        var controller = new GroupsController(
+          userManager.Object,
+          context,
+          blobClientFactory.Object,
+          Mock.Of<ILogger<GroupsController>>()
+        );
+        var res = await controller.Delete(users[0].Token, new() { id = group.Id });
+        Assert.IsType<OkResult>(res);
+      }
+      userManager.Verify(m => m.IsLoggedIn(users[0].Token), Times.Once);
+      foreach(var image in images) {
+        blobClientFactory.Verify(b => b.GetClientFromUri(new Uri(image.Url)), Times.Once);
+      }
+      blobClient.Verify(b => b.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, null, default), Times.Exactly(images.Count()));
+      using var contextVerify = CreateContextForConnection(connection);
+      Assert.Empty(contextVerify.CustomLocations);
+      Assert.NotEmpty(contextVerify.GoogleMapsLocations);
+      Assert.Empty(contextVerify.Groups);
+      Assert.Empty(contextVerify.Images);
+      Assert.Empty(contextVerify.Invitations);
+      Assert.Empty(contextVerify.PendingDebts);
+      Assert.NotEmpty(contextVerify.Users);
+      Assert.Empty(contextVerify.Votes);
     }
     [Fact]
     public async Task UsersCanLeaveGroupsTheyAreIn() {
-      var (context, connection) = GetDb();
-      var userManager = new UserManager(
-        context,
-        Mock.Of<ILogger<UserManager>>()
+      var connection = GetDb();
+      var (users, group, events, customLocations, googleMapsLocations, invitations, images, debts, pendingDebts)
+        = await SeedDbWithOneGroup(connection);
+      var userManager = UserManagerMock(users);
+      var blobClientFactory = new Mock<IBlobClientFactory>(MockBehavior.Strict);
+      using(var context = CreateContextForConnection(connection)) {
+        var controller = new GroupsController(
+          userManager.Object,
+          context,
+          blobClientFactory.Object,
+          Mock.Of<ILogger<GroupsController>>()
+        );
+        var res = await controller.Leave(users[1].Token, new() { id = group.Id });
+        Assert.IsType<OkResult>(res);
+      }
+      userManager.Verify(m => m.IsLoggedIn(users[1].Token), Times.Once);
+      var contextVerify = CreateContextForConnection(connection);
+      var grp = await contextVerify.Groups.FindAsync(group.Id);
+      Assert.Equal(
+        new[] { users[0].Id, users[2].Id }.OrderBy(i => i),
+        (from user in grp.Users
+         orderby user.Id
+         select user.Id).ToArray()
       );
-      var data = UsersWithTokens(643, 3).First();
-      var token1 = (data[0] as object[])[0] as string;
-      var jwt1 = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
-      var token2 = (data[0] as object[])[1] as string;
-      var jwt2 = (data[1] as object[])[1] as GoogleJsonWebSignature.Payload;
-      var token3 = (data[0] as object[])[2] as string;
-      var jwt3 = (data[1] as object[])[2] as GoogleJsonWebSignature.Payload;
-
-      await Task.WhenAll(
-        userManager.OnTokenGranted(token1, jwt1),
-        userManager.OnTokenGranted(token2, jwt2),
-        userManager.OnTokenGranted(token3, jwt3)
-      );
-      Assert.Equal(3, context.Users.Count());
-
-      var groupController = new GroupsController(
-        userManager,
-        context,
-        Mock.Of<BlobClientFactory>(),
-        Mock.Of<ILogger<GroupsController>>()
-      );
-      var invitationController = new InvitationsController(
-        userManager,
-        context,
-        Mock.Of<ILogger<InvitationsController>>()
-      );
-      var eventsController = new EventsController(
-        userManager,
-        context,
-        Mock.Of<ILogger<EventsController>>()
-      );
-      var debtsController = new DebtsController(
-        userManager,
-        context,
-        Mock.Of<ILogger<DebtsController>>()
-      );
-      var locationsController = new LocationsController(
-        userManager,
-        context,
-        Mock.Of<ILogger<LocationsController>>()
-      );
-
-      var grp = await groupController.Create(token1, new() { name = "ASD" });
-      var groupCreatedResponse = grp.Value;
-      await invitationController.Send(token1, new() {
-        to_id = jwt3.Subject,
-        group_id = groupCreatedResponse.id
-      });
-      await groupController.Join(token3, new() { id = groupCreatedResponse.id });
-      Assert.Empty(context.Invitations);
-      await invitationController.Send(token1, new() {
-        to_id = jwt2.Subject,
-        group_id = groupCreatedResponse.id
-      });
-      var ev = await eventsController.Create(token1, new() {
-        deadline = DateTime.Now,
-        group_id = groupCreatedResponse.id,
-        name = "ASD"
-      });
-      var eventCreatedResponse = ev.Value;
-      Assert.Equal(1, context.Events.Count());
-      var loc = await locationsController.CreateCustom(token1, new() {
-        Address = "sesame street",
-        group_id = groupCreatedResponse.id,
-        Name = "mcdonalds",
-      });
-      Assert.Equal(1, context.CustomLocations.Count());
-      var locationCreatedResponse = loc.Value;
-      await eventsController.Update(token1, new EventsController.EventUpdateBody() {
-        custom_locations_ids = new[] { locationCreatedResponse.id },
-        id = eventCreatedResponse.id,
-      });
-      await debtsController.Add(token1, new() {
-        amount = 20,
-        group_id = groupCreatedResponse.id,
-        from_id = jwt1.Subject,
-        to_id = jwt3.Subject,
-      });
-      Assert.Equal(1, context.Debts.Count());
-      var leaveRes = await groupController.Leave(token3, new() { id = groupCreatedResponse.id });
-      Assert.IsType<OkResult>(leaveRes);
-
-      Assert.NotEmpty(context.CustomLocations);
-      Assert.Empty(context.Debts);
-      Assert.NotEmpty(context.Events);
-      Assert.NotEmpty(context.Groups);
-      var user1 = await context.Users.FindAsync(jwt1.Subject);
-      Assert.NotEmpty(user1.OwnedGroups);
-      Assert.NotEmpty(user1.Groups);
-      Assert.NotEmpty(context.Invitations);
-      var user3 = await context.Users.FindAsync(jwt3.Subject);
-      Assert.Empty(user3.Groups);
-
-      context.Dispose();
-      connection.Dispose();
     }
   }
 }

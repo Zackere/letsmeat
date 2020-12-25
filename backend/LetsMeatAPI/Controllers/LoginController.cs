@@ -23,7 +23,7 @@ namespace LetsMeatAPI.Controllers {
     }
     public LoginController(
       GoogleTokenIdValidator googleTokenIdValidator,
-      UserManager userManager,
+      IUserManager userManager,
       GoogleAudiences? expectedGoogleAudiences,
       Random rnd,
       ILogger<LoginController> logger
@@ -114,7 +114,7 @@ namespace LetsMeatAPI.Controllers {
     public const string FakeTokenPrefix = "fake-token-";
     public const int TokenLength = 128;
     private readonly GoogleTokenIdValidator _googleTokenIdValidator;
-    private readonly UserManager _userManager;
+    private readonly IUserManager _userManager;
     private readonly IEnumerable<string>? _expectedGoogleAudiences;
     private readonly Random _rnd;
     private readonly ILogger<LoginController> _logger;

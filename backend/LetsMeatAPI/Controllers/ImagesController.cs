@@ -14,9 +14,9 @@ namespace LetsMeatAPI.Controllers {
   [ApiController]
   public class ImagesController : ControllerBase {
     public ImagesController(
-      UserManager userManager,
+      IUserManager userManager,
       LMDbContext context,
-      BlobClientFactory blobClientFactory,
+      IBlobClientFactory blobClientFactory,
       ILogger<ImagesController> logger
     ) {
       _userManager = userManager;
@@ -105,9 +105,9 @@ namespace LetsMeatAPI.Controllers {
       };
     }
     public const int MaxFilesize = (int)10e+6; // 10Mb
-    private readonly UserManager _userManager;
+    private readonly IUserManager _userManager;
     private readonly LMDbContext _context;
-    private readonly BlobClientFactory _blobClientFactory;
+    private readonly IBlobClientFactory _blobClientFactory;
     private readonly ILogger<ImagesController> _logger;
   }
 }

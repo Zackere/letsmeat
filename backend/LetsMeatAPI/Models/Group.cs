@@ -16,5 +16,7 @@ namespace LetsMeatAPI.Models {
     public virtual ICollection<Event> Events { get; set; }
     public virtual ICollection<CustomLocation> CustomLocations { get; set; }
     public virtual ICollection<Image> Images { get; set; }
+    public virtual ICollection<Debt> Debts { get; set; }
+    public virtual ICollection<PendingDebt> PendingDebts { get; set; }
   }
 }

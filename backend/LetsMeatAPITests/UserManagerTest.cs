@@ -20,7 +20,8 @@ namespace LetsMeatAPITests {
       string[] tokens,
       GoogleJsonWebSignature.Payload[] jwts
     ) {
-      var (context, connection) = GetDb();
+      var connection = GetDb();
+      using var context = CreateContextForConnection(connection);
       var userManager = new UserManager(context, Mock.Of<ILogger<UserManager>>());
       await Task.WhenAll(tokens.Zip(jwts).Select(p => userManager.OnTokenGranted(p.First, p.Second)).ToArray());
 
@@ -35,17 +36,14 @@ namespace LetsMeatAPITests {
         VerifyUserInformation(user, jwt);
         Assert.Equal(jwt.Subject, userManager.IsLoggedIn(token));
       }
-
-      context.Dispose();
-      connection.Close();
-      connection.Dispose();
     }
     [Fact]
     public async Task ProvidesInformationAboutLoggedInUsers() {
       var data = UsersWithTokens(123321, 1).First();
       var token = (data[0] as object[])[0] as string;
       var jwt = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
-      var (context, connection) = GetDb();
+      var connection = GetDb();
+      using var context = CreateContextForConnection(connection);
       var userManager = new UserManager(context, Mock.Of<ILogger<UserManager>>());
 
       await userManager.OnTokenGranted(token, jwt);
@@ -57,10 +55,6 @@ namespace LetsMeatAPITests {
       Assert.Equal(jwt.Subject, userManager.IsLoggedIn(token));
       Assert.Equal(jwt.Subject, userManager.LogOut(token));
       Assert.Null(userManager.LogOut(token));
-
-      context.Dispose();
-      connection.Close();
-      connection.Dispose();
     }
     [Fact]
     public async Task UpdatesUserInformationUponLogin() {
@@ -70,7 +64,8 @@ namespace LetsMeatAPITests {
       var token2 = (data[0] as object[])[1] as string;
       var jwt2 = (data[1] as object[])[1] as GoogleJsonWebSignature.Payload;
       jwt2.Subject = jwt.Subject; // They are the same user
-      var (context, connection) = GetDb();
+      var connection = GetDb();
+      using var context = CreateContextForConnection(connection);
 
       var userManager = new UserManager(
         context,
@@ -92,10 +87,6 @@ namespace LetsMeatAPITests {
       VerifyUserInformation(user, jwt2);
       Assert.Equal(jwt.Subject, userManager.IsLoggedIn(token2));
       Assert.Null(userManager.IsLoggedIn(token));
-
-      context.Dispose();
-      connection.Close();
-      connection.Dispose();
     }
     [Fact]
     public async Task ThrowsDbUpdateExceptionOnRealDb() {
@@ -105,14 +96,9 @@ namespace LetsMeatAPITests {
       var token2 = (data[0] as object[])[1] as string;
       var jwt2 = (data[1] as object[])[1] as GoogleJsonWebSignature.Payload;
       jwt2.Subject = jwt1.Subject; // Force conflict
-      var (context1, connection1) = GetDb();
-      var context2 = new LMDbContext(
-                          new DbContextOptionsBuilder<LMDbContext>()
-                           .UseSqlite(connection1)
-                           .LogTo(s => _output.WriteLine(s), LogLevel.Debug)
-                           .EnableSensitiveDataLogging()
-                           .Options
-                         );
+      var connection = GetDb();
+      using var context1 = CreateContextForConnection(connection);
+      using var context2 = CreateContextForConnection(connection);
       var genuineUsers = context2.Users;
       var mockUsers = new Mock<DbSet<User>>(MockBehavior.Strict);
       mockUsers.Setup(u => u.FindAsync(It.IsAny<object[]>()))
@@ -137,25 +123,15 @@ namespace LetsMeatAPITests {
       Assert.Equal(1, genuineUsers.Count());
       var user = genuineUsers.First();
       VerifyUserInformation(user, jwt2);
-
-      context1.Dispose();
-      context2.Dispose();
-      connection1.Close();
-      connection1.Dispose();
     }
     [Fact]
     public async Task ThrowsDbUpdateConcurrencyExceptionOnRealDb() {
       var data = UsersWithTokens(123321, 1).First();
       var token1 = (data[0] as object[])[0] as string;
       var jwt1 = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
-      var (context1, connection1) = GetDb();
-      var context2 = new LMDbContext(
-                          new DbContextOptionsBuilder<LMDbContext>()
-                           .UseSqlite(connection1)
-                           .LogTo(s => _output.WriteLine(s), LogLevel.Debug)
-                           .EnableSensitiveDataLogging()
-                           .Options
-                         );
+      var connection = GetDb();
+      using var context1 = CreateContextForConnection(connection);
+      using var context2 = CreateContextForConnection(connection);
       context2.Users.Add(new User {
         Id = jwt1.Subject,
         PictureUrl = jwt1.Picture,
@@ -187,12 +163,6 @@ namespace LetsMeatAPITests {
       await update1;
 
       Assert.Equal(0, genuineUsers.Count());
-
-      context1.Users = genuineUsers;
-      context1.Dispose();
-      context2.Dispose();
-      connection1.Close();
-      connection1.Dispose();
     }
     private void VerifyUserInformation(
       User user,

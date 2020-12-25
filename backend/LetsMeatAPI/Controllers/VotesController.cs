@@ -12,7 +12,7 @@ namespace LetsMeatAPI.Controllers {
   [ApiController]
   public class VotesController : ControllerBase {
     public VotesController(
-      UserManager userManager,
+      IUserManager userManager,
       LMDbContext context,
       ILogger<VotesController> logger
     ) {
@@ -178,7 +178,7 @@ namespace LetsMeatAPI.Controllers {
       }
       return Ok();
     }
-    private readonly UserManager _userManager;
+    private readonly IUserManager _userManager;
     private readonly LMDbContext _context;
     private readonly ILogger<VotesController> _logger;
   }

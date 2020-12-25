@@ -10,7 +10,7 @@ namespace LetsMeatAPI.Controllers {
   [Route("[controller]")]
   public class InvitationsController : ControllerBase {
     public InvitationsController(
-      UserManager userManager,
+      IUserManager userManager,
       LMDbContext context,
       ILogger<InvitationsController> logger
     ) {
@@ -100,7 +100,7 @@ namespace LetsMeatAPI.Controllers {
       await _context.SaveChangesAsync();
       return Ok();
     }
-    private readonly UserManager _userManager;
+    private readonly IUserManager _userManager;
     private readonly LMDbContext _context;
     private readonly ILogger<InvitationsController> _logger;
   }

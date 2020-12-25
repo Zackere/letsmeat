@@ -7,7 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace LetsMeatAPI {
-  public class UserManager {
+  public interface IUserManager {
+    public Task OnTokenGranted(string token, GoogleJsonWebSignature.Payload jwt);
+    public string? IsLoggedIn(string token);
+    public string? LogOut(string token);
+  }
+  public class UserManager : IUserManager {
     public UserManager(LMDbContext context, ILogger<UserManager> logger) {
       _context = context;
       _logger = logger;

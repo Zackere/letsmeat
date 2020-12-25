@@ -20,7 +20,7 @@ namespace LetsMeatAPI {
                .UseLazyLoadingProxies()
       );
       services.AddScoped<Random>();
-      services.AddScoped<UserManager>();
+      services.AddScoped<IUserManager, UserManager>();
       services.AddScoped<Controllers.LoginController.GoogleTokenIdValidator>(
         _ => GoogleJsonWebSignature.ValidateAsync
       );
@@ -32,11 +32,13 @@ namespace LetsMeatAPI {
                where aud != null
                select aud
       });
-      services.AddScoped(_ => new BlobClientFactory(
-        _configuration.GetConnectionString("LMBlobStorage") ??
-        Environment.GetEnvironmentVariable("LMBlobStorage") ??
-        throw new ArgumentNullException("Could not retrieve LMBlobStorage conn string")
-      ));
+      services.AddScoped<IBlobClientFactory, BlobClientFactory>(
+        _ => new BlobClientFactory(
+          _configuration.GetConnectionString("LMBlobStorage") ??
+          Environment.GetEnvironmentVariable("LMBlobStorage") ??
+          throw new ArgumentNullException("Could not retrieve LMBlobStorage conn string")
+        )
+      );
       services.AddControllers();
       services.AddCors(cors => cors.AddPolicy(
         _letsMeatAPIPolicy,

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -15,5 +16,6 @@ namespace LetsMeatAPI.Models {
     public string UploadedById { get; set; }
     public virtual User UploadedBy { get; set; }
     public DateTime UploadTime { get; set; }
+    public virtual ICollection<PendingDebt> PendingDebtsWithMe { get; set; }
   }
 }

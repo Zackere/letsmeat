@@ -2,8 +2,11 @@ using Azure.Storage.Blobs;
 using System;
 
 namespace LetsMeatAPI {
-  public class BlobClientFactory {
-    public BlobClientFactory() : this("") { }
+  public interface IBlobClientFactory {
+    public BlobClient GetImageClient(string filename);
+    public BlobClient GetClientFromUri(Uri uri);
+  }
+  public class BlobClientFactory : IBlobClientFactory {
     public BlobClientFactory(string connectionString) {
       _connectionString = connectionString;
     }
