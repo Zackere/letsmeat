@@ -1,17 +1,19 @@
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import React, { useContext, useEffect, useState } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import {
+  Image, StyleSheet, View, Text
+} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import ImagePicker from 'react-native-image-crop-picker';
 import {
-  ActivityIndicator, Button, Card, Subheading, Surface, Title
+  ActivityIndicator, Button, Card, Surface, Title
 } from 'react-native-paper';
 import {
   getEventInfo, getImagesInfo, getUsersInfo, updateEvent, uploadImage
 } from '../../Requests';
 import { store } from '../../Store';
 import UserCard from '../../User';
-import Times from './times';
+import Times, { TimeCard } from './times';
 
 const Creator = ({ userId }) => {
   const { state } = useContext(store);
@@ -25,18 +27,19 @@ const Creator = ({ userId }) => {
   }, [state, userId]);
 
   return (
-    userInfo
-      ? <UserCard user={userInfo} />
-      : <ActivityIndicator />
+    <Card elevation={0} style={styles.section}>
+      <Card.Title title="Creator" />
+      {userInfo
+        ? <UserCard user={userInfo} />
+        : <ActivityIndicator />}
+    </Card>
   );
 };
 
 const Deadline = ({ time }) => (
-  <Card style={{ margin: 20 }}>
-
-    <Subheading>
-      {time}
-    </Subheading>
+  <Card elevation={0} style={styles.section}>
+    <Card.Title title="Deadline" />
+    <TimeCard time={new Date(time)} />
   </Card>
 );
 
@@ -103,10 +106,14 @@ const Debts = ({ images }) => {
   );
 };
 
-const EventView = ({ navigation }) => {
+const EventView = ({ navigation, route }) => {
   const { state, dispatch } = useContext(store);
   const [eventDetails, setEventDetails] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({ tabBarVisible: false });
+  }, [navigation, route]);
 
   useEffect(() => {
     getEventInfo({ state }, state.event.id).then((event) => {
@@ -121,7 +128,7 @@ const EventView = ({ navigation }) => {
         { eventDetails
           ? (
             <>
-              <Title style={{ fontSize: 30, marginHorizontal: 20, marginTop: 20 }}>{state.event.name}</Title>
+              <Title style={styles.eventTitle}>{state.event.name}</Title>
               <Deadline time={eventDetails.deadline} />
               <Creator userId={eventDetails.creator_id} />
               <Card style={styles.section} elevation={0}>
@@ -137,8 +144,13 @@ const EventView = ({ navigation }) => {
                 <Times
                   loading={loading}
                   times={eventDetails.candidate_times.map((t) => new Date(t))}
+                  onVote={() => {
+                    navigation.navigate('VoteTime', {
+                      eventId: state.event.id
+                    });
+                  }}
                   onAddTime={(time) => {
-                    console.log({ ...eventDetails, candidate_times: [time] });
+                    // console.log({ ...eventDetails, candidate_times: [time] });
                     setLoading(true);
                     return updateEvent({ state }, { ...eventDetails, candidate_times: [time] }).then((r) => setEventDetails(r)).finally(() => setLoading(false));
                   }}
@@ -155,6 +167,11 @@ const EventView = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  eventTitle: {
+    fontSize: 30,
+    marginHorizontal: 20,
+    marginTop: 20
+  },
   container: {
     width: '100%',
     height: '100%'

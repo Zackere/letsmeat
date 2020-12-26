@@ -1,108 +1,133 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { createStackNavigator } from '@react-navigation/stack';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { Button, Card, Paragraph, Surface, TextInput } from 'react-native-paper';
+import {
+  Button, Dialog, Portal, Surface, TextInput, Title, Card, Text
+} from 'react-native-paper';
+import { Header } from '../../Header';
 import { createEvent } from '../../Requests';
 import { store } from '../../Store';
-import { Header } from '../../Header';
+import { DateAndHourPicker, TimeCard } from '../Feed/times';
 
 const Stack = createStackNavigator();
 
-const NewEventContent = ({ navigation }) => {
-  const { state, dispatch } = useContext(store);
+const SetNameDialog = ({
+  dialogVisible, setDialogVisible, onAccept, onDismiss
+}) => {
+  const [result, setResult] = useState('');
+  const showDialog = () => setDialogVisible(true);
+  const hideDialog = () => setDialogVisible(false);
 
-  const [eventName, setName] = useState('');
-  const [eventDeadline, setDeadline] = useState(null);
-  const [show, setShow] = useState(false);
-  const [mode, setMode] = useState('date');
-  const [timeLeftUntilDeadline, setTimeLeft] = useState('');
-  const [timeUpdater, setTimeUpdater] = useState(null);
-  const updateTimeLeft = () => {
-    console.log('timer tick tock')
-    if (!eventDeadline) return;
-    const msLeft = (eventDeadline - new Date());
-    const days = Math.floor(msLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor(msLeft / (1000 * 60 * 60)) - 24 * days;
-    const minutes = Math.floor(msLeft / (1000 * 60)) - 24 * 60 * days - 60 * hours;
-    const seconds = Math.floor(msLeft / 1000) - 24 * 60 * 60 * days - 60 * 60 * hours - 60 * minutes;
-    setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+  return (
+    <Portal>
+      <Dialog visible={dialogVisible} onDismiss={onDismiss} contentContainerStyle={styles.container}>
+        <Dialog.Content>
+          <TextInput
+            mode="outlined"
+            label="Event Name"
+            onChangeText={setResult}
+            value={result}
+          />
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button
+            style={{ color: 'red' }}
+            onPress={
+            () => {
+              hideDialog();
+              onDismiss();
+              setResult('');
+            }
+          }
+          >
+            Cancel
+          </Button>
+          <Button onPress={() => {
+            hideDialog();
+            onAccept(result);
+            setResult('');
+          }}
+          >
+            Accept
+          </Button>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
+  );
+};
+
+const NewEventContent = ({ navigation }) => {
+  const { state } = useContext(store);
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const hidePicker = () => setPickerVisible(false);
+  const showPicker = () => setPickerVisible(true);
+  const [dialogVisible, setDialogVisible] = useState(true);
+  const hideDialog = () => setDialogVisible(false);
+  const showDialog = () => setDialogVisible(true);
+  const [name, setName] = useState(null);
+  const [deadline, setDeadline] = useState(null);
+  const [justOpened, setJustOpened] = useState(false);
+
+  const onNameDismiss = () => {
+    if (justOpened) {
+      showPicker();
+    }
   };
 
-  useEffect(() => () => {
-    console.log('cleanup')
-    if (timeUpdater) clearInterval(timeUpdater);
-  }, []);
-
-  const now = new Date();
-
-  const onSetDate = (event, date) => {
-    clearInterval(timeUpdater);
-    setShow(false);
-    if (event.type === 'dismissed') {
-      setMode('date');
+  const onNameSet = (newName) => {
+    if (justOpened) {
+      showPicker();
+    }
+    if (!newName) {
       return;
     }
-    setDeadline(new Date(event.nativeEvent.timestamp));
-    if (mode === 'date') {
-      setMode('time');
-      setShow(true);
-    }
-    if (mode === 'time') {
-      setTimeUpdater(setInterval(updateTimeLeft, 1000));
-      setMode('date');
-    }
+    setName(newName);
+  };
+
+  const onDateDismiss = () => {
+    setJustOpened(false);
+  };
+
+  const onDateSet = (date) => {
+    setJustOpened(false);
+    setDeadline(date);
   };
 
   return (
     <Surface style={styles.container}>
-      <TextInput
-        style={styles.textInput}
-        mode="outlined"
-        label="Event Name"
-        onChangeText={setName}
-        value={eventName}
-      />
-      <Card
-        style={styles.emptyCard}
-        onPress={() => {
-          setShow(true);
-          setDeadline(new Date());
-        }}
-      >
-        <Card.Title title={eventDeadline ? eventDeadline.toString() : 'Click to set voting deadline'} />
-        <Card.Content>
-          <Paragraph>
-            {timeLeftUntilDeadline}
-          </Paragraph>
-        </Card.Content>
-      </Card>
+      <Title style={styles.eventTitle}>{name}</Title>
+      {deadline ? <TimeCard time={deadline} /> : (<Card><Text>You need to supply some deadline</Text></Card>)}
       <Button onPress={() => {
-        createEvent({ state }, state.group.id, eventName, eventDeadline).then(navigation.navigate('Feed'));
+        setDialogVisible(true);
+      }}
+      >
+        Set title
+      </Button>
+      <Button onPress={() => {
+        setPickerVisible(true);
+      }}
+      >
+        Set event deadline
+      </Button>
+      <Button onPress={() => {
+        createEvent({ state }, state.group.id, name, deadline).then(navigation.navigate('Feed'));
       }}
       >
         Create Event
       </Button>
-      {/* {`Voting Deadline : \n${eventDeadline || 'click to select'}` }
-      <Button
-        style={styles.dateButton}
-        contentStyle={styles.dateButton}
-        onPress={() => {
-          setShow(true);
-          setDeadline(new Date());
-        }}
-      /> */}
-      {show && (
-      <DateTimePicker
-        onChange={(event) => {
-          onSetDate(event);
-        }}
-        value={eventDeadline}
-        minimumDate={now}
-        mode={mode}
-        display="spinner"
+      <DateAndHourPicker
+        visible={pickerVisible}
+        setVisible={setPickerVisible}
+        setPickerVisible={setPickerVisible}
+        minimumDate={new Date()}
+        setValue={setDeadline}
       />
-      )}
+      <SetNameDialog
+        dialogVisible={dialogVisible}
+        setDialogVisible={setDialogVisible}
+        onAccept={onNameSet}
+        onDismiss={onNameDismiss}
+      />
     </Surface>
   );
 };
@@ -133,6 +158,11 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     height: '100%'
+  },
+  eventTitle: {
+    fontSize: 30,
+    marginHorizontal: 20,
+    marginTop: 20
   },
   textInput: {
     margin: 20

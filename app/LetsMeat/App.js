@@ -19,6 +19,7 @@ import { appendAPIToken, appendUserID } from './components/Requests';
 import SignInScreen from './components/SignIn';
 import SplashScreen from './components/SplashScreen';
 import { StateProvider, store } from './components/Store';
+import Header from './components/Header';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -61,7 +62,9 @@ const Navigation = () => {
     mainComponent = (
       <Drawer.Navigator
         initialRouteName={state.group.id ? 'Home' : 'Groups'}
-        drawerContent={(props) => <DrawerContent navigation={props.navigation} />}
+        drawerContent={(props) => (
+          <DrawerContent navigation={props.navigation} />
+        )}
       >
         <Drawer.Screen name="Home" component={BottomTabs} />
         <Drawer.Screen name="Groups" component={Groups} />

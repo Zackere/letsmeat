@@ -1,12 +1,15 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+// import { NavigationState } from 'react-navigation';
 import Feed from '../Feed';
 import NewEvent from '../NewEvent';
+
 import { Settings } from '../Settings';
 
-
-const Tab = createMaterialBottomTabNavigator();
+const Tab = createBottomTabNavigator();
 
 const makeIcon = (name) => ({ focused, color, size }) => (
   <MaterialCommunityIcons
@@ -16,32 +19,49 @@ const makeIcon = (name) => ({ focused, color, size }) => (
   />
 );
 
-export const BottomTabs = ({ navigation }) => (
-  <Tab.Navigator
-    initialRouteName="Feed"
-  >
-    <Tab.Screen
-      name="Feed"
-      component={Feed}
-      options={{
-        tabBarIcon: makeIcon('home-account'),
-      }}
-    />
-    <Tab.Screen
-      name="New Event"
-      component={NewEvent}
-      options={{
-        tabBarIcon: makeIcon('calendar-plus'),
-      }}
-    />
-    <Tab.Screen
-      name="Group Info"
-      component={Settings}
-      options={{
-        tabBarIcon: makeIcon('account-group'),
-      }}
-    />
-  </Tab.Navigator>
-);
+const getActiveRouteState = function (route) {
+  if (!route.routes || route.routes.length === 0 || route.index >= route.routes.length) {
+    return route;
+  }
 
+  const childActiveRoute = route.routes[route.index];
+  return getActiveRouteState(childActiveRoute);
+};
+
+export const BottomTabs = ({ navigation, route }) => {
+  React.useLayoutEffect(() => {
+    // console.log(route.state.routes[0])
+    // console.log(getActiveRouteState(route));
+    // console.log(getFocusedRouteNameFromRoute(route.state.routes[0]));
+  }, [navigation, route]);
+
+  return (
+    <Tab.Navigator
+      initialRouteName="Feed"
+    >
+      <Tab.Screen
+        name="Feed"
+        component={Feed}
+        options={{
+          tabBarVisible: true,
+          tabBarIcon: makeIcon('home-account'),
+        }}
+      />
+      <Tab.Screen
+        name="New Event"
+        component={NewEvent}
+        options={{
+          tabBarIcon: makeIcon('calendar-plus'),
+        }}
+      />
+      <Tab.Screen
+        name="Group Info"
+        component={Settings}
+        options={{
+          tabBarIcon: makeIcon('account-group'),
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
 export default BottomTabs;

@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createStackNavigator } from '@react-navigation/stack';
 import React, { useContext, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import {
   Button, Card, Dialog, Paragraph, Portal, Surface
 } from 'react-native-paper';
@@ -128,8 +129,16 @@ const SettingsScroll = ({ navigation }) => {
 
 const Stack = createStackNavigator();
 
-const Settings = () => {
-  const { state, dispatch } = useContext(store);
+const SCREENS_WITHOUT_TABS = new Set(['Invite']);
+
+const Settings = ({ navigation, route }) => {
+  const { state } = useContext(store);
+
+  React.useLayoutEffect(() => {
+    const screenName = getFocusedRouteNameFromRoute(route);
+    if (SCREENS_WITHOUT_TABS.has(screenName)) navigation.setOptions({ tabBarVisible: false });
+    else navigation.setOptions({ tabBarVisible: true });
+  }, [navigation, route]);
 
   return (
 

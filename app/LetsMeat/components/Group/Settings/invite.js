@@ -14,39 +14,32 @@ import { searchUsers, sendInvitation } from '../../Requests';
 import { store } from '../../Store';
 import UserCard from '../../User';
 
-const SelectedUsers = ({ users, onClose }) =>
-// placeholder
-{
-  if (users && users.length > 0) console.log(users[0]);
-  return (
-    <View style={styles.selectedUserContainer}>
-      <ScrollView horizontal>
-        {users ? users.map((user) => (
-          <Chip
-            key={user.id}
-            avatar={<Avatar.Image source={{ uri: user.picture_url }} size={24} />}
-            onClose={onClose}
-          >
-            <Text>
-              {user.name}
-            </Text>
-          </Chip>
-        ))
-          : <Chip><Text>Nothin to show</Text></Chip>}
-      </ScrollView>
-    </View>
-  );
-};
+const SelectedUsers = ({ users, onClose }) => (
+  <View style={styles.selectedUserContainer}>
+    <ScrollView horizontal>
+      {users ? users.map((user) => (
+        <Chip
+          key={user.id}
+          avatar={<Avatar.Image source={{ uri: user.picture_url }} size={24} />}
+          onClose={onClose}
+        >
+          <Text>
+            {user.name}
+          </Text>
+        </Chip>
+      ))
+        : <Chip><Text>Nothin to show</Text></Chip>}
+    </ScrollView>
+  </View>
+);
 
 const Invite = ({ navigation }) => {
-  const { state, dispatch } = useContext(store);
+  const { state } = useContext(store);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const persistentSearchQuery = useRef('');
-
-  useEffect(() => navigation.setOptions({ tabBarVisible: false }), []);
 
   let debounceResult = null;
 

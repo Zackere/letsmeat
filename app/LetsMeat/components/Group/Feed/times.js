@@ -65,11 +65,13 @@ export const DateAndHourPicker = ({
 };
 
 const Times = ({
-  times, deadline, onAddTime, loading
+  times, deadline, onAddTime, loading, onVote
 }) => {
   const [isAdding, setAdding] = useState(false);
   const [newDate, setNewDate] = useState(null);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
+
   const onDismiss = () => {
     setNewDate(null);
     setAdding(false);
@@ -89,10 +91,18 @@ const Times = ({
 
   return (
     <>
-      <View>
-        {times.map((t) => <TimeCard key={t.getTime()} time={t} />)}
-        {newDate ? <TimeCard key={newDate.getTime()} time={newDate} highlight /> : null}
-      </View>
+      {isVoting
+        ? (
+          <View>
+            {times.map((t) => <TimeCard key={t.getTime()} time={t} />)}
+            {newDate ? <TimeCard key={newDate.getTime()} time={newDate} highlight /> : null}
+          </View>
+        ) : (
+          <View>
+            {times.map((t) => <TimeCard key={t.getTime()} time={t} />)}
+            {newDate ? <TimeCard key={newDate.getTime()} time={newDate} highlight /> : null}
+          </View>
+        )}
       <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
         {isAdding ? (
           <>
@@ -129,7 +139,7 @@ const Times = ({
             <Button
               style={styles.addButton}
               disabled={loading || times.length === 0}
-              onPress={() => Promise.reject('Not implemented')}
+              onPress={onVote}
             >
               <Icon name="vote" size={25} />
             </Button>
