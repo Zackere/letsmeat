@@ -15,10 +15,12 @@ namespace LetsMeatAPI.Controllers {
     public DebtsController(
       IUserManager userManager,
       LMDbContext context,
+      IDebtReducer debtReducer,
       ILogger<DebtsController> logger
     ) {
       _userManager = userManager;
       _context = context;
+      _debtReducer = debtReducer;
       _logger = logger;
     }
     public class DebtAddBody {
@@ -75,6 +77,7 @@ namespace LetsMeatAPI.Controllers {
         _logger.LogError(ex.ToString());
         return Conflict();
       }
+      await _debtReducer.ReduceDebts((Guid)body.group_id);
       return Ok();
     }
     public class DebtPendingResponse {
@@ -165,9 +168,8 @@ namespace LetsMeatAPI.Controllers {
         return Forbid();
       }
       var switchSign = pendingDebt.FromId.CompareTo(pendingDebt.ToId) < 0;
-      if(switchSign) {
+      if(switchSign)
         (pendingDebt.FromId, pendingDebt.ToId) = (pendingDebt.ToId, pendingDebt.FromId);
-      }
       var debt = await _context.Debts.FindAsync(pendingDebt.FromId, pendingDebt.ToId, pendingDebt.GroupId);
       if(debt == null) {
         await _context.Debts.AddAsync(new() {
@@ -210,6 +212,7 @@ namespace LetsMeatAPI.Controllers {
     }
     private readonly IUserManager _userManager;
     private readonly LMDbContext _context;
+    private readonly IDebtReducer _debtReducer;
     private readonly ILogger<DebtsController> _logger;
   }
 }

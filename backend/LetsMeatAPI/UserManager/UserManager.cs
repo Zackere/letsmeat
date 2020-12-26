@@ -45,28 +45,26 @@ namespace LetsMeatAPI {
       try {
         _mtx.AcquireReaderLock(_mtxTimeout);
         _loggedUsersTokenToId.TryGetValue(token, out var id);
+        _mtx.ReleaseReaderLock();
         return id;
       } catch(ApplicationException ex) {
         _logger.LogError(ex.ToString());
         return null;
-      } finally {
-        _mtx.ReleaseReaderLock();
       }
     }
     public string? LogOut(string token) {
       try {
         _mtx.AcquireWriterLock(_mtxTimeout);
         _loggedUsersTokenToId.TryGetValue(token, out var id);
-        if(id == null)
-          return null;
-        _loggedUsersTokenToId.Remove(token);
-        _loggedUsersIdToToken.Remove(id);
+        if(id != null) {
+          _loggedUsersTokenToId.Remove(token);
+          _loggedUsersIdToToken.Remove(id);
+        }
+        _mtx.ReleaseWriterLock();
         return id;
       } catch(ApplicationException ex) {
         _logger.LogError(ex.ToString());
         return null;
-      } finally {
-        _mtx.ReleaseWriterLock();
       }
     }
     public static void Init(IEnumerable<(string token, string id)> grantedTokens) {
@@ -76,9 +74,8 @@ namespace LetsMeatAPI {
           _loggedUsersIdToToken[id] = token;
           _loggedUsersTokenToId[token] = id;
         }
-      } finally {
         _mtx.ReleaseWriterLock();
-      }
+      } catch(ApplicationException) { }
     }
     private void logUser(string token, string id) {
       try {
@@ -88,10 +85,9 @@ namespace LetsMeatAPI {
           _loggedUsersTokenToId.Remove(oldToken);
         _loggedUsersIdToToken[id] = token;
         _loggedUsersTokenToId[token] = id;
+        _mtx.ReleaseWriterLock();
       } catch(ApplicationException ex) {
         _logger.LogError(ex.ToString());
-      } finally {
-        _mtx.ReleaseWriterLock();
       }
     }
     private readonly LMDbContext _context;

@@ -21,6 +21,7 @@ namespace LetsMeatAPI {
       );
       services.AddScoped<Random>();
       services.AddScoped<IUserManager, UserManager>();
+      services.AddScoped<IPaidResourceGuard, PaidResouceGuard>();
       services.AddScoped<Controllers.LoginController.GoogleTokenIdValidator>(
         _ => GoogleJsonWebSignature.ValidateAsync
       );
@@ -39,6 +40,7 @@ namespace LetsMeatAPI {
           throw new ArgumentNullException("Could not retrieve LMBlobStorage conn string")
         )
       );
+      services.AddScoped<IDebtReducer, DebtReducer>();
       services.AddControllers();
       services.AddCors(cors => cors.AddPolicy(
         _letsMeatAPIPolicy,

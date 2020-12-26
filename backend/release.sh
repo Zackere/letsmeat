@@ -1,6 +1,6 @@
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-dotnet ef database update --connection "$LETSMEATDB_CONNECTION_STRING" || exit 1
 cd LetsMeatAPI
+dotnet ef database update --connection "$LETSMEATDB_CONNECTION_STRING" || exit 1
 dotnet publish --configuration Release
 cd bin/Release/netcoreapp3.1/
 7z a letsmeatapi.zip ./publish/*

@@ -1,3 +1,4 @@
+using Azure.Storage.Blobs.Models;
 using LetsMeatAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +18,13 @@ namespace LetsMeatAPI.Controllers {
       IUserManager userManager,
       LMDbContext context,
       IBlobClientFactory blobClientFactory,
+      IPaidResourceGuard paidResourceGuard,
       ILogger<ImagesController> logger
     ) {
       _userManager = userManager;
       _context = context;
       _blobClientFactory = blobClientFactory;
+      _paidResourceGuard = paidResourceGuard;
       _logger = logger;
     }
     public class ImageInfoResponse {
@@ -48,7 +51,7 @@ namespace LetsMeatAPI.Controllers {
         return NotFound();
       return await (from image in _context.Images
                     where body.image_ids.Contains(image.Id)
-                    select new ImageInfoResponse() {
+                    select new ImageInfoResponse {
                       event_id = image.EventId,
                       group_id = image.GroupId,
                       image_id = image.Id,
@@ -67,7 +70,10 @@ namespace LetsMeatAPI.Controllers {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
-      if(token.StartsWith(LoginController.FakeTokenPrefix))
+      var user = await _context.Users.FindAsync(userId);
+      if(user == null)
+        return NotFound();
+      if(!_paidResourceGuard.CanAccessPaidResource(user))
         return Forbid();
       if(file.Length > MaxFilesize)
         return new StatusCodeResult(418);
@@ -95,7 +101,7 @@ namespace LetsMeatAPI.Controllers {
         _logger.LogError(ex.ToString());
         return Conflict();
       }
-      return new ImageInfoResponse() {
+      return new ImageInfoResponse {
         event_id = event_id,
         group_id = image.GroupId,
         image_id = image.Id,
@@ -104,10 +110,36 @@ namespace LetsMeatAPI.Controllers {
         uploaded_time = DateTime.SpecifyKind(image.UploadTime, DateTimeKind.Utc),
       };
     }
+    public class ImageDeleteBody {
+      public Guid id { get; set; }
+    }
+    [HttpDelete]
+    [Route("delete")]
+    public async Task<ActionResult> Delete(
+      string token,
+      [FromBody] ImageDeleteBody body
+    ) {
+      var userId = _userManager.IsLoggedIn(token);
+      if(userId == null)
+        return Unauthorized();
+      var image = await _context.Images.FindAsync(body.id);
+      if(image == null)
+        return NotFound();
+      _context.Remove(image);
+      await _context.SaveChangesAsync();
+      var client = _blobClientFactory.GetClientFromUri(new Uri(image.Url));
+      try {
+        await client.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+      } catch(Azure.RequestFailedException ex) {
+        _logger.LogError(ex.ToString());
+      }
+      return Ok();
+    }
     public const int MaxFilesize = (int)10e+6; // 10Mb
     private readonly IUserManager _userManager;
     private readonly LMDbContext _context;
     private readonly IBlobClientFactory _blobClientFactory;
+    private readonly IPaidResourceGuard _paidResourceGuard;
     private readonly ILogger<ImagesController> _logger;
   }
 }
