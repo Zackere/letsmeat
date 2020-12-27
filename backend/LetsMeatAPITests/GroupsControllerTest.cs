@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -89,7 +90,10 @@ namespace LetsMeatAPITests {
           .Setup(b => b.GetClientFromUri(new Uri(image.Url)))
           .Returns(blobClient.Object);
         blobClient
-          .Setup(b => b.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, null, default))
+          .Setup(b => b.DeleteIfExistsAsync(
+            DeleteSnapshotsOption.IncludeSnapshots,
+            null,
+            It.IsAny<CancellationToken>()))
           .Returns(Task.FromResult(Mock.Of<Azure.Response<bool>>()));
       }
       using(var context = CreateContextForConnection(connection)) {

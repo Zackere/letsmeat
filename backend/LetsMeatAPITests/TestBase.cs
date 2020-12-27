@@ -30,9 +30,9 @@ namespace LetsMeatAPITests {
         .Select(s => s[rnd.Next(s.Length)]).ToArray());
     }
     public async Task<(
-      User[], 
-      Group, 
-      Event[], 
+      User[],
+      Group,
+      Event[],
       CustomLocation[],
       GoogleMapsLocation[],
       Invitation[],
@@ -170,18 +170,20 @@ namespace LetsMeatAPITests {
       var rnd = new Random(seed);
       while(n-- > 0) {
         ret[n] = new GoogleMapsLocation {
-          Address = RandomString(rnd, 12),
           AmountOfFood = (ulong)rnd.Next(0, 100),
           AmountOfFoodVotes = (ulong)rnd.Next(0, 100),
           EventsWithMe = new List<Event>(),
+          FormattedAddress = RandomString(rnd, 12),
+          ExpirationDate = DateTime.UtcNow.AddDays(100),
+          Icon = RandomString(rnd, 64),
           Id = RandomString(rnd, 64),
-          Latitude = (float)rnd.NextDouble(),
-          Longitude = (float)rnd.NextDouble(),
           Name = RandomString(rnd, 15),
           Price = (ulong)rnd.Next(0, 100),
           PriceVotes = (ulong)rnd.Next(0, 100),
           Taste = (ulong)rnd.Next(0, 100),
           TasteVotes = (ulong)rnd.Next(0, 100),
+          Url = RandomString(rnd, 64),
+          Vicinity = RandomString(rnd, 56),
           WaitingTime = (ulong)rnd.Next(0, 100),
           WaitingTimeVotes = (ulong)rnd.Next(0, 100),
         };

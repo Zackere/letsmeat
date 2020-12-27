@@ -7,7 +7,7 @@ namespace LetsMeatAPITests {
     public InvitationsControllerTest(ITestOutputHelper output) : base(output) { }
     [Fact]
     public async Task UsersCanInviteOthersToGroupsTheyAreIn() {
-      
+
     }
   }
 }

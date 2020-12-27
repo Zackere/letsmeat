@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -42,7 +43,7 @@ namespace LetsMeatAPI.Controllers {
       if(grp == null)
         return NotFound();
       if(!grp.Users.Any(u => u.Id == userId))
-        return Forbid();
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       var ev = new Event() {
         CandidateCustomLocations = new List<CustomLocation>(),
         CandidateGoogleMapsLocations = new List<GoogleMapsLocation>(),
@@ -98,7 +99,7 @@ namespace LetsMeatAPI.Controllers {
         body.deadline != null) &&
         userId != ev.CreatorId
       ) {
-        return Forbid();
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       }
       if(ev == null)
         return NotFound();
@@ -225,7 +226,7 @@ namespace LetsMeatAPI.Controllers {
       if(ev == null)
         return NotFound();
       if(ev.CreatorId != userId)
-        return Forbid();
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       _context.Votes.RemoveRange(ev.Votes);
       _context.Entry(ev).State = EntityState.Deleted;
       await _context.SaveChangesAsync();

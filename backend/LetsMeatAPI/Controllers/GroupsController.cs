@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace LetsMeatAPI.Controllers {
@@ -170,7 +171,7 @@ namespace LetsMeatAPI.Controllers {
       if(grp == null)
         return NotFound();
       if(grp.OwnerId != userId)
-        return Forbid();
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       _context.Events.RemoveRange(grp.Events);
       _context.CustomLocations.RemoveRange(grp.CustomLocations);
       foreach(var image in grp.Images) {

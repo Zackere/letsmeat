@@ -1,13 +1,16 @@
 using Google.Apis.Auth;
+using LetsMeatAPI.ExternalAPI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 
 namespace LetsMeatAPI {
   public class Startup {
@@ -15,13 +18,24 @@ namespace LetsMeatAPI {
       _configuration = configuration;
     }
     public void ConfigureServices(IServiceCollection services) {
+      services.AddHttpClient();
       services.AddDbContext<LMDbContext>(options =>
         options.UseSqlServer(_configuration.GetConnectionString("LMDatabase"))
                .UseLazyLoadingProxies()
       );
       services.AddScoped<Random>();
+      services.AddScoped<IGooglePlaces, GooglePlaces>(
+        s => new GooglePlaces(
+          Environment.GetEnvironmentVariable("PLACES_API_KEY") ?? "PLACES_API_KEY",
+          s.GetService<IHttpClientFactory>()!,
+          s.GetService<ILogger<GooglePlaces>>()!
+        )
+      );
+      services.AddScoped<IDebtReducer, DebtReducer>();
       services.AddScoped<IUserManager, UserManager>();
-      services.AddScoped<IPaidResourceGuard, PaidResouceGuard>();
+      services.AddScoped<IPaidResourceGuard, PaidResouceGuard>(
+        s => new PaidResouceGuard(500, s.GetService<ILogger<PaidResouceGuard>>()!)
+      );
       services.AddScoped<Controllers.LoginController.GoogleTokenIdValidator>(
         _ => GoogleJsonWebSignature.ValidateAsync
       );
@@ -40,7 +54,6 @@ namespace LetsMeatAPI {
           throw new ArgumentNullException("Could not retrieve LMBlobStorage conn string")
         )
       );
-      services.AddScoped<IDebtReducer, DebtReducer>();
       services.AddControllers();
       services.AddCors(cors => cors.AddPolicy(
         _letsMeatAPIPolicy,
@@ -70,7 +83,6 @@ namespace LetsMeatAPI {
       app.UseCors(_letsMeatAPIPolicy);
       app.UseHttpsRedirection();
       app.UseRouting();
-      app.UseAuthorization();
       app.UseEndpoints(endpoints => endpoints.MapControllers());
       app.UseSwagger();
       app.UseSwaggerUI(config => {
@@ -83,6 +95,6 @@ namespace LetsMeatAPI {
                        select new ValueTuple<string, string>(user.Token!, user.Id));
     }
     private readonly IConfiguration _configuration;
-    private readonly string _letsMeatAPIPolicy = "_letsMeatAPIPolicy";
+    private const string _letsMeatAPIPolicy = "_letsMeatAPIPolicy";
   }
 }

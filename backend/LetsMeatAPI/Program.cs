@@ -6,10 +6,10 @@ namespace LetsMeatAPI {
   public class Program {
     public static void Main(string[] args) {
       var timer = new Timer(
-        _ => PaidResouceGuard.DecayCounter(),
+        _ => PaidResouceGuard.DecayCounter(500),
         null,
-        600_000,
-        10_000
+        0,
+        30_000
       );
       CreateHostBuilder(args).Build().Run();
     }

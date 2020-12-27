@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace LetsMeatAPI.Controllers {
@@ -132,7 +133,7 @@ namespace LetsMeatAPI.Controllers {
       if(grp == null)
         return NotFound();
       if(!grp.Users.Any(u => u.Id == userId))
-        return Forbid();
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       var debts = from debt in _context.Debts
                   where debt.GroupId == id
                   select new { debt.Amount, debt.FromId, debt.ToId };
@@ -160,12 +161,12 @@ namespace LetsMeatAPI.Controllers {
       if(pendingDebt == null)
         return NotFound();
       if(!pendingDebt.Group.Users.Any(u => u.Id == userId))
-        return Forbid();
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       if(
         !pendingDebt.Group.Users.Any(u => u.Id == pendingDebt.FromId) ||
         !pendingDebt.Group.Users.Any(u => u.Id == pendingDebt.ToId)
       ) {
-        return Forbid();
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       }
       var switchSign = pendingDebt.FromId.CompareTo(pendingDebt.ToId) < 0;
       if(switchSign)

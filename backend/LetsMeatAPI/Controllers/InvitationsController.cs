@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace LetsMeatAPI.Controllers {
@@ -58,7 +59,7 @@ namespace LetsMeatAPI.Controllers {
       if(grp == null)
         return NotFound();
       if(!grp.Users.Any(u => u.Id == userId))
-        return Forbid();
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       if(grp.Users.Any(u => u.Id == body.to_id))
         return Conflict();
       var inv = await _context.Invitations.FindAsync(

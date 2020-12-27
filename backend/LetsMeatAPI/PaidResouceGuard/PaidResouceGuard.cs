@@ -3,51 +3,56 @@ using LetsMeatAPI.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace LetsMeatAPI {
   public interface IPaidResourceGuard {
-    public bool CanAccessPaidResource(User user);
+    public Task<bool> CanAccessPaidResource(User user);
   }
   public class PaidResouceGuard : IPaidResourceGuard {
-    public PaidResouceGuard(ILogger<PaidResouceGuard> logger) {
+    public PaidResouceGuard(
+      int delay,
+      ILogger<PaidResouceGuard> logger
+    ) {
+      _delay = delay;
       _logger = logger;
     }
-    public bool CanAccessPaidResource(User user) {
-      if(
-        user.Token == null ||
-        user.Token.StartsWith(LoginController.FakeTokenPrefix)
-      ) {
-        return false;
-      }
-      try {
-        _mtx.AcquireWriterLock(_mtxTimeout);
-        var ret = false;
-        if(_counter < MaxAccesses) {
-          ++_counter;
-          ret = true;
+    public Task<bool> CanAccessPaidResource(User user) {
+      return Task.Run(() => {
+        if(
+          user.Token == null ||
+          user.Token.StartsWith(LoginController.FakeTokenPrefix)
+        ) {
+          return false;
         }
-        _mtx.ReleaseWriterLock();
-        return ret;
-      } catch(ApplicationException ex) {
-        _logger.LogError(ex.ToString());
-        return false;
-      }
+        try {
+          _mtx.AcquireWriterLock(4 * _delay);
+          var ret = _counter < MaxAccesses;
+          if(ret)
+            ++_counter;
+          Thread.Sleep(_delay);
+          _mtx.ReleaseWriterLock();
+          return ret;
+        } catch(ApplicationException ex) {
+          _logger.LogError(ex.ToString());
+          return false;
+        }
+      });
     }
-    public static void DecayCounter() {
+    public static void DecayCounter(int delay) {
       try {
-        _mtx.AcquireWriterLock(_mtxTimeout);
+        _mtx.AcquireWriterLock(delay);
         if(_counter > 0)
           --_counter;
         _mtx.ReleaseWriterLock();
-      } catch(ApplicationException) {
-      }
+      } catch(ApplicationException) { }
     }
     public static void ResetCounterForTesting() {
       _counter = 0;
     }
+    private readonly int _delay;
     private readonly ILogger<PaidResouceGuard> _logger;
     private static readonly ReaderWriterLock _mtx = new();
-    private const int _mtxTimeout = 500;
     private static uint _counter = 0;
     public const uint MaxAccesses = 50;
   }

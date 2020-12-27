@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace LetsMeatAPI.Controllers {
@@ -71,10 +72,7 @@ namespace LetsMeatAPI.Controllers {
       if(userId == null)
         return Unauthorized();
       var user = await _context.Users.FindAsync(userId);
-      if(user == null)
-        return NotFound();
-      if(!_paidResourceGuard.CanAccessPaidResource(user))
-        return Forbid();
+      var canAccess = _paidResourceGuard.CanAccessPaidResource(user);
       if(file.Length > MaxFilesize)
         return new StatusCodeResult(418);
       var ev = await _context.Events.FindAsync(event_id);
@@ -86,6 +84,8 @@ namespace LetsMeatAPI.Controllers {
       var filename = $"{DateTime.UtcNow:yyyyddmmssffff}{new Random().Next(0, 1000)}{extension}";
       var client = _blobClientFactory.GetImageClient(filename);
       using var stream = file.OpenReadStream();
+      if(!await canAccess)
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       await client.UploadAsync(stream);
       var image = new Image() {
         EventId = event_id,
