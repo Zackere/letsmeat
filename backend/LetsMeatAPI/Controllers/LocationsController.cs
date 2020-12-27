@@ -38,6 +38,16 @@ namespace LetsMeatAPI.Controllers {
       public ulong waiting_time_votes { get; set; }
       public double overall_score { get; set; }
       public double personalized_score { get; set; }
+      public Rating(LocationBase location) {
+        amount_of_food = location.AmountOfFood;
+        amount_of_food_votes = location.AmountOfFoodVotes;
+        price = location.Price;
+        price_votes = location.PriceVotes;
+        taste = location.Taste;
+        taste_votes = location.TasteVotes;
+        waiting_time = location.WaitingTime;
+        waiting_time_votes = location.WaitingTimeVotes;
+      }
       public Rating FillPersonalizedInfo(User user) {
         // TODO(wreplin): Fill in a meaningful way based on user preferences
         var rnd = new Random();
@@ -85,16 +95,8 @@ namespace LetsMeatAPI.Controllers {
         created_for_id = location.CreatedForId,
         id = location.Id,
         name = location.Name,
-        rating = new Rating {
-          amount_of_food = location.AmountOfFood,
-          amount_of_food_votes = location.AmountOfFoodVotes,
-          price = location.Price,
-          price_votes = location.PriceVotes,
-          taste = location.Taste,
-          taste_votes = location.TasteVotes,
-          waiting_time = location.WaitingTime,
-          waiting_time_votes = location.WaitingTimeVotes,
-        }.FillPersonalizedInfo(await _context.Users.FindAsync(userId)),
+        rating = new Rating(location)
+                 .FillPersonalizedInfo(await _context.Users.FindAsync(userId)),
       };
     }
     public class LocationCreateFromGMapsBody {
@@ -142,16 +144,7 @@ namespace LetsMeatAPI.Controllers {
               url = location.Url,
               vicinity = location.Vicinity,
             },
-            rating = new Rating {
-              amount_of_food = location.AmountOfFood,
-              amount_of_food_votes = location.AmountOfFoodVotes,
-              price = location.Price,
-              price_votes = location.PriceVotes,
-              taste = location.Taste,
-              taste_votes = location.TasteVotes,
-              waiting_time = location.WaitingTime,
-              waiting_time_votes = location.WaitingTimeVotes,
-            }.FillPersonalizedInfo(user),
+            rating = new Rating(location).FillPersonalizedInfo(user),
           };
         }
         return NotFound();
@@ -199,16 +192,7 @@ namespace LetsMeatAPI.Controllers {
           url = location.Url,
           vicinity = location.Vicinity,
         },
-        rating = new Rating {
-          amount_of_food = location.AmountOfFood,
-          amount_of_food_votes = location.AmountOfFoodVotes,
-          price = location.Price,
-          price_votes = location.PriceVotes,
-          taste = location.Taste,
-          taste_votes = location.TasteVotes,
-          waiting_time = location.WaitingTime,
-          waiting_time_votes = location.WaitingTimeVotes,
-        }.FillPersonalizedInfo(user),
+        rating = new Rating(location).FillPersonalizedInfo(user),
       };
     }
     public class LocationInformationResponse {
@@ -255,10 +239,10 @@ namespace LetsMeatAPI.Controllers {
       }
       var placesToBeUpdatedIds = from d in updatedDetails
                                  select d.result.place_id;
-      var placesToBeUpdated = from l in _context.GoogleMapsLocations
-                              where placesToBeUpdatedIds.Contains(l.Id)
-                              orderby l.Id
-                              select l;
+      var placesToBeUpdated = (from l in _context.GoogleMapsLocations
+                               where placesToBeUpdatedIds.Contains(l.Id)
+                               orderby l.Id
+                               select l).AsEnumerable();
       foreach(var (p, d) in placesToBeUpdated.Zip(updatedDetails)) {
         if(d.status != "OK")
           continue;
@@ -287,16 +271,7 @@ namespace LetsMeatAPI.Controllers {
                                               created_for_id = l.CreatedForId,
                                               id = l.Id,
                                               name = l.Name,
-                                              rating = new Rating {
-                                                amount_of_food = l.AmountOfFood,
-                                                amount_of_food_votes = l.AmountOfFoodVotes,
-                                                price = l.Price,
-                                                price_votes = l.PriceVotes,
-                                                taste = l.Taste,
-                                                taste_votes = l.TasteVotes,
-                                                waiting_time = l.WaitingTime,
-                                                waiting_time_votes = l.WaitingTimeVotes,
-                                              }
+                                              rating = new Rating(l),
                                             }).ToListAsync(),
         google_maps_location_information = await (from l in _context.GoogleMapsLocations
                                                   where body.google_maps_location_ids.Contains(l.Id)
@@ -310,16 +285,7 @@ namespace LetsMeatAPI.Controllers {
                                                       url = l.Url,
                                                       vicinity = l.Vicinity,
                                                     },
-                                                    rating = new Rating {
-                                                      amount_of_food = l.AmountOfFood,
-                                                      amount_of_food_votes = l.AmountOfFoodVotes,
-                                                      price = l.Price,
-                                                      price_votes = l.PriceVotes,
-                                                      taste = l.Taste,
-                                                      taste_votes = l.TasteVotes,
-                                                      waiting_time = l.WaitingTime,
-                                                      waiting_time_votes = l.WaitingTimeVotes,
-                                                    }
+                                                    rating = new Rating(l),
                                                   }).ToListAsync(),
       };
       foreach(var l in ret.custom_location_infomation)
@@ -371,16 +337,7 @@ namespace LetsMeatAPI.Controllers {
                               address = l.Address,
                               id = l.Id,
                               name = l.Name,
-                              rating = new Rating {
-                                amount_of_food = l.AmountOfFood,
-                                amount_of_food_votes = l.AmountOfFoodVotes,
-                                price = l.Price,
-                                price_votes = l.PriceVotes,
-                                taste = l.Taste,
-                                taste_votes = l.TasteVotes,
-                                waiting_time = l.WaitingTime,
-                                waiting_time_votes = l.WaitingTimeVotes,
-                              },
+                              rating = new Rating(l),
                             }).ToList(),
         google_maps_locations = await (from l in _context.GoogleMapsLocations
                                        where l.Name.Contains(query_string) || l.FormattedAddress.Contains(query_string)
@@ -394,16 +351,7 @@ namespace LetsMeatAPI.Controllers {
                                            url = l.Url,
                                            vicinity = l.Vicinity,
                                          },
-                                         rating = new Rating {
-                                           amount_of_food = l.AmountOfFood,
-                                           amount_of_food_votes = l.AmountOfFoodVotes,
-                                           price = l.Price,
-                                           price_votes = l.PriceVotes,
-                                           taste = l.Taste,
-                                           taste_votes = l.TasteVotes,
-                                           waiting_time = l.WaitingTime,
-                                           waiting_time_votes = l.WaitingTimeVotes,
-                                         },
+                                         rating = new Rating(l),
                                        }).ToListAsync(),
         google_maps_locations_predictions = Enumerable.Empty<IGooglePlaces.PlaceAutocompleteResponse.Prediction>(),
       };
@@ -453,10 +401,7 @@ namespace LetsMeatAPI.Controllers {
       ) {
         return new StatusCodeResult(418);
       }
-      if(body.custom_location_id != null) {
-        var location = await _context.CustomLocations.FindAsync(body.custom_location_id);
-        if(location == null)
-          return NotFound();
+      void rate(LocationBase location) {
         if(body.amount_of_food != null) {
           location.AmountOfFood += (ulong)body.amount_of_food;
           ++location.AmountOfFoodVotes;
@@ -473,28 +418,19 @@ namespace LetsMeatAPI.Controllers {
           location.WaitingTime += (ulong)body.waiting_time;
           ++location.WaitingTimeVotes;
         }
+      }
+      if(body.custom_location_id != null) {
+        var location = await _context.CustomLocations.FindAsync(body.custom_location_id);
+        if(location == null)
+          return NotFound();
+        rate(location);
         _context.Entry(location).State = EntityState.Modified;
       }
       if(body.google_maps_id != null) {
         var location = await _context.GoogleMapsLocations.FindAsync(body.google_maps_id);
         if(location == null)
           return NotFound();
-        if(body.amount_of_food != null) {
-          location.AmountOfFood += (ulong)body.amount_of_food;
-          ++location.AmountOfFoodVotes;
-        }
-        if(body.price != null) {
-          location.Price += (ulong)body.price;
-          ++location.PriceVotes;
-        }
-        if(body.taste != null) {
-          location.Taste += (ulong)body.taste;
-          ++location.TasteVotes;
-        }
-        if(body.waiting_time != null) {
-          location.WaitingTime += (ulong)body.waiting_time;
-          ++location.WaitingTimeVotes;
-        }
+        rate(location);
         _context.Entry(location).State = EntityState.Modified;
       }
       try {

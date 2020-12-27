@@ -25,8 +25,8 @@ namespace LetsMeatAPI.Controllers {
         public string? google_maps_location_id { get; set; }
         public Guid? custom_location_id { get; set; }
       }
-      public DateTime[]? times { get; set; }
-      public LocationInformation[]? locations { get; set; }
+      public IEnumerable<DateTime>? times { get; set; }
+      public IEnumerable<LocationInformation>? locations { get; set; }
     }
     [HttpGet]
     [Route("result")]
@@ -123,47 +123,51 @@ namespace LetsMeatAPI.Controllers {
         return NotFound();
       if(DateTime.SpecifyKind(ev.Deadline, DateTimeKind.Utc) < DateTime.UtcNow)
         return new StatusCodeResult(418);
-      if(body.vote_information.locations == null)
-        body.vote_information.locations = new VoteInformation.LocationInformation[] { };
-      if(body.vote_information.times == null)
-        body.vote_information.times = new DateTime[] { };
-      if(body.vote_information.locations
-        .Any(l => l.google_maps_location_id == null && l.custom_location_id == null)) {
-        return new StatusCodeResult(418);
+      var vote = await _context.Votes.FindAsync(body.event_id, userId);
+      var deserializedVote = vote == null
+        ? new VoteInformation {
+          locations = Enumerable.Empty<VoteInformation.LocationInformation>(),
+          times = Enumerable.Empty<DateTime>(),
+        }
+        : JsonSerializer.Deserialize<VoteInformation>(vote.Order);
+      if(body.vote_information.times != null) {
+        body.vote_information.times =
+          body.vote_information.times
+          .Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc))
+          .Distinct();
+        var candidateTimes = JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes);
+        candidateTimes = candidateTimes.Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc));
+        var timesDiff = body.vote_information.times.Except(candidateTimes);
+        if(timesDiff.Count() > 0)
+          return NotFound(timesDiff);
+        deserializedVote.times = body.vote_information.times;
       }
-      if(body.vote_information.locations
+      if(body.vote_information.locations != null) {
+        if(body.vote_information.locations
         .Where(l => l.custom_location_id != null)
         .Any(l => !_context.CustomLocations.Any(c => c.Id == l.custom_location_id))) {
-        return NotFound();
+          return NotFound();
+        }
+        if(body.vote_information.locations
+          .Where(l => l.google_maps_location_id != null)
+          .Any(l => !_context.GoogleMapsLocations.Any(c => c.Id == l.google_maps_location_id))) {
+          return NotFound();
+        }
+        body.vote_information.locations =
+          body.vote_information.locations
+            .Where(l => l.custom_location_id != null ^ l.custom_location_id != null)
+            .Distinct();
+        deserializedVote.locations = body.vote_information.locations;
       }
-      if(body.vote_information.locations
-        .Where(l => l.google_maps_location_id != null)
-        .Any(l => !_context.GoogleMapsLocations.Any(c => c.Id == l.google_maps_location_id))) {
-        return NotFound();
-      }
-      var candidateTimes = JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes);
-      var timesDiff = body.vote_information.times.Except(candidateTimes);
-      if(timesDiff.Count() > 0)
-        return NotFound(timesDiff);
-      body.vote_information.locations =
-        body.vote_information.locations
-        .Distinct()
-        .ToArray();
-      body.vote_information.times =
-        body.vote_information.times
-        .Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc))
-        .Distinct()
-        .ToArray();
-      var vote = await _context.Votes.FindAsync(body.event_id, userId);
       if(vote == null) {
         vote = new() {
           EventId = body.event_id,
-          Order = JsonSerializer.Serialize(body.vote_information),
+          Order = JsonSerializer.Serialize(deserializedVote),
           UserId = userId,
         };
         await _context.Votes.AddAsync(vote);
       } else {
-        vote.Order = JsonSerializer.Serialize(body.vote_information);
+        vote.Order = JsonSerializer.Serialize(deserializedVote);
         _context.Entry(vote).State = EntityState.Modified;
       }
       try {
