@@ -78,7 +78,6 @@ namespace LetsMeatAPI.Controllers {
         _logger.LogError(ex.ToString());
         return Conflict();
       }
-      await _debtReducer.ReduceDebts((Guid)body.group_id);
       return Ok();
     }
     public class DebtPendingResponse {
@@ -91,6 +90,7 @@ namespace LetsMeatAPI.Controllers {
         public uint amount { get; set; }
         public string description { get; set; }
         public Guid? image_id { get; set; }
+        public DateTime timestamp { get; set; }
       }
       public IEnumerable<PendingDebtInformation> pending_debts { get; set; }
     }
@@ -104,7 +104,8 @@ namespace LetsMeatAPI.Controllers {
         return Unauthorized();
       return new DebtPendingResponse {
         pending_debts = from debt in _context.PendingDebts
-                        where debt.ToId == userId
+                        where debt.FromId == userId
+                        orderby debt.Timestamp descending
                         select new DebtPendingResponse.PendingDebtInformation {
                           amount = debt.Amount,
                           description = debt.Description,
@@ -113,6 +114,7 @@ namespace LetsMeatAPI.Controllers {
                           group_id = debt.GroupId,
                           id = debt.Id,
                           image_id = debt.ImageId,
+                          timestamp = DateTime.SpecifyKind(debt.Timestamp, DateTimeKind.Utc),
                           to_id = debt.ToId,
                         },
       };
@@ -193,6 +195,7 @@ namespace LetsMeatAPI.Controllers {
         _logger.LogError(ex.ToString());
         return Conflict();
       }
+      await _debtReducer.ReduceDebts(pendingDebt.GroupId);
       return Ok();
     }
     [HttpPost]
