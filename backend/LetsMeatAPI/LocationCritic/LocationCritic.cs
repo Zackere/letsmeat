@@ -11,19 +11,19 @@ namespace LetsMeatAPI {
       var ret = 0.0;
       var nProps = 0;
       if(location.AmountOfFoodVotes > 0) {
-        ret = 100 * (double)location.AmountOfFood / location.AmountOfFoodVotes;
+        ret = (double)location.AmountOfFood / location.AmountOfFoodVotes;
         ++nProps;
       }
       if(location.PriceVotes > 0) {
-        ret += 100 * (double)location.Price / location.PriceVotes;
+        ret += (double)location.Price / location.PriceVotes;
         ++nProps;
       }
       if(location.TasteVotes > 0) {
-        ret += 100 * (double)location.Taste / location.TasteVotes;
+        ret += (double)location.Taste / location.TasteVotes;
         ++nProps;
       }
       if(location.TasteVotes > 0) {
-        ret += 100 * (double)location.WaitingTime / location.WaitingTimeVotes;
+        ret += (double)location.WaitingTime / location.WaitingTimeVotes;
         ++nProps;
       }
       if(nProps > 0)
@@ -50,7 +50,7 @@ namespace LetsMeatAPI {
         ++nProps;
       }
       if(nProps > 0)
-        return ret / nProps;
+        return ret / (nProps * 100);
       return ret;
     }
   }

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -26,9 +27,22 @@ namespace LetsMeatAPI.Controllers {
       _logger = logger;
     }
     public class VoteInformation {
-      public class LocationInformation {
+      public class LocationInformation : IEquatable<LocationInformation> {
         public string? google_maps_location_id { get; set; }
         public Guid? custom_location_id { get; set; }
+        public bool Equals([AllowNull] LocationInformation other) {
+          return other != null &&
+                 google_maps_location_id == other.google_maps_location_id &&
+                 custom_location_id == other.custom_location_id;
+        }
+        public override bool Equals([AllowNull] object other) {
+          return Equals(other as LocationInformation);
+        }
+        public override int GetHashCode() {
+          if(google_maps_location_id != null)
+            return google_maps_location_id.GetHashCode();
+          return custom_location_id.GetHashCode();
+        }
       }
       public IEnumerable<DateTime>? times { get; set; }
       public IEnumerable<LocationInformation>? locations { get; set; }
