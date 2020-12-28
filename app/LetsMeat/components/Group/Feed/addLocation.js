@@ -3,60 +3,16 @@ import React, {
   useCallback, useContext, useRef, useState
 } from 'react';
 import {
-  StyleSheet, Text, Image
+  StyleSheet
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import {
-  Button, Card, Paragraph, Searchbar, Surface
+  Button, Searchbar, Surface
 } from 'react-native-paper';
 import { randomId } from '../../../helpers/random';
 import { createLocationGoogle, searchLocation, updateEvent } from '../../Requests';
 import { store } from '../../Store';
-
-const GMapsPredictionCard = ({ location, onPress }) => (
-  <Card style={styles.searchResult} onPress={onPress}>
-    <Card.Title title={location.structured_formatting.main_text} />
-    <Card.Content>
-      <Paragraph>
-        { location.description}
-      </Paragraph>
-    </Card.Content>
-  </Card>
-);
-
-const GMapsCard = ({ location, onPress }) => (
-  <Card style={styles.searchResult} onPress={onPress}>
-    <Card.Title title={location.details.name} />
-    <Card.Content>
-      <Paragraph>
-        {location.details.formatted_address}
-      </Paragraph>
-      <Image style={{ width: 20, height: 20 }} source={{ uri: location.details.icon }} />
-    </Card.Content>
-  </Card>
-);
-
-const CustomLocationCard = ({ location, onPress }) => (
-  <Card style={styles.searchResult}>
-    <Card.Title />
-    <Card.Content>
-      <Paragraph>
-        <Text>custom</Text>
-      </Paragraph>
-    </Card.Content>
-  </Card>
-);
-
-const LocationCard = ({
-  location, onPressPrediction, onPressGMaps, onPressCustom
-}) => {
-  const { kind } = location;
-  const [Component, onPress] = (kind === 'google_maps_locations_predictions'
-    ? [GMapsPredictionCard, onPressPrediction]
-    : kind === 'google_maps_locations'
-      ? [GMapsCard, onPressGMaps] : [CustomLocationCard, onPressCustom]);
-  return <Component location={location} onPress={onPress} />;
-};
+import LocationCard from '../../Location';
 
 const combineLocations = (results) => {
   console.log(results);
@@ -114,7 +70,7 @@ const AddLocation = ({ navigation, route }) => {
         onChangeText={onChangeSearch}
         value={searchQuery}
       />
-      <Button onPress={() => {}}>Or add a new custom location</Button>
+      <Button onPress={() => { navigation.navigate('CreateLocation', { eventId }); }}>Or add a new custom location</Button>
       <ScrollView>
         {(searchResults && Object.keys(searchResults).length) ? (combineLocations(searchResults).map((result) => (
           <LocationCard

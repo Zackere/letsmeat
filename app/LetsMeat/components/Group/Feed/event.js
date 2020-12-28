@@ -8,8 +8,9 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {
   ActivityIndicator, Button, Card, Surface, Title
 } from 'react-native-paper';
+import { CustomLocationCard, GMapsCard } from '../../Location';
 import {
-  getEventInfo, getImagesInfo, getUsersInfo, updateEvent, uploadImage
+  getEventInfo, getImagesInfo, getUsersInfo, updateEvent, uploadImage, getLocationsInfo
 } from '../../Requests';
 import { store } from '../../Store';
 import UserCard from '../../User';
@@ -43,18 +44,37 @@ const Deadline = ({ time }) => (
   </Card>
 );
 
-const Locations = ({ custom_locations, google_locations, onAdd }) => {
+const Locations = ({
+  customLocations, googleLocations, onAdd, onVote
+}) => {
   const { state } = useContext(store);
+  const [loading, setLoading] = useState(true);
+  const [locationsInfo, setLocationsInfo] = useState(null);
+
+  useEffect(() => {
+    setLoading(true);
+    getLocationsInfo({ state }, customLocations, googleLocations)
+      .then((info) => { setLocationsInfo(info); setLoading(false); });
+  }, [customLocations, googleLocations, state]);
 
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
-      <Button style={styles.addButton} onPress={onAdd}>
-        <Icon name="plus" size={25} />
-      </Button>
-      <Button style={styles.addButton}>
-        <Icon name="vote" size={25} />
-      </Button>
-    </View>
+    loading ? <ActivityIndicator />
+      : (
+        <>
+          <View>
+            {locationsInfo.custom_location_infomation.map((l) => <CustomLocationCard location={l} key={l.id} />)}
+            {locationsInfo.google_maps_location_information.map((l) => <GMapsCard location={l} key={l.details.place_id} />)}
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
+            <Button style={styles.addButton} onPress={onAdd}>
+              <Icon name="plus" size={25} />
+            </Button>
+            <Button style={styles.addButton} onPress={onVote}>
+              <Icon name="vote" size={25} />
+            </Button>
+          </View>
+        </>
+      )
   );
 };
 
@@ -133,7 +153,6 @@ const EventView = ({ navigation, route }) => {
               <Card style={styles.section} elevation={0}>
                 <Card.Title title="Candidate Locations" />
                 <Locations
-                  locations={[...eventDetails.candidate_google_maps_locations, ...eventDetails.candidate_custom_locations]}
                   googleLocations={eventDetails.candidate_google_maps_locations}
                   customLocations={eventDetails.candidate_custom_locations}
                   onAdd={() => navigation.navigate('AddLocation', { eventId: state.event.id, groupId: state.group.id })}

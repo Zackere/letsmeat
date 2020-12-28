@@ -1,13 +1,13 @@
+/* eslint-disable no-restricted-syntax */
 import React, {
-  useState, useEffect, useContext, useLayoutEffect,
-  useRef
+  useContext, useEffect, useLayoutEffect, useState, useRef
 } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { Surface, ActivityIndicator } from 'react-native-paper';
+import { StyleSheet } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
-import { TimeCard } from './times';
+import { ActivityIndicator, Surface } from 'react-native-paper';
+import { getLocationsInfo, getVoteLocations, castVote } from '../../Requests';
 import { store } from '../../Store';
-import { castVote, getVoteTimes } from '../../Requests';
+import LocationCard from '../../Location';
 
 const VoteLocation = ({ navigation, route }) => {
   const { state } = useContext(store);
@@ -15,15 +15,16 @@ const VoteLocation = ({ navigation, route }) => {
   const { eventId } = route.params;
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState(false);
-  const [times, setTimes] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const voteData = useRef([]);
 
   const setHeaderAction = () => {
-    if (!loading && times && times.length > 0 && !voting) {
+    if (!loading && locations && locations.length > 0 && !voting) {
       navigation.setOptions({
         rightIcon: 'vote',
         rightAction: () => {
           setVoting(true);
-          castVote({ state }, eventId, times).then(() => {
+          castVote({ state }, eventId, undefined, translateLocationsToVote(locations)).then(() => {
             setVoting(false);
           });
         }
@@ -36,26 +37,64 @@ const VoteLocation = ({ navigation, route }) => {
     }
   };
 
-  useLayoutEffect(setHeaderAction, [times, loading, state, navigation, voting, eventId]);
+  useLayoutEffect(setHeaderAction, [loading, state, navigation, voting, eventId, locations]);
 
-  useEffect(() => {
-    getVoteTimes({ state }, eventId).then((data) => {
-      setTimes(data);
-      setLoading(false);
-    });
-  }, [state, eventId]);
+  const translateLocationsToVote = (locations) => locations.map((l) => {
+    if (l.kind === 'google_maps_locations') {
+      return {
+        google_maps_location_id: l.details.place_id,
+        custom_location_id: null
+      };
+    }
+    return {
+      google_maps_location_id: null,
+      custom_location_id: l.id
+    };
+  });
+
+  const translateAndSetData = (locationsInfo) => {
+    const locationsArray = [];
+    for (const l of voteData.current) {
+      if (l.google_maps_location_id) {
+        const details = locationsInfo
+          .google_maps_location_information
+          .find((d) => d.details.place_id === l.google_maps_location_id);
+        locationsArray.push({ ...details, kind: 'google_maps_locations' });
+      } else if (l.custom_location_id) {
+        const details = locationsInfo
+          .custom_location_infomation
+          .find((d) => d.id === l.custom_location_id);
+        locationsArray.push({ ...details, kind: 'custom' });
+      }
+    }
+    setLocations([...locationsArray]);
+    setLoading(false);
+  };
+
+  const getAndExtractData = () => {
+    getVoteLocations({ state }, eventId).then((data) => {
+      voteData.current = data;
+      const googleLocations = data.filter((l) => l.google_maps_location_id).map((l) => l.google_maps_location_id);
+      const customLocations = data.filter((l) => l.custom_location_id).map((l) => l.custom_location_id);
+      return getLocationsInfo({ state }, customLocations, googleLocations);
+    }).then(translateAndSetData);
+  };
+
+  useEffect(getAndExtractData, [state, eventId]);
+
+  const keyExtractor = (item) => `${item.kind === 'google_maps_locations' ? item.details.place_id : item.id}`;
 
   return (
     <Surface style={styles.container}>
       { loading ? <ActivityIndicator />
         : (
           <DraggableFlatList
-            data={times}
+            data={locations}
             renderItem={({
               item, drag, isActive
-            }) => <TimeCard time={new Date(item)} highlight={isActive} onLongPress={drag} />}
-            keyExtractor={(item) => `${item}`}
-            onDragEnd={({ data }) => setTimes(data)}
+            }) => <LocationCard location={item} onLongPress={drag} />}
+            keyExtractor={keyExtractor}
+            onDragEnd={({ data }) => setLocations(data)}
           />
         )}
     </Surface>

@@ -65,6 +65,7 @@ const Navigation = () => {
         drawerContent={(props) => (
           <DrawerContent navigation={props.navigation} />
         )}
+        edgeWidth={0}
       >
         <Drawer.Screen name="Home" component={BottomTabs} />
         <Drawer.Screen name="Groups" component={Groups} />

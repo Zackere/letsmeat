@@ -170,5 +170,5 @@ export {
   sendInvitation, getInvitations, rejectInvitation, acceptInvitation,
   uploadImage, getImagesInfo,
   getVote, getVoteTimes, getVoteLocations, castVote,
-  searchLocation, createLocationGoogle, createLocationCustom,
+  searchLocation, createLocationGoogle, createLocationCustom, getLocationsInfo
 };
