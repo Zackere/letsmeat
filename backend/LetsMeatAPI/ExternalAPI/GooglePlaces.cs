@@ -71,6 +71,7 @@ namespace LetsMeatAPI.ExternalAPI {
     public async Task<IGooglePlaces.PlaceAutocompleteResponse?>
       PlaceAutocomplete(string input, string sessionToken) {
       const string baseAddr = "https://maps.googleapis.com/maps/api/place/autocomplete/json";
+      _logger.LogInformation($"Sending autocomplete request to {baseAddr} for {input}");
       var request = new HttpRequestMessage(
         HttpMethod.Get,
         $"{baseAddr}?input={input}&types=establishment&sessiontoken={sessionToken}&key={_apiKey}"
@@ -97,6 +98,7 @@ namespace LetsMeatAPI.ExternalAPI {
       string? sessionToken
     ) {
       const string baseAddr = "https://maps.googleapis.com/maps/api/place/details/json";
+      _logger.LogInformation($"Sending details request to {baseAddr} with fields: {fields} for {placeId}");
       var request = new HttpRequestMessage(
         HttpMethod.Get,
         $"{baseAddr}?fields={fields}&place_id={placeId}&key={_apiKey}" + (sessionToken != null ? $"&sessiontoken={sessionToken}" : "")

@@ -1,5 +1,4 @@
 using LetsMeatAPI.Models;
-using System;
 
 namespace LetsMeatAPI {
   public interface ILocationCritic {

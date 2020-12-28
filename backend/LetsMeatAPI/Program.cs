@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.Threading;
 
 namespace LetsMeatAPI {
@@ -16,6 +17,7 @@ namespace LetsMeatAPI {
 
     public static IHostBuilder CreateHostBuilder(string[] args) {
       return Host.CreateDefaultBuilder(args)
+                 .ConfigureLogging(builder => builder.AddProvider(new LogsControllerLoggerProvider()))
                  .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
     }
   }

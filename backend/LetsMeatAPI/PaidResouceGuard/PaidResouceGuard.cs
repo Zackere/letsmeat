@@ -23,6 +23,7 @@ namespace LetsMeatAPI {
           user.Token == null ||
           user.Token.StartsWith(LoginController.FakeTokenPrefix)
         ) {
+          _logger.LogInformation($"Request DENIED to access paid resource for {user.Name}");
           return false;
         }
         try {
@@ -31,6 +32,7 @@ namespace LetsMeatAPI {
           if(ret)
             ++_counter;
           Thread.Sleep(_delay);
+          _logger.LogInformation($"Request to paid reasource {(ret ? "" : "NOT ")}granted. Counter: {_counter}");
           _mtx.ReleaseWriterLock();
           return ret;
         } catch(ApplicationException ex) {
