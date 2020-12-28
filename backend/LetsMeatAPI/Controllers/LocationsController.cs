@@ -156,8 +156,10 @@ namespace LetsMeatAPI.Controllers {
       var advancedDetails = await _googlePlaces.AdvancedPlaceDetails(body.place_id, body.sessiontoken);
       if(advancedDetails == null || advancedDetails.status != "OK")
         return NotFound();
-      var score = (ulong)((advancedDetails.result.rating - 1) / 4 * 100);
-      var priceScore = (ulong)(advancedDetails.result.price_level * 100 / 4);
+      var score = (ulong)((advancedDetails.result.rating - 1) * 100 / 4);
+      score *= advancedDetails.result.user_ratings_total;
+      var priceScore = (ulong)((4 - advancedDetails.result.price_level) * 100 / 4);
+      priceScore *= advancedDetails.result.user_ratings_total;
       location = new GoogleMapsLocation {
         AmountOfFood = score,
         AmountOfFoodVotes = advancedDetails.result.user_ratings_total,
