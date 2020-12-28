@@ -19,9 +19,7 @@ export const Create = ({ navigation }) => {
   };
 
   const createNewGroup = () => {
-    // console.log('let's try)
     createGroup({ state }, name).then((group) => {
-      console.log(group)
       setName('');
       setNameValid(null);
       dispatch({ type: 'ADD_GROUP', group });

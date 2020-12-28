@@ -1,22 +1,7 @@
-import React, { useContext } from 'react';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GoogleSignin } from '@react-native-community/google-signin';
-// import FormData from 'form-data';
-import { store } from '../Store';
-// import { forScaleFromCenterAndroid } from '@react-navigation/stack/lib/typescript/src/TransitionConfigs/CardStyleInterpolators';
+import axios from 'axios';
 
 const baseURL = 'https://letsmeatapi.azurewebsites.net/';
-
-// const post = (route) => {
-//   const axiosConfig = { baseURL, token };
-// };
-
-// const get = (state, endpoint) => AsyncStorage.getItem('token').then((token) => {
-//   console.log(token);
-//   const axiosConfig = { baseURL, params: { token }};
-//   return axios.get(endpoint, axiosConfig);
-// });
 
 const setUser = (userInfo) => {
   console.log('setting user');

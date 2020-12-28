@@ -62,7 +62,7 @@ const Invite = ({ navigation }) => {
 
   return (
     <Surface style={styles.container}>
-      <SelectedUsers users={selectedUsers} onClose={console.log} />
+      <SelectedUsers users={selectedUsers}/>
       <Searchbar
         style={styles.searchbar}
         placeholder="Search"
