@@ -6,10 +6,12 @@ import { Header } from '../../Header';
 import EventView from './event';
 import FeedContent from './feedContent';
 import VoteTime from './voteTime';
+import AddLocation from './addLocation';
+import VoteLocation from './voteLocation';
 
 const Stack = createStackNavigator();
 
-const SCREENS_WITHOUT_TABS = new Set(['Event', 'VoteTime', 'VoteLocation']);
+const SCREENS_WITHOUT_TABS = new Set(['Event', 'VoteTime', 'VoteLocation', 'AddLocation']);
 
 const Feed = ({ navigation, route }) => {
   const { state } = useContext(store);
@@ -46,6 +48,15 @@ const Feed = ({ navigation, route }) => {
         name="VoteTime"
         component={VoteTime}
       />
+      <Stack.Screen
+        name="AddLocation"
+        component={AddLocation}
+      />
+      <Stack.Screen
+        name="VoteLocation"
+        component={VoteLocation}
+      />
+
     </Stack.Navigator>
   );
 };

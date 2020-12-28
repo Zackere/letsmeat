@@ -43,21 +43,20 @@ const Deadline = ({ time }) => (
   </Card>
 );
 
-const Locations = ({ locations }) => (
-  <>
-    {locations.map((l) => {
-      <Card>{l}</Card>;
-    })}
+const Locations = ({ custom_locations, google_locations, onAdd }) => {
+  const { state } = useContext(store);
+
+  return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
-      <Button style={styles.addButton}>
+      <Button style={styles.addButton} onPress={onAdd}>
         <Icon name="plus" size={25} />
       </Button>
       <Button style={styles.addButton}>
         <Icon name="vote" size={25} />
       </Button>
     </View>
-  </>
-);
+  );
+};
 
 const DebtImage = ({ id }) => {
   const { state } = useContext(store);
@@ -137,6 +136,8 @@ const EventView = ({ navigation, route }) => {
                   locations={[...eventDetails.candidate_google_maps_locations, ...eventDetails.candidate_custom_locations]}
                   googleLocations={eventDetails.candidate_google_maps_locations}
                   customLocations={eventDetails.candidate_custom_locations}
+                  onAdd={() => navigation.navigate('AddLocation', { eventId: state.event.id, groupId: state.group.id })}
+                  onVote={() => navigation.navigate('VoteLocation', { eventId: state.event.id, groupId: state.group.id })}
                 />
               </Card>
               <Card style={styles.section} elevation={0}>

@@ -122,7 +122,6 @@ const uploadImage = ({ state }, eventId, image) => {
     headers: {
       Accept: 'text/',
       'Content-Type': 'multipart/form-data',
-      // Authorization: `Token ${Token}`
     },
     body: form
   }).then((response) => response.json());
@@ -130,11 +129,46 @@ const uploadImage = ({ state }, eventId, image) => {
 
 const getImagesInfo = ({ state }, ids) => post({ state }, '/Images/info', { image_ids: (Array.isArray(ids) ? ids : [ids]) }).then(extractData);
 
+const getVote = ({ state }, eventId) => get({ state }, '/Votes/get', { event_id: eventId }).then(extractData);
+
+const getVoteTimes = ({ state }, eventId) => getVote({ state }, eventId).then((data) => data.times);
+
+const getVoteLocations = ({ state }, eventId) => getVote({ state }, eventId)
+  .then((data) => data.locations);
+
+const castVote = ({ state }, eventId, times, locations) => post({ state }, '/Votes/cast',
+  {
+    event_id: eventId,
+    vote_information: {
+      times,
+      locations
+    }
+  });
+
+const searchLocation = ({ state }, groupId, query, sessionToken) => get({ state },
+  '/Locations/search',
+  { group_id: groupId, query_string: query, sessiontoken: sessionToken })
+  .then(extractData);
+
+const createLocationGoogle = ({ state }, placeId, sessionToken) => post({ state }, '/Locations/create_from_gmaps', { place_id: placeId, sessiontoken: sessionToken }).then(extractData);
+
+const createLocationCustom = ({ state }, groupId, name, address) => post({ state }, '/Locations/create_custom', { group_id: groupId, name, address }).then(extractData);
+
+const getLocationsInfo = ({ state }, customIds, googleIds) => post({ state },
+  '/Locations/info',
+  {
+    custom_location_ids: customIds,
+    google_maps_location_ids: googleIds
+  })
+  .then(extractData);
+
 export {
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups, leaveGroup, joinGroup,
   createEvent, getEventInfo, updateEvent,
   searchUsers, getUsersInfo, updatePrefs,
   sendInvitation, getInvitations, rejectInvitation, acceptInvitation,
-  uploadImage, getImagesInfo
+  uploadImage, getImagesInfo,
+  getVote, getVoteTimes, getVoteLocations, castVote,
+  searchLocation, createLocationGoogle, createLocationCustom,
 };

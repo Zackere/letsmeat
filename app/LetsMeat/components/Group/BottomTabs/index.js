@@ -29,12 +29,6 @@ const getActiveRouteState = function (route) {
 };
 
 export const BottomTabs = ({ navigation, route }) => {
-  React.useLayoutEffect(() => {
-    // console.log(route.state.routes[0])
-    // console.log(getActiveRouteState(route));
-    // console.log(getFocusedRouteNameFromRoute(route.state.routes[0]));
-  }, [navigation, route]);
-
   return (
     <Tab.Navigator
       initialRouteName="Feed"

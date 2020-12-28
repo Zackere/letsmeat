@@ -9,8 +9,8 @@ import {
 } from 'react-native-paper';
 import { formatDate, formatTime, getTimeLeft } from '../../../helpers/time';
 
-export const TimeCard = ({ time, highlight = false }) => (
-  <Card style={styles.timeCard} elevation={highlight ? 5 : 1}>
+export const TimeCard = ({ time, highlight = false, onLongPress }) => (
+  <Card style={styles.timeCard} elevation={highlight ? 5 : 1} onLongPress={onLongPress}>
     <View style={{ textAlign: 'center' }}>
       <Headline style={{ fontSize: 30, textAlign: 'center' }}>
         {formatTime(time)}

@@ -9,7 +9,7 @@ import { TimeCard } from './times';
 import { store } from '../../Store';
 import { castVote, getVoteTimes } from '../../Requests';
 
-const VoteTime = ({ navigation, route }) => {
+const VoteLocation = ({ navigation, route }) => {
   const { state } = useContext(store);
 
   const { eventId } = route.params;
@@ -72,4 +72,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default VoteTime;
+export default VoteLocation;
