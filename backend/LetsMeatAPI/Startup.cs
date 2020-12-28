@@ -1,4 +1,5 @@
 using Google.Apis.Auth;
+using LetsMeatAPI.Controllers;
 using LetsMeatAPI.ExternalAPI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +25,8 @@ namespace LetsMeatAPI {
                .UseLazyLoadingProxies()
       );
       services.AddScoped<Random>();
+      services.AddScoped<ILocationCritic, LocationCritic>();
+      services.AddScoped<IElectionHolder, ElectionHolder>();
       services.AddScoped<IGooglePlaces, GooglePlaces>(
         s => new GooglePlaces(
           Environment.GetEnvironmentVariable("PLACES_API_KEY") ?? "PLACES_API_KEY",
@@ -36,10 +39,10 @@ namespace LetsMeatAPI {
       services.AddScoped<IPaidResourceGuard, PaidResouceGuard>(
         s => new PaidResouceGuard(500, s.GetService<ILogger<PaidResouceGuard>>()!)
       );
-      services.AddScoped<Controllers.LoginController.GoogleTokenIdValidator>(
+      services.AddScoped<LoginController.GoogleTokenIdValidator>(
         _ => GoogleJsonWebSignature.ValidateAsync
       );
-      services.AddScoped(_ => new Controllers.LoginController.GoogleAudiences {
+      services.AddScoped(_ => new LoginController.GoogleAudiences {
         Auds = from aud in new[] {
                 Environment.GetEnvironmentVariable("WEB_GOOGLE_CLIENT_ID"),
                 Environment.GetEnvironmentVariable("MOBILE_GOOGLE_CLIENT_ID")
@@ -76,7 +79,7 @@ namespace LetsMeatAPI {
       IWebHostEnvironment env,
       LMDbContext context
     ) {
-      app.UseMiddleware<Utils.RequestResponseLoggingMiddleware>();
+      app.UseMiddleware<RequestResponseLoggingMiddleware>();
       if(env.IsDevelopment()) {
         app.UseDeveloperExceptionPage();
       }

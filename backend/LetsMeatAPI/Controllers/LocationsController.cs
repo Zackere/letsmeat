@@ -19,12 +19,14 @@ namespace LetsMeatAPI.Controllers {
       LMDbContext context,
       IGooglePlaces googlePlaces,
       IPaidResourceGuard paidResourceGuard,
+      ILocationCritic critic,
       ILogger<LocationsController> logger
     ) {
       _userManager = userManager;
       _context = context;
       _googlePlaces = googlePlaces;
       _paidResourceGuard = paidResourceGuard;
+      _critic = critic;
       _logger = logger;
     }
     public class Rating {
@@ -39,6 +41,7 @@ namespace LetsMeatAPI.Controllers {
       public double overall_score { get; set; }
       public double personalized_score { get; set; }
       public Rating(LocationBase location) {
+        _location = location;
         amount_of_food = location.AmountOfFood;
         amount_of_food_votes = location.AmountOfFoodVotes;
         price = location.Price;
@@ -48,13 +51,12 @@ namespace LetsMeatAPI.Controllers {
         waiting_time = location.WaitingTime;
         waiting_time_votes = location.WaitingTimeVotes;
       }
-      public Rating FillPersonalizedInfo(User user) {
-        // TODO(wreplin): Fill in a meaningful way based on user preferences
-        var rnd = new Random();
-        overall_score = rnd.NextDouble() * 100;
-        personalized_score = rnd.NextDouble() * 100;
+      public Rating FillPersonalizedInfo(User user, ILocationCritic critic) {
+        overall_score = critic.AbsoluteScore(_location);
+        personalized_score = critic.PersonalScore(_location, user);
         return this;
       }
+      private readonly LocationBase _location;
     }
     public class LocationCreateCustomBody {
       public Guid group_id { get; set; }
@@ -96,7 +98,7 @@ namespace LetsMeatAPI.Controllers {
         id = location.Id,
         name = location.Name,
         rating = new Rating(location)
-                 .FillPersonalizedInfo(await _context.Users.FindAsync(userId)),
+                 .FillPersonalizedInfo(await _context.Users.FindAsync(userId), _critic),
       };
     }
     public class LocationCreateFromGMapsBody {
@@ -144,7 +146,7 @@ namespace LetsMeatAPI.Controllers {
               url = location.Url,
               vicinity = location.Vicinity,
             },
-            rating = new Rating(location).FillPersonalizedInfo(user),
+            rating = new Rating(location).FillPersonalizedInfo(user, _critic),
           };
         }
         return NotFound();
@@ -192,7 +194,7 @@ namespace LetsMeatAPI.Controllers {
           url = location.Url,
           vicinity = location.Vicinity,
         },
-        rating = new Rating(location).FillPersonalizedInfo(user),
+        rating = new Rating(location).FillPersonalizedInfo(user, _critic),
       };
     }
     public class LocationInformationResponse {
@@ -289,9 +291,9 @@ namespace LetsMeatAPI.Controllers {
                                                   }).ToListAsync(),
       };
       foreach(var l in ret.custom_location_infomation)
-        l.rating.FillPersonalizedInfo(user);
+        l.rating.FillPersonalizedInfo(user, _critic);
       foreach(var l in ret.google_maps_location_information)
-        l.rating.FillPersonalizedInfo(user);
+        l.rating.FillPersonalizedInfo(user, _critic);
       return new LocationInformationResponse {
         custom_location_infomation = ret.custom_location_infomation
                                         .OrderByDescending(l => l.rating.personalized_score),
@@ -356,9 +358,9 @@ namespace LetsMeatAPI.Controllers {
         google_maps_locations_predictions = Enumerable.Empty<IGooglePlaces.PlaceAutocompleteResponse.Prediction>(),
       };
       foreach(var l in ret.custom_locations)
-        l.rating.FillPersonalizedInfo(user);
+        l.rating.FillPersonalizedInfo(user, _critic);
       foreach(var l in ret.google_maps_locations)
-        l.rating.FillPersonalizedInfo(user);
+        l.rating.FillPersonalizedInfo(user, _critic);
       if(await canAccess) {
         var placesResponse = await _googlePlaces.PlaceAutocomplete(query_string, sessiontoken);
         if(placesResponse != null && placesResponse.status == "OK" && placesResponse.predictions != null)
@@ -445,6 +447,7 @@ namespace LetsMeatAPI.Controllers {
     private readonly LMDbContext _context;
     private readonly IGooglePlaces _googlePlaces;
     private readonly IPaidResourceGuard _paidResourceGuard;
+    private readonly ILocationCritic _critic;
     private readonly ILogger<LocationsController> _logger;
   }
 }

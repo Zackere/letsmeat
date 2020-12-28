@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace LetsMeatAPI.Utils {
+namespace LetsMeatAPI {
   public class RequestResponseLoggingMiddleware {
     public RequestResponseLoggingMiddleware(
       RequestDelegate next

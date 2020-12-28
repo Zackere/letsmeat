@@ -1,3 +1,4 @@
+using LetsMeatAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -14,10 +15,14 @@ namespace LetsMeatAPI.Controllers {
     public VotesController(
       IUserManager userManager,
       LMDbContext context,
+      ILocationCritic critic,
+      IElectionHolder electionHolder,
       ILogger<VotesController> logger
     ) {
       _userManager = userManager;
       _context = context;
+      _critic = critic;
+      _electionHolder = electionHolder;
       _logger = logger;
     }
     public class VoteInformation {
@@ -34,7 +39,61 @@ namespace LetsMeatAPI.Controllers {
       string token,
       Guid event_id
     ) {
-      return new StatusCodeResult(501);
+      var userId = _userManager.IsLoggedIn(token);
+      if(userId == null)
+        return Unauthorized();
+      var user = await _context.Users.FindAsync(userId);
+      var ev = await _context.Events.FindAsync(event_id);
+      var candidateLocationToOrdinal = new Dictionary<VoteInformation.LocationInformation, int>();
+      var ordinalToCandidateLocation = new Dictionary<int, VoteInformation.LocationInformation>();
+      var ordinal = 0;
+      foreach(var l in ev.CandidateGoogleMapsLocations) {
+        var candidate = new VoteInformation.LocationInformation {
+          google_maps_location_id = l.Id,
+        };
+        candidateLocationToOrdinal[candidate] = ordinal;
+        ordinalToCandidateLocation[ordinal] = candidate;
+        ++ordinal;
+      }
+      foreach(var l in ev.CandidateCustomLocations) {
+        var candidate = new VoteInformation.LocationInformation {
+          custom_location_id = l.Id,
+        };
+        candidateLocationToOrdinal[candidate] = ordinal;
+        ordinalToCandidateLocation[ordinal] = candidate;
+        ++ordinal;
+      }
+      var votes = from vote in ev.Votes
+                  select CompleteVoteIfNotEmpty(
+                    JsonSerializer.Deserialize<VoteInformation>(vote.Order),
+                    ev,
+                    user
+                  );
+      var locationVotes = from vote in votes
+                          where vote.locations.Any()
+                          select from location in vote.locations
+                                 select candidateLocationToOrdinal[location];
+      var locationOrder = _electionHolder.DecideWinner(ordinal, locationVotes);
+      ordinal = 0;
+      var candidateTimeToOrdinal = new Dictionary<DateTime, int>();
+      var ordinalToCandidateTime = new Dictionary<int, DateTime>();
+      foreach(var time in from time in JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes)
+                          select time.ToUniversalTime()) {
+        candidateTimeToOrdinal[time] = ordinal;
+        ordinalToCandidateTime[ordinal] = time;
+        ++ordinal;
+      }
+      var timesVotes = from vote in votes
+                       where vote.times.Any()
+                       select from time in vote.times
+                              select candidateTimeToOrdinal[time];
+      var timeOrder = _electionHolder.DecideWinner(ordinal, timesVotes);
+      return new VoteInformation {
+        locations = from locationOrdinal in locationOrder
+                    select ordinalToCandidateLocation[locationOrdinal],
+        times = from timeOrdinal in timeOrder
+                select ordinalToCandidateTime[timeOrdinal],
+      };
     }
     [HttpGet]
     [Route("get")]
@@ -45,6 +104,7 @@ namespace LetsMeatAPI.Controllers {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
         return Unauthorized();
+      var user = await _context.Users.FindAsync(userId);
       var ev = await _context.Events.FindAsync(event_id);
       if(ev == null)
         return NotFound();
@@ -52,10 +112,12 @@ namespace LetsMeatAPI.Controllers {
       if(vote == null) {
         return new VoteInformation {
           locations = ev.CandidateGoogleMapsLocations
+                        .OrderByDescending(l => _critic.PersonalScore(l, user))
                         .Select(l => new VoteInformation.LocationInformation {
                           google_maps_location_id = l.Id,
                         })
                         .Union(ev.CandidateCustomLocations
+                        .OrderByDescending(l => _critic.PersonalScore(l, user))
                         .Select(l => new VoteInformation.LocationInformation {
                           custom_location_id = l.Id,
                         }))
@@ -65,33 +127,11 @@ namespace LetsMeatAPI.Controllers {
                   .ToArray(),
         };
       }
-      var ret = JsonSerializer.Deserialize<VoteInformation>(vote.Order);
-      // Union guarantees to preserve order
-      ret.locations = ret.locations
-        .Where(l => {
-          if(l.custom_location_id != null)
-            return _context.CustomLocations.Any(c => c.Id == l.custom_location_id);
-          if(l.google_maps_location_id != null)
-            return _context.GoogleMapsLocations.Any(c => c.Id == l.google_maps_location_id);
-          return false;
-        })
-        .Union(ev.CandidateCustomLocations
-          .Select(l =>
-            new VoteInformation.LocationInformation() {
-              custom_location_id = l.Id
-            })
-          )
-        .Union(ev.CandidateGoogleMapsLocations
-          .Select(l =>
-            new VoteInformation.LocationInformation() {
-              google_maps_location_id = l.Id
-            })
-          )
-        .ToArray();
-      ret.times = ret.times
-        .Union(JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes))
-        .Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc))
-        .ToArray();
+      var ret = CompleteVote(
+        JsonSerializer.Deserialize<VoteInformation>(vote.Order),
+        ev,
+        user
+      );
       var newOrder = JsonSerializer.Serialize(ret);
       if(newOrder != vote.Order) {
         vote.Order = newOrder;
@@ -155,7 +195,7 @@ namespace LetsMeatAPI.Controllers {
         }
         body.vote_information.locations =
           body.vote_information.locations
-            .Where(l => l.custom_location_id != null ^ l.custom_location_id != null)
+            .Where(l => l.custom_location_id != null ^ l.google_maps_location_id != null)
             .Distinct();
         deserializedVote.locations = body.vote_information.locations;
       }
@@ -182,8 +222,56 @@ namespace LetsMeatAPI.Controllers {
       }
       return Ok();
     }
+    private VoteInformation CompleteVoteIfNotEmpty(
+      VoteInformation incomplete,
+      Event ev,
+      User user
+    ) {
+      var ret = CompleteVote(incomplete, ev, user);
+      if(!incomplete.locations.Any())
+        ret.locations = incomplete.locations;
+      if(!incomplete.times.Any())
+        ret.times = incomplete.times;
+      return ret;
+    }
+    private VoteInformation CompleteVote(
+      VoteInformation incomplete,
+      Event ev,
+      User user
+    ) {
+      var ret = new VoteInformation {
+        locations = incomplete.locations
+        .Where(l => {
+          if(l.custom_location_id != null)
+            return _context.CustomLocations.Any(c => c.Id == l.custom_location_id);
+          if(l.google_maps_location_id != null)
+            return _context.GoogleMapsLocations.Any(c => c.Id == l.google_maps_location_id);
+          return false;
+        })
+        .Union(ev.CandidateCustomLocations
+        .OrderByDescending(l => _critic.PersonalScore(l, user))
+        .Select(l =>
+          new VoteInformation.LocationInformation {
+            custom_location_id = l.Id
+          })
+        )
+        .Union(ev.CandidateGoogleMapsLocations
+        .OrderByDescending(l => _critic.PersonalScore(l, user))
+        .Select(l =>
+          new VoteInformation.LocationInformation {
+            google_maps_location_id = l.Id
+          })
+        ),
+        times = incomplete.times
+        .Union(JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes))
+        .Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc))
+      };
+      return ret;
+    }
     private readonly IUserManager _userManager;
     private readonly LMDbContext _context;
+    private readonly ILocationCritic _critic;
+    private readonly IElectionHolder _electionHolder;
     private readonly ILogger<VotesController> _logger;
   }
 }

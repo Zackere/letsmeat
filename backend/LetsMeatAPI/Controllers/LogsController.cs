@@ -6,7 +6,7 @@ namespace LetsMeatAPI.Controllers {
   public class LogsController : ControllerBase {
     [HttpGet]
     public string Index() {
-      return string.Join('\n', Utils.RequestResponseLoggingMiddleware._queue);
+      return string.Join('\n', RequestResponseLoggingMiddleware._queue);
     }
   }
 }
