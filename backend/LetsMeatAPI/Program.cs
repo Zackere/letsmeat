@@ -9,8 +9,8 @@ namespace LetsMeatAPI {
       var timer = new Timer(
         _ => PaidResouceGuard.DecayCounter(500),
         null,
-        0,
-        30_000
+        120_000,
+        40_000
       );
       CreateHostBuilder(args).Build().Run();
     }

@@ -37,7 +37,7 @@ namespace LetsMeatAPI {
       services.AddScoped<IDebtReducer, DebtReducer>();
       services.AddScoped<IUserManager, UserManager>();
       services.AddScoped<IPaidResourceGuard, PaidResouceGuard>(
-        s => new PaidResouceGuard(500, s.GetService<ILogger<PaidResouceGuard>>()!)
+        s => new PaidResouceGuard(2_000, s.GetService<ILogger<PaidResouceGuard>>()!)
       );
       services.AddScoped<LoginController.GoogleTokenIdValidator>(
         _ => GoogleJsonWebSignature.ValidateAsync
