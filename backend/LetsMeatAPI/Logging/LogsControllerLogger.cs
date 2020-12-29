@@ -24,7 +24,8 @@ namespace LetsMeatAPI {
       Exception exception,
       Func<TState, Exception, string> formatter
     ) {
-      LogsController.AddLog($"{logLevel} from {_name} at {DateTime.Now}: {formatter(state, exception)}");
+      var message = formatter(state, exception);
+      LogsController.AddLog($"{logLevel} from {_name} at {DateTime.Now}: {message}");
     }
     public bool IsEnabled(LogLevel logLevel) {
       return true;

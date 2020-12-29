@@ -21,7 +21,7 @@ namespace LetsMeatAPI {
         ret += (double)location.Taste / location.TasteVotes;
         ++nProps;
       }
-      if(location.TasteVotes > 0) {
+      if(location.WaitingTimeVotes > 0) {
         ret += (double)location.WaitingTime / location.WaitingTimeVotes;
         ++nProps;
       }
@@ -44,7 +44,7 @@ namespace LetsMeatAPI {
         ret += user.TastePref * (double)location.Taste / location.TasteVotes;
         ++nProps;
       }
-      if(location.TasteVotes > 0) {
+      if(location.WaitingTimeVotes > 0) {
         ret += user.WaitingTimePref * (double)location.WaitingTime / location.WaitingTimeVotes;
         ++nProps;
       }
