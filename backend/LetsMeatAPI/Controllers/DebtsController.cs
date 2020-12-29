@@ -29,10 +29,10 @@ namespace LetsMeatAPI.Controllers {
       public Guid? event_id { get; set; }
       public string from_id { get; set; }
       public string to_id { get; set; }
-      public uint amount { get; set; }
+      public uint? amount { get; set; }
       [MaxLength(250)]
-      public string description { get; set; }
-      public Guid? image_id { get; set; }
+      public string? description { get; set; }
+      public Guid? image_debt_id { get; set; }
     }
     [HttpPost]
     [Route("add")]
@@ -47,9 +47,14 @@ namespace LetsMeatAPI.Controllers {
         return new StatusCodeResult(418);
       if(body.from_id == body.to_id)
         return new StatusCodeResult(418);
+      if((body.amount, body.image_debt_id) is (null, null))
+        return new StatusCodeResult(418);
+      if((body.description, body.image_debt_id) is (null, null))
+        return new StatusCodeResult(418);
       if(!(await _context.Users.AnyAsync(u => u.Id == body.from_id) &&
            await _context.Users.AnyAsync(u => u.Id == body.to_id) &&
-           (body.image_id == null || await _context.Images.AnyAsync(i => i.Id == (Guid)body.image_id))
+           (body.image_debt_id == null ||
+           await _context.DebtsFromImages.AnyAsync(i => i.Id == (Guid)body.image_debt_id))
         )) {
         return NotFound();
       }
@@ -61,16 +66,21 @@ namespace LetsMeatAPI.Controllers {
       } else if(!await _context.Groups.AnyAsync(g => g.Id == body.group_id)) {
         return NotFound();
       }
+      var imageDebt = body.image_debt_id == null
+                      ? null
+                      : await _context.DebtsFromImages.FindAsync(body.image_debt_id);
       var debt = new PendingDebt {
-        Amount = body.amount,
-        Description = body.description,
+        Amount = imageDebt?.Amount ?? (uint)body.amount!,
+        Description = imageDebt?.Description ?? body.description!,
         EventId = body.event_id,
         FromId = body.from_id,
         GroupId = (Guid)body.group_id!,
-        ImageId = body.image_id,
+        ImageId = imageDebt?.ImageId,
         Timestamp = DateTime.UtcNow,
         ToId = body.to_id,
       };
+      if(imageDebt != null)
+        _context.DebtsFromImages.Remove(imageDebt);
       await _context.PendingDebts.AddAsync(debt);
       try {
         await _context.SaveChangesAsync();

@@ -14,6 +14,7 @@ namespace LetsMeatAPI {
     public DbSet<Vote> Votes { get; set; }
     public DbSet<Image> Images { get; set; }
     public DbSet<PendingDebt> PendingDebts { get; set; }
+    public DbSet<DebtFromImage> DebtsFromImages { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
       modelBuilder.Entity<User>()
         .HasMany(user => user.DebtsForMe)

@@ -122,7 +122,7 @@ namespace LetsMeatAPI.Controllers {
                  select new GroupInformationResponse.EventInformation {
                    id = evnt.Id,
                    name = evnt.Name,
-                   deadline = evnt.Deadline,
+                   deadline = DateTime.SpecifyKind(evnt.Deadline, DateTimeKind.Utc),
                    creator_id = evnt.CreatorId,
                  }
       };

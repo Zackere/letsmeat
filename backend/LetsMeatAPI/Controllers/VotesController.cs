@@ -92,7 +92,7 @@ namespace LetsMeatAPI.Controllers {
       var candidateTimeToOrdinal = new Dictionary<DateTime, int>();
       var ordinalToCandidateTime = new Dictionary<int, DateTime>();
       foreach(var time in from time in JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes)
-                          select time.ToUniversalTime()) {
+                          select DateTime.SpecifyKind(time, DateTimeKind.Utc)) {
         candidateTimeToOrdinal[time] = ordinal;
         ordinalToCandidateTime[ordinal] = time;
         ++ordinal;

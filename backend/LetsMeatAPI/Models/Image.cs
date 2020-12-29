@@ -17,5 +17,6 @@ namespace LetsMeatAPI.Models {
     public virtual User UploadedBy { get; set; }
     public DateTime UploadTime { get; set; }
     public virtual ICollection<PendingDebt> PendingDebtsWithMe { get; set; }
+    public virtual ICollection<DebtFromImage> DebtsFromImage { get; set; }
   }
 }
