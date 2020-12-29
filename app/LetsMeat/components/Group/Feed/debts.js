@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import React, { useContext, useEffect, useState } from 'react';
 import {
-  Image, View, StyleSheet
+  Image, StyleSheet, View
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import {
@@ -42,7 +42,7 @@ const DebtImage = ({ id }) => {
 
 const Images = ({ images }) => (images ? images.map((i) => <DebtImage key={i} id={i} />) : <></>);
 
-const Debts = ({ images }) => {
+const Debts = ({ images, onAdd }) => {
   const { state } = useContext(store);
   return (
     <Card style={styles.section} elevation={0}>
@@ -52,6 +52,8 @@ const Debts = ({ images }) => {
         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
           <Button
             style={styles.addButton}
+            onPress={onAdd
+            }
           >
             <Icon name="cash-usd" size={25} />
           </Button>

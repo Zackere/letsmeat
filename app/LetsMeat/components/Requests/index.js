@@ -147,6 +147,18 @@ const getLocationsInfo = ({ state }, customIds, googleIds) => post({ state },
   })
   .then(extractData);
 
+const addDebt = ({ state }, groupId, eventId, fromId, toId, amount, description, imageId) => post({ state }, '/Debts/add',
+  {
+    group_id: groupId,
+    event_id: eventId,
+    from_id: fromId,
+    to_id: toId,
+    amount,
+    description,
+    image_id: imageId
+  })
+  .then(extractData);
+
 export {
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups, leaveGroup, joinGroup,
@@ -155,5 +167,6 @@ export {
   sendInvitation, getInvitations, rejectInvitation, acceptInvitation,
   uploadImage, getImagesInfo,
   getVote, getVoteTimes, getVoteLocations, castVote,
-  searchLocation, createLocationGoogle, createLocationCustom, getLocationsInfo
+  searchLocation, createLocationGoogle, createLocationCustom, getLocationsInfo,
+  addDebt
 };

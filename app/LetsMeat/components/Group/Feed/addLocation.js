@@ -15,7 +15,6 @@ import { store } from '../../Store';
 import LocationCard from '../../Location';
 
 const combineLocations = (results) => {
-  console.log(results);
   const predictions = results.google_maps_locations_predictions;
   let predictionsIndex = 0;
   const gmaps = results.google_maps_locations;

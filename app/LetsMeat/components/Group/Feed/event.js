@@ -65,7 +65,14 @@ const EventView = ({ navigation, route }) => {
                   deadline={new Date(eventDetails.deadline)}
                 />
               </Card>
-              <Debts images={eventDetails.images || []} />
+              <Debts
+                onAdd={() => {
+                  navigation.navigate('AddDebt', {
+                    eventId: state.event.id
+                  });
+                }}
+                images={eventDetails.images || []}
+              />
             </>
           )
           : (<ActivityIndicator />)}
