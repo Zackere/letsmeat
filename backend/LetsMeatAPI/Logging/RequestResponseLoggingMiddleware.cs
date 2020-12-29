@@ -15,10 +15,10 @@ namespace LetsMeatAPI {
     }
     public async Task Invoke(HttpContext context) {
       if(
-        context.Request.Path.Value == "/index.html" ||
-        context.Request.Path.Value.Contains("swagger") ||
-        context.Request.Path.Value == "/logs" ||
-        context.Request.Path.Value == "/favicon.ico"
+        context.Request.Path.Value.ToLower() == "/index.html" ||
+        context.Request.Path.Value.ToLower().Contains("swagger") ||
+        context.Request.Path.Value.ToLower() == "/logs" ||
+        context.Request.Path.Value.ToLower() == "/favicon.ico"
       ) {
         await _next(context);
         return;
