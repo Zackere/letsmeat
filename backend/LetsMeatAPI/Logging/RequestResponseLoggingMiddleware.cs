@@ -23,8 +23,7 @@ namespace LetsMeatAPI {
         await _next(context);
         return;
       }
-      LogsController.AddLog(await LogRequest(context));
-      LogsController.AddLog(await LogResponse(context));
+      LogsController.AddLog(await LogRequest(context) + await LogResponse(context));
     }
     private async Task<string> LogRequest(HttpContext context) {
       context.Request.EnableBuffering();

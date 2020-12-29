@@ -69,12 +69,12 @@ namespace LetsMeatAPI.ExternalAPI {
       _logger = logger;
     }
     public async Task<IGooglePlaces.PlaceAutocompleteResponse?>
-      PlaceAutocomplete(string input, string? sessionToken) {
+      PlaceAutocomplete(string input, string sessionToken) {
       const string baseAddr = "https://maps.googleapis.com/maps/api/place/autocomplete/json";
       _logger.LogInformation($"Sending autocomplete request to {baseAddr} for {input}");
       var request = new HttpRequestMessage(
         HttpMethod.Get,
-        $"{baseAddr}?input={input}&types=establishment&key={_apiKey}{(sessionToken == null ? "" : $"&sessiontoken={sessionToken}")}"
+        $"{baseAddr}?input={input}&types=establishment&sessiontoken={sessionToken}&key={_apiKey}"
       );
       var client = _httpClientFactory.CreateClient();
       var response = await client.SendAsync(request);

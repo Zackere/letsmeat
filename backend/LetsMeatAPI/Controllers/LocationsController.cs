@@ -233,23 +233,18 @@ namespace LetsMeatAPI.Controllers {
       if(body.google_maps_location_ids == null)
         body.google_maps_location_ids = Enumerable.Empty<string>();
       body.google_maps_location_ids = body.google_maps_location_ids.Distinct();
+      await _context.GoogleMapsLocations.LoadAsync();
       if(body.google_maps_location_ids.Any(id => !_context.GoogleMapsLocations.Any(l => l.Id == id)))
         return NotFound();
       var updatedDetails = Enumerable.Empty<IGooglePlaces.BasicPlaceDetailsResponse>();
       if(body.google_maps_location_ids.Count() != 0) {
-        updatedDetails = (await Task.WhenAll(from l in body.google_maps_location_ids
-                                             select _googlePlaces.BasicPlaceDetails(l, null)))
-                                             .OrderBy(d => d.result.place_id);
+        updatedDetails = await Task.WhenAll(from l in body.google_maps_location_ids
+                                            select _googlePlaces.BasicPlaceDetails(l, null));
       }
-      var placesToBeUpdatedIds = from d in updatedDetails
-                                 select d.result.place_id;
-      var placesToBeUpdated = (from l in _context.GoogleMapsLocations
-                               where placesToBeUpdatedIds.Contains(l.Id)
-                               orderby l.Id
-                               select l).AsEnumerable();
-      foreach(var (p, d) in placesToBeUpdated.Zip(updatedDetails)) {
+      foreach(var d in updatedDetails) {
         if(d.status != "OK")
           continue;
+        var p = await _context.GoogleMapsLocations.FindAsync(d.result.place_id);
         p.BusinessStatus = d.result.business_status;
         p.ExpirationDate = DateTime.UtcNow.AddDays(100);
         p.FormattedAddress = d.result.formatted_address;
