@@ -120,23 +120,21 @@ namespace LetsMeatAPI.Controllers {
       var canAccess = _paidResourceGuard.CanAccessPaidResource(user);
       var location = await _context.GoogleMapsLocations.FindAsync(body.place_id);
       if(location != null) {
-        if(DateTime.SpecifyKind(location.ExpirationDate, DateTimeKind.Utc) < DateTime.UtcNow) {
-          var basicDetails = await _googlePlaces.BasicPlaceDetails(body.place_id, body.sessiontoken);
-          if(basicDetails != null && basicDetails.status == "OK") {
-            location.BusinessStatus = basicDetails.result.business_status;
-            location.ExpirationDate = DateTime.UtcNow.AddDays(100);
-            location.FormattedAddress = basicDetails.result.formatted_address;
-            location.Icon = basicDetails.result.icon;
-            location.Name = basicDetails.result.name;
-            location.Url = basicDetails.result.url;
-            location.Vicinity = basicDetails.result.vicinity;
-            _context.Entry(location).State = EntityState.Modified;
-            try {
-              await _context.SaveChangesAsync();
-            } catch(DbUpdateConcurrencyException ex) {
-              _logger.LogError(ex.ToString());
-              return Conflict();
-            }
+        var basicDetails = await _googlePlaces.BasicPlaceDetails(body.place_id, body.sessiontoken);
+        if(basicDetails != null && basicDetails.status == "OK") {
+          location.BusinessStatus = basicDetails.result.business_status;
+          location.ExpirationDate = DateTime.UtcNow.AddDays(100);
+          location.FormattedAddress = basicDetails.result.formatted_address;
+          location.Icon = basicDetails.result.icon;
+          location.Name = basicDetails.result.name;
+          location.Url = basicDetails.result.url;
+          location.Vicinity = basicDetails.result.vicinity;
+          _context.Entry(location).State = EntityState.Modified;
+          try {
+            await _context.SaveChangesAsync();
+          } catch(DbUpdateConcurrencyException ex) {
+            _logger.LogError(ex.ToString());
+            return Conflict();
           }
           return new LocationInformationResponse.GoogleMapsLocationInformation() {
             details = new IGooglePlaces.BasicPlaceDetailsResponse.Result {
@@ -245,8 +243,8 @@ namespace LetsMeatAPI.Controllers {
           locations.Add(await _context.GoogleMapsLocations.FindAsync(id));
         var detailsPromises = from l in locations
                               select DateTime.SpecifyKind(l.ExpirationDate, DateTimeKind.Utc) < DateTime.UtcNow
-                              ? Task.FromResult<IGooglePlaces.BasicPlaceDetailsResponse?>(null)
-                              : _googlePlaces.BasicPlaceDetails(l.Id, null);
+                              ? _googlePlaces.BasicPlaceDetails(l.Id, null)
+                              : Task.FromResult<IGooglePlaces.BasicPlaceDetailsResponse?>(null);
         updatedDetails = await Task.WhenAll<IGooglePlaces.BasicPlaceDetailsResponse?>(detailsPromises);
       }
       foreach(var d in updatedDetails) {
