@@ -69,24 +69,55 @@ namespace LetsMeatAPI.Controllers {
       var imageDebt = body.image_debt_id == null
                       ? null
                       : await _context.DebtsFromImages.FindAsync(body.image_debt_id);
-      var debt = new PendingDebt {
-        Amount = imageDebt?.Amount ?? (uint)body.amount!,
-        Description = imageDebt?.Description ?? body.description!,
-        EventId = body.event_id,
-        FromId = body.from_id,
-        GroupId = (Guid)body.group_id!,
-        ImageId = imageDebt?.ImageId,
-        Timestamp = DateTime.UtcNow,
-        ToId = body.to_id,
-      };
-      if(imageDebt != null)
-        _context.DebtsFromImages.Remove(imageDebt);
-      await _context.PendingDebts.AddAsync(debt);
-      try {
-        await _context.SaveChangesAsync();
-      } catch(DbUpdateException ex) {
-        _logger.LogError(ex.ToString());
-        return Conflict();
+      if(userId == body.from_id) {
+        var switchSign = body.from_id.CompareTo(body.to_id) < 0;
+        if(switchSign)
+          (body.from_id, body.to_id) = (body.to_id, body.from_id);
+        var debt = await _context.Debts.FindAsync(body.from_id, body.to_id, body.group_id);
+        if(debt == null) {
+          await _context.Debts.AddAsync(new() {
+            Amount = (switchSign ? -1 : 1) * (int)(imageDebt?.Amount ?? (uint)body.amount!),
+            FromId = body.from_id,
+            GroupId = (Guid)body.group_id!,
+            ToId = body.to_id,
+          });
+        } else {
+          debt.Amount += (switchSign ? -1 : 1) * (int)(imageDebt?.Amount ?? (uint)body.amount!);
+          _context.Entry(debt).State = EntityState.Modified;
+        }
+        if(imageDebt != null)
+          _context.DebtsFromImages.Remove(imageDebt);
+        try {
+          await _context.SaveChangesAsync();
+        } catch(Exception ex)
+            when(ex is DbUpdateConcurrencyException ||
+                 ex is DbUpdateException
+          ) {
+          _logger.LogError(ex.ToString());
+          return Conflict();
+        }
+        await _debtReducer.ReduceDebts((Guid)body.group_id!);
+        return Ok();
+      } else {
+        var debt = new PendingDebt {
+          Amount = imageDebt?.Amount ?? (uint)body.amount!,
+          Description = imageDebt?.Description ?? body.description!,
+          EventId = body.event_id,
+          FromId = body.from_id,
+          GroupId = (Guid)body.group_id!,
+          ImageId = imageDebt?.ImageId,
+          Timestamp = DateTime.UtcNow,
+          ToId = body.to_id,
+        };
+        if(imageDebt != null)
+          _context.DebtsFromImages.Remove(imageDebt);
+        await _context.PendingDebts.AddAsync(debt);
+        try {
+          await _context.SaveChangesAsync();
+        } catch(DbUpdateException ex) {
+          _logger.LogError(ex.ToString());
+          return Conflict();
+        }
       }
       return Ok();
     }
