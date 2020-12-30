@@ -1,19 +1,8 @@
+import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { Paragraph, Surface } from 'react-native-paper';
-import { createStackNavigator } from '@react-navigation/stack';
 import { Header } from '../Header';
-
-const NotificationsContent = ({ navigation }) => {
-  const n = navigation;
-  return (
-    <Surface style={styles.container}>
-      <Paragraph>
-        To be implemented
-      </Paragraph>
-    </Surface>
-  );
-};
+import NotificationsScreen from './notificationsScreen';
 
 const Stack = createStackNavigator();
 
@@ -29,7 +18,7 @@ const Notifications = () => (
   >
     <Stack.Screen
       name="NotificationsContent"
-      component={NotificationsContent}
+      component={NotificationsScreen}
       options={{ headerTitle: 'Notifications' }}
     />
   </Stack.Navigator>

@@ -1,9 +1,8 @@
-import { CommonActions } from '@react-navigation/native';
 import React, { useContext } from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import {
   Button, Caption,
-  IconButton, Subheading
+  IconButton, Subheading, Surface
 } from 'react-native-paper';
 import { getNotificationTimestamp, refreshNotifications } from '../../helpers/notifications';
 import { store } from '../Store';
@@ -16,27 +15,17 @@ const Notifications = ({ navigation }) => {
     .sort((a, b) => getNotificationTimestamp(b) - getNotificationTimestamp(a));
 
   return (
-    <View>
-      <View style={{ flexDirection: 'row', margin: 5 }}>
-        <Subheading style={{ margin: 10 }}>Notifications</Subheading>
-        <IconButton
-          icon="refresh"
-          size={20}
-          style={{ position: 'absolute', top: -9, right: 0 }}
-          onPress={() => refreshNotifications({ state, dispatch })}
-        />
-      </View>
+    <Surface style={styles.container}>
       {notifications.length > 0
         ? (
           <>
-            {notifications.slice(0, 2)
+            {notifications
               .map((item) => (
                 <Notification
                   item={item}
                   key={`${item.group_id}${item.id}`}
                 />
               ))}
-            {notifications.length > 2 && <Button onPress={() => navigation.navigate('Notifications')}>Show all</Button>}
           </>
         )
         : (
@@ -44,8 +33,15 @@ const Notifications = ({ navigation }) => {
             <Caption>You have no pending notifications</Caption>
           </View>
         )}
-    </View>
+    </Surface>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+    height: '100%'
+  }
+});
 
 export default Notifications;
