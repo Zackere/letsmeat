@@ -8,4 +8,4 @@ function randomId(length) {
   return result;
 }
 
-export { randomId };
+export default randomId;

@@ -8,7 +8,8 @@ const initialState = {
   groups: null,
   group: {},
   event: {},
-  invitations: []
+  invitations: [],
+  debts: []
 };
 const store = createContext(initialState);
 const { Provider } = store;
@@ -92,6 +93,13 @@ const StateProvider = ({ children }) => {
         const newState = {
           ...state,
           invitations: state.invitations.filter((i) => i.group_id !== action.groupId),
+        };
+        return newState;
+      }
+      case 'SET_DEBTS': {
+        const newState = {
+          ...state,
+          debts: action.payload,
         };
         return newState;
       }

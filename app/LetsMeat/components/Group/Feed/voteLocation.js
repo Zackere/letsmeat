@@ -92,7 +92,7 @@ const VoteLocation = ({ navigation, route }) => {
             data={locations}
             renderItem={({
               item, drag, isActive
-            }) => <LocationCard location={item} onLongPress={drag} />}
+            }) => <LocationCard location={item} onLongPress={drag} highlight={isActive} />}
             keyExtractor={keyExtractor}
             onDragEnd={({ data }) => setLocations(data)}
           />

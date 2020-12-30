@@ -13,8 +13,10 @@ export const GMapsPredictionCard = ({ location, onPress, onLongPress }) => (
   </Card>
 );
 
-export const GMapsCard = ({ location, onPress, onLongPress }) => (
-  <Card style={styles.searchResult} onPress={onPress} onLongPress={onLongPress}>
+export const GMapsCard = ({
+  location, onPress, onLongPress, highlight
+}) => (
+  <Card style={styles.searchResult} onPress={onPress} onLongPress={onLongPress} elevation={highlight ? 5 : 1}>
     <Card.Title title={location.details.name} />
     <Card.Content>
       <Paragraph>
@@ -25,8 +27,10 @@ export const GMapsCard = ({ location, onPress, onLongPress }) => (
   </Card>
 );
 
-export const CustomLocationCard = ({ location, onPress, onLongPress }) => (
-  <Card style={styles.searchResult} onPress={onPress} onLongPress={onLongPress}>
+export const CustomLocationCard = ({
+  location, onPress, onLongPress, highlight
+}) => (
+  <Card style={styles.searchResult} onPress={onPress} onLongPress={onLongPress} elevation={highlight ? 5 : 1}>
     <Card.Title title={location.name} />
     <Card.Content>
       <Paragraph>
@@ -37,14 +41,14 @@ export const CustomLocationCard = ({ location, onPress, onLongPress }) => (
 );
 
 const LocationCard = ({
-  location, onPressPrediction, onPressGMaps, onPressCustom, onLongPress
+  location, onPressPrediction, onPressGMaps, onPressCustom, onLongPress, highlight
 }) => {
   const { kind } = location;
   const [Component, onPress] = (kind === 'google_maps_locations_predictions'
     ? [GMapsPredictionCard, onPressPrediction]
     : kind === 'google_maps_locations'
       ? [GMapsCard, onPressGMaps] : [CustomLocationCard, onPressCustom]);
-  return <Component location={location} onPress={onPress} onLongPress={onLongPress} />;
+  return <Component location={location} onPress={onPress} onLongPress={onLongPress} highlight={highlight} />;
 };
 
 const AddKindToLocation = (location) => {

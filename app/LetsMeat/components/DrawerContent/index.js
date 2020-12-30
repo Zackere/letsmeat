@@ -3,21 +3,19 @@ import {
   GoogleSignin
 } from '@react-native-community/google-signin';
 import { DrawerItem } from '@react-navigation/drawer';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import {
-  StyleSheet, Text, View
+  StyleSheet, View
 } from 'react-native';
 import {
-  ActivityIndicator, Avatar,
-  Button, Caption, Card, Drawer,
-  IconButton, Paragraph, Subheading, Title
+  Avatar,
+  Caption, Drawer,
+  Title
 } from 'react-native-paper';
-import {
-  getGroupInfo, getInvitations, getUsersInfo, rejectInvitation, acceptInvitation
-} from '../Requests';
 import { store } from '../Store';
+import Notifications from '../Notifications/drawer';
 
-const DrawerButton = ({
+export const DrawerButton = ({
   onPress, icon, label
 }) => {
   const x = 0;
@@ -33,93 +31,6 @@ const DrawerButton = ({
       onPress={onPress}
       label={label}
     />
-  );
-};
-
-const InvitationButton = ({ invitation }) => {
-  const { state, dispatch } = useContext(store);
-  const [user, setUser] = useState(null);
-  const [group, setGroup] = useState(null);
-
-  useEffect(() => {
-    getUsersInfo({ state }, invitation.from_id).then((users) => setUser(users[0]));
-    getGroupInfo({ state }, invitation.group_id).then(setGroup);
-  }, []);
-
-  return (
-    <Card style={{ margin: 5 }}>
-      <Card.Content>
-        { (user && group)
-          ? (
-            <Paragraph>
-              <Subheading>{user.name}</Subheading>
-              {'\t'}
-              <Caption>invites you to join</Caption>
-              {'\n'}
-              <Subheading>{group.name}</Subheading>
-            </Paragraph>
-          )
-          : <ActivityIndicator />}
-      </Card.Content>
-      <Card.Actions>
-        <Button
-          color="red"
-          onPress={() => {
-            rejectInvitation({ state }, group.id).then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }));
-          }}
-        >
-          Refuse
-        </Button>
-        <Button onPress={() => {
-          acceptInvitation({ state }, group.id).then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }));
-        }}
-        >
-          Accept
-        </Button>
-      </Card.Actions>
-    </Card>
-  );
-};
-
-const Notifications = ({ navigation }) => {
-  const { state, dispatch } = useContext(store);
-
-  useEffect(() => {}, []);
-
-  return (
-    <View>
-      <View style={{ flexDirection: 'row', margin: 5 }}>
-        <Subheading style={{ margin: 10 }}>Notifications</Subheading>
-        <IconButton
-          icon="refresh"
-          size={20}
-          style={{ position: 'absolute', top: -9, right: 0 }}
-          onPress={() => {
-            getInvitations({ state }).then((invitations) => {
-              dispatch({ type: 'SET_INVITATIONS', payload: invitations });
-            });
-          }}
-        />
-      </View>
-      {state.invitations.length > 0
-        ? (
-          <>
-            {state.invitations.slice(0, 2)
-              .map((invitation) => (
-                <InvitationButton
-                  invitation={invitation}
-                  key={invitation.group_id}
-                />
-              ))}
-            {state.invitations.length > 2 && <Button>Show all notifications</Button>}
-          </>
-        )
-        : (
-          <View style={{ alignItems: 'center', marginBottom: 10 }}>
-            <Caption>No notifications</Caption>
-          </View>
-        )}
-    </View>
   );
 };
 
@@ -159,7 +70,7 @@ function DrawerContent({ navigation }) {
         />
       </Drawer.Section>
       <Drawer.Section style={{ ...styles.drawerSection, ...styles.notificationsSection }}>
-        <Notifications />
+        <Notifications navigation={navigation} />
       </Drawer.Section>
       <Drawer.Section style={styles.lastDrawerSection}>
         <DrawerItem

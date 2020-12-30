@@ -159,6 +159,8 @@ const addDebt = ({ state }, groupId, eventId, fromId, toId, amount, description,
   })
   .then(extractData);
 
+const getPendingDebts = ({ state }) => get({ state }, '/Debts/pending').then((d) => d.data.pending_debts);
+
 export {
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups, leaveGroup, joinGroup,
@@ -168,5 +170,5 @@ export {
   uploadImage, getImagesInfo,
   getVote, getVoteTimes, getVoteLocations, castVote,
   searchLocation, createLocationGoogle, createLocationCustom, getLocationsInfo,
-  addDebt
+  addDebt, getPendingDebts
 };
