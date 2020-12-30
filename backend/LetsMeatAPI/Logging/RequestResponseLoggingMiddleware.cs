@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.IO;
 using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace LetsMeatAPI {
@@ -31,6 +32,7 @@ namespace LetsMeatAPI {
       await context.Request.Body.CopyToAsync(requestStream);
       var ret = $"Http Request Information:\n" +
                 $"Time: {DateTime.Now}\n" +
+                $"Headers: {HeaderDictToString(context.Request.Headers)}\n" +
                 $"Schema: {context.Request.Scheme}\n" +
                 $"Method: {context.Request.Method}\n" +
                 $"Host: {context.Request.Host}\n" +
@@ -54,6 +56,7 @@ namespace LetsMeatAPI {
                 $"Host: {context.Request.Host}\n" +
                 $"Path: {context.Request.Path}\n" +
                 $"QueryString: {context.Request.QueryString}\n" +
+                $"ResponseHeaders: {HeaderDictToString(context.Response.Headers)}\n" +
                 $"Response Code: {context.Response.StatusCode}\n" +
                 $"Response Body: {text}\n";
       await responseBody.CopyToAsync(originalBodyStream);
@@ -71,6 +74,13 @@ namespace LetsMeatAPI {
         textWriter.Write(readChunk, 0, readChunkLength);
       } while(readChunkLength > 0);
       return textWriter.ToString();
+    }
+    private string HeaderDictToString(IHeaderDictionary dict) {
+      var ss = new StringBuilder();
+      foreach(var h in dict.Keys) {
+        ss.Append($"{{{h}:{dict[h]}}}");
+      }
+      return ss.ToString();
     }
     private readonly RequestDelegate _next;
     private readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager;

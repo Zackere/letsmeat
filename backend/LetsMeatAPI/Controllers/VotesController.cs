@@ -199,12 +199,12 @@ namespace LetsMeatAPI.Controllers {
       if(body.vote_information.locations != null) {
         if(body.vote_information.locations
         .Where(l => l.custom_location_id != null)
-        .Any(l => !_context.CustomLocations.Any(c => c.Id == l.custom_location_id))) {
+        .Any(l => !ev.CandidateCustomLocations.Any(c => c.Id == l.custom_location_id))) {
           return NotFound();
         }
         if(body.vote_information.locations
           .Where(l => l.google_maps_location_id != null)
-          .Any(l => !_context.GoogleMapsLocations.Any(c => c.Id == l.google_maps_location_id))) {
+          .Any(l => !ev.CandidateGoogleMapsLocations.Any(c => c.Id == l.google_maps_location_id))) {
           return NotFound();
         }
         body.vote_information.locations =
@@ -253,13 +253,14 @@ namespace LetsMeatAPI.Controllers {
       Event ev,
       User user
     ) {
+      var candidateTimes = JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes);
       var ret = new VoteInformation {
         locations = incomplete.locations
         .Where(l => {
           if(l.custom_location_id != null)
-            return _context.CustomLocations.Any(c => c.Id == l.custom_location_id);
+            return ev.CandidateCustomLocations.Any(c => c.Id == l.custom_location_id);
           if(l.google_maps_location_id != null)
-            return _context.GoogleMapsLocations.Any(c => c.Id == l.google_maps_location_id);
+            return ev.CandidateGoogleMapsLocations.Any(c => c.Id == l.google_maps_location_id);
           return false;
         })
         .Union(ev.CandidateCustomLocations
@@ -277,7 +278,7 @@ namespace LetsMeatAPI.Controllers {
           })
         ),
         times = incomplete.times
-        .Union(JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes))
+        .Union(candidateTimes)
         .Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc))
       };
       return ret;
