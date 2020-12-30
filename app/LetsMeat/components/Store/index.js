@@ -96,6 +96,13 @@ const StateProvider = ({ children }) => {
         };
         return newState;
       }
+      case 'REMOVE_DEBT': {
+        const newState = {
+          ...state,
+          debts: state.debts.filter((d) => d.id !== action.debtId),
+        };
+        return newState;
+      }
       case 'SET_DEBTS': {
         const newState = {
           ...state,

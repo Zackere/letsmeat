@@ -161,6 +161,10 @@ const addDebt = ({ state }, groupId, eventId, fromId, toId, amount, description,
 
 const getPendingDebts = ({ state }) => get({ state }, '/Debts/pending').then((d) => d.data.pending_debts);
 
+const rejectDebt = ({ state }, debtId) => post({ state }, '/Debts/reject', { debt_id: debtId });
+
+const acceptDebt = ({ state }, debtId) => post({ state }, '/Debts/approve', { debt_id: debtId });
+
 export {
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups, leaveGroup, joinGroup,
@@ -170,5 +174,5 @@ export {
   uploadImage, getImagesInfo,
   getVote, getVoteTimes, getVoteLocations, castVote,
   searchLocation, createLocationGoogle, createLocationCustom, getLocationsInfo,
-  addDebt, getPendingDebts
+  addDebt, getPendingDebts, rejectDebt, acceptDebt
 };

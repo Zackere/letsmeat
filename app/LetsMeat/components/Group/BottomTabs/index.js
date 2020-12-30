@@ -28,34 +28,33 @@ const getActiveRouteState = function (route) {
   return getActiveRouteState(childActiveRoute);
 };
 
-export const BottomTabs = ({ navigation, route }) => {
-  return (
-    <Tab.Navigator
-      initialRouteName="Feed"
-    >
-      <Tab.Screen
-        name="Feed"
-        component={Feed}
-        options={{
-          tabBarVisible: true,
-          tabBarIcon: makeIcon('home-account'),
-        }}
-      />
-      <Tab.Screen
-        name="New Event"
-        component={NewEvent}
-        options={{
-          tabBarIcon: makeIcon('calendar-plus'),
-        }}
-      />
-      <Tab.Screen
-        name="Group Info"
-        component={Settings}
-        options={{
-          tabBarIcon: makeIcon('account-group'),
-        }}
-      />
-    </Tab.Navigator>
-  );
-};
+export const BottomTabs = ({ navigation, route }) => (
+  <Tab.Navigator
+    initialRouteName="Feed"
+  >
+    <Tab.Screen
+      name="Feed"
+      component={Feed}
+      options={{
+        tabBarVisible: true,
+        tabBarIcon: makeIcon('home-account'),
+      }}
+    />
+    <Tab.Screen
+      name="New Event"
+      component={NewEvent}
+      options={{
+        tabBarIcon: makeIcon('calendar-plus'),
+      }}
+    />
+    <Tab.Screen
+      name="Group Info"
+      component={Settings}
+      options={{
+        tabBarIcon: makeIcon('account-group'),
+      }}
+    />
+  </Tab.Navigator>
+);
+
 export default BottomTabs;

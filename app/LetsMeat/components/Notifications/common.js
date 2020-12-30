@@ -5,9 +5,45 @@ import {
   Paragraph, Subheading
 } from 'react-native-paper';
 import {
-  acceptInvitation, getGroupInfo, getUsersInfo, rejectInvitation
+  acceptDebt, acceptInvitation, getGroupInfo, getUsersInfo, rejectDebt, rejectInvitation
 } from '../Requests';
 import { store } from '../Store';
+
+const NotificationAction = ({ acceptAction, rejectAction }) => {
+  const [active, setActive] = useState(false);
+
+  return (
+    <Card.Actions>
+      <Button
+        disabled={active}
+        color="red"
+        onPress={() => {
+          setActive(true);
+          rejectAction().finally(() => setActive(false));
+        }}
+      >
+        Refuse
+      </Button>
+      <Button
+        disabled={active}
+        onPress={() => {
+          setActive(true);
+          acceptAction().finally(() => setActive(false));
+        }}
+      >
+        Accept
+      </Button>
+    </Card.Actions>
+  );
+};
+
+const NotificationContent = ({ node, loading }) => (
+  <Card.Content>
+    { loading
+      ? { node }
+      : <ActivityIndicator />}
+  </Card.Content>
+);
 
 export const Invitation = ({ invitation, full = false }) => {
   const { state, dispatch } = useContext(store);
@@ -17,7 +53,7 @@ export const Invitation = ({ invitation, full = false }) => {
   useEffect(() => {
     getUsersInfo({ state }, invitation.from_id).then((users) => setUser(users[0]));
     getGroupInfo({ state }, invitation.group_id).then(setGroup);
-  }, []);
+  }, [state, invitation.from_id, invitation.group_id]);
 
   return (
     <Card style={{ margin: 5 }}>
@@ -34,22 +70,12 @@ export const Invitation = ({ invitation, full = false }) => {
           )
           : <ActivityIndicator />}
       </Card.Content>
-      <Card.Actions>
-        <Button
-          color="red"
-          onPress={() => {
-            rejectInvitation({ state }, group.id).then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }));
-          }}
-        >
-          Refuse
-        </Button>
-        <Button onPress={() => {
-          acceptInvitation({ state }, group.id).then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }));
-        }}
-        >
-          Accept
-        </Button>
-      </Card.Actions>
+      <NotificationAction
+        rejectAction={() => rejectInvitation({ state }, group.id)
+          .then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }))}
+        acceptAction={() => acceptInvitation({ state }, group.id)
+          .then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }))}
+      />
     </Card>
   );
 };
@@ -60,7 +86,7 @@ export const Debt = ({ debt, full = false }) => {
 
   useEffect(() => {
     getUsersInfo({ state }, debt.from_id).then((users) => setUser(users[0]));
-  }, []);
+  }, [debt.from_id, state]);
 
   return (
     <Card style={{ margin: 5 }}>
@@ -77,26 +103,23 @@ export const Debt = ({ debt, full = false }) => {
           )
           : <ActivityIndicator />}
       </Card.Content>
-      <Card.Actions>
-        <Button
-          color="red"
-          onPress={() => {
-            rejectInvitation({ state }, group.id).then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }));
-          }}
-        >
-          Refuse
-        </Button>
-        <Button onPress={() => {
-          acceptInvitation({ state }, group.id).then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }));
-        }}
-        >
-          Accept
-        </Button>
-      </Card.Actions>
+      <NotificationAction
+        rejectAction={() => rejectDebt({ state }, debt.id)
+          .then(() => dispatch({ type: 'REMOVE_DEBT', debtId: debt.id }))}
+        acceptAction={() => acceptDebt({ state }, debt.id)
+          .then(() => dispatch({ type: 'REMOVE_DEBT', debtId: debt.id }))}
+      />
     </Card>
   );
 };
 
-export const Notification = ({ item, full = false }) => (item.kind === 'invitation' ? <Invitation invitation={item} full={full} /> : <Debt debt={item} full={full} />);
+export const Notification = (
+  {
+    item,
+    full = false
+  }
+) => (item.kind === 'invitation'
+  ? <Invitation invitation={item} full={full} />
+  : <Debt debt={item} full={full} />);
 
 export default Notification;

@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import {
-  Button, Caption,
-  IconButton, Subheading, Surface
+  Caption,
+  Surface
 } from 'react-native-paper';
-import { getNotificationTimestamp, refreshNotifications } from '../../helpers/notifications';
+import { getNotificationTimestamp } from '../../helpers/notifications';
 import { store } from '../Store';
 import { Notification } from './common';
 

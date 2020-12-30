@@ -2,25 +2,24 @@
  * @format
  * @flow strict-local
  */
-import React, { useContext, useEffect } from 'react';
 import {
   GoogleSignin
 } from '@react-native-community/google-signin';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { DefaultTheme as NavigationDefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import React, { useContext, useEffect } from 'react';
 import 'react-native-gesture-handler';
 import { DefaultTheme as PaperDefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import DrawerContent from './components/DrawerContent';
 import BottomTabs from './components/Group/BottomTabs';
 import Groups from './components/Groups';
+import Notifications from './components/Notifications';
 import Preferences from './components/Preferences';
 import { appendAPIToken, appendUserID } from './components/Requests';
 import SignInScreen from './components/SignIn';
 import SplashScreen from './components/SplashScreen';
 import { StateProvider, store } from './components/Store';
-import Notifications from './components/Notifications';
-import Header from './components/Header';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -68,7 +67,8 @@ const Navigation = () => {
         )}
         edgeWidth={0}
       >
-        <Drawer.Screen name="Home" component={BottomTabs} />
+        {state.group.id
+          ? <Drawer.Screen name="Home" component={BottomTabs} /> : null}
         <Drawer.Screen name="Groups" component={Groups} />
         <Drawer.Screen name="Preferences" component={Preferences} />
         <Drawer.Screen name="Notifications" component={Notifications} />
