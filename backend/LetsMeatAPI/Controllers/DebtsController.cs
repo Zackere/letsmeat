@@ -85,8 +85,10 @@ namespace LetsMeatAPI.Controllers {
           debt.Amount += (switchSign ? -1 : 1) * (int)(imageDebt?.Amount ?? (uint)body.amount!);
           _context.Entry(debt).State = EntityState.Modified;
         }
-        if(imageDebt != null)
-          _context.DebtsFromImages.Remove(imageDebt);
+        if(imageDebt != null) {
+          imageDebt.Satisfied = true;
+          _context.Entry(imageDebt).State = EntityState.Modified;
+        }
         try {
           await _context.SaveChangesAsync();
         } catch(Exception ex)
@@ -109,8 +111,14 @@ namespace LetsMeatAPI.Controllers {
           Timestamp = DateTime.UtcNow,
           ToId = body.to_id,
         };
-        if(imageDebt != null)
-          _context.DebtsFromImages.Remove(imageDebt);
+        if(imageDebt != null) {
+          var bound = new PendingDebtFromImageBound {
+            DebtFromImage = imageDebt,
+            PendingDebt = debt,
+          };
+          debt.Bound = imageDebt.Bound = bound;
+          await _context.PendingDebtFromImageBounds.AddAsync(bound);
+        }
         await _context.PendingDebts.AddAsync(debt);
         try {
           await _context.SaveChangesAsync();
@@ -132,6 +140,7 @@ namespace LetsMeatAPI.Controllers {
         public string description { get; set; }
         public Guid? image_id { get; set; }
         public DateTime timestamp { get; set; }
+        public Guid? image_debt_id { get; set; }
       }
       public IEnumerable<PendingDebtInformation> pending_debts { get; set; }
     }
@@ -154,6 +163,7 @@ namespace LetsMeatAPI.Controllers {
                           from_id = debt.FromId,
                           group_id = debt.GroupId,
                           id = debt.Id,
+                          image_debt_id = debt.Bound == null ? null : debt.Bound.DebtFromImageId,
                           image_id = debt.ImageId,
                           timestamp = DateTime.SpecifyKind(debt.Timestamp, DateTimeKind.Utc),
                           to_id = debt.ToId,
@@ -180,7 +190,7 @@ namespace LetsMeatAPI.Controllers {
       var debts = from debt in _context.Debts
                   where debt.GroupId == id
                   select new { debt.Amount, debt.FromId, debt.ToId };
-      var ret = new DebtGroupInformationResponse() { debts = new() };
+      var ret = new DebtGroupInformationResponse { debts = new() };
       foreach(var debt in debts) {
         if(!ret.debts.ContainsKey(debt.FromId))
           ret.debts[debt.FromId] = new();
@@ -225,6 +235,10 @@ namespace LetsMeatAPI.Controllers {
       } else {
         debt.Amount += (switchSign ? -1 : 1) * (int)pendingDebt.Amount;
         _context.Entry(debt).State = EntityState.Modified;
+      }
+      if(pendingDebt.Bound != null) {
+        pendingDebt.Bound.DebtFromImage.Satisfied = true;
+        _context.Entry(pendingDebt.Bound.DebtFromImage).State = EntityState.Modified;
       }
       _context.Remove(pendingDebt);
       try {

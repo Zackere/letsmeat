@@ -35,6 +35,7 @@ namespace LetsMeatAPI.Controllers {
         public uint amount { get; set; }
         [MaxLength(128)]
         public string description { get; set; }
+        public bool satisfied { get; set; }
       }
       public Guid image_id { get; set; }
       public Guid? event_id { get; set; }
@@ -66,6 +67,7 @@ namespace LetsMeatAPI.Controllers {
                                            amount = debt.Amount,
                                            description = debt.Description,
                                            id = debt.Id,
+                                           satisfied = debt.Satisfied,
                                          },
                       event_id = image.EventId,
                       group_id = image.GroupId,
@@ -117,6 +119,7 @@ namespace LetsMeatAPI.Controllers {
           Amount = (uint)rnd.Next(100, 1000),
           Description = $"Some very meaningful description that needs to be verified :) {i}",
           Image = image,
+          Satisfied = false,
         });
       }
       await _context.DebtsFromImages.AddRangeAsync(debts);
@@ -133,6 +136,7 @@ namespace LetsMeatAPI.Controllers {
                              amount = debt.Amount,
                              description = debt.Description,
                              id = debt.Id,
+                             satisfied = debt.Satisfied,
                            },
         event_id = event_id,
         group_id = image.GroupId,
@@ -186,11 +190,17 @@ namespace LetsMeatAPI.Controllers {
       await _context.SaveChangesAsync();
       return Ok();
     }
+    public class UpdateImageDebtBody {
+      public Guid id { get; set; }
+      public uint amount { get; set; }
+      [MaxLength(128)]
+      public string description { get; set; }
+    }
     [HttpPatch]
     [Route("update_image_debt")]
     public async Task<ActionResult> UpdateImageDebt(
       string token,
-      [FromBody] ImageInformationResponse.DebtFromImageInformation body
+      [FromBody] UpdateImageDebtBody body
     ) {
       var userId = _userManager.IsLoggedIn(token);
       if(userId == null)
@@ -198,6 +208,8 @@ namespace LetsMeatAPI.Controllers {
       var debt = await _context.DebtsFromImages.FindAsync(body.id);
       if(debt == null)
         return NotFound();
+      if(debt.Satisfied)
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       debt.Amount = body.amount;
       debt.Description = body.description;
       _context.Entry(debt).State = EntityState.Modified;
@@ -230,6 +242,7 @@ namespace LetsMeatAPI.Controllers {
         Amount = body.amount,
         Description = body.description,
         ImageId = body.image_id,
+        Satisfied = false,
       };
       await _context.DebtsFromImages.AddAsync(debt);
       try {

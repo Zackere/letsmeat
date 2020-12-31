@@ -23,6 +23,7 @@ namespace LetsMeatAPI {
       services.AddDbContext<LMDbContext>(options =>
         options.UseSqlServer(_configuration.GetConnectionString("LMDatabase"))
                .UseLazyLoadingProxies()
+               .LogTo(s => LogsController.AddLog(s))
       );
       services.AddScoped<Random>();
       services.AddScoped<ILocationCritic, LocationCritic>();

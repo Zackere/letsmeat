@@ -15,6 +15,7 @@ namespace LetsMeatAPI {
     public DbSet<Image> Images { get; set; }
     public DbSet<PendingDebt> PendingDebts { get; set; }
     public DbSet<DebtFromImage> DebtsFromImages { get; set; }
+    public DbSet<PendingDebtFromImageBound> PendingDebtFromImageBounds { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
       modelBuilder.Entity<User>()
         .HasMany(user => user.DebtsForMe)
@@ -88,6 +89,8 @@ namespace LetsMeatAPI {
         .HasMany(i => i.PendingDebtsWithMe)
         .WithOne(debt => debt.Image)
         .OnDelete(DeleteBehavior.SetNull);
+      modelBuilder.Entity<PendingDebtFromImageBound>()
+        .HasKey(d => new { d.DebtFromImageId, d.PendingDebtId });
     }
   }
 }

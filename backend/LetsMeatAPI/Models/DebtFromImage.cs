@@ -11,5 +11,7 @@ namespace LetsMeatAPI.Models {
     public string Description { get; set; }
     public Guid ImageId { get; set; }
     public virtual Image Image { get; set; }
+    public bool Satisfied { get; set; }
+    public virtual PendingDebtFromImageBound? Bound { get; set; }
   }
 }
