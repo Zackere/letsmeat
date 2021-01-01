@@ -177,6 +177,8 @@ const rejectDebt = ({ state }, debtId) => post({ state }, '/Debts/reject', { deb
 
 const acceptDebt = ({ state }, debtId) => post({ state }, '/Debts/approve', { debt_id: debtId });
 
+const getGroupDebts = ({ state }, groupId, normalize = true) => get({ state }, '/Debts/groupinfo', { id: groupId, normalize }).then(extractData);
+
 export {
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups, leaveGroup, joinGroup,
@@ -186,5 +188,5 @@ export {
   uploadImage, getImagesInfo, deleteImage,
   getVote, getVoteTimes, getVoteLocations, castVote, getResults,
   searchLocation, createLocationGoogle, createLocationCustom, getLocationsInfo, rateLocation,
-  addDebt, getPendingDebts, rejectDebt, acceptDebt
+  addDebt, getPendingDebts, rejectDebt, acceptDebt, getGroupDebts,
 };

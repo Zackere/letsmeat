@@ -3,7 +3,7 @@ import {
   RefreshControl, ScrollView, StyleSheet, Text
 } from 'react-native';
 import { Card, Surface } from 'react-native-paper';
-import { getGroupInfo } from '../../Requests';
+import { getGroupInfo, getGroupDebts } from '../../Requests';
 import { store } from '../../Store';
 
 const Event = ({ event, onPress }) => (
@@ -27,10 +27,14 @@ const FeedContent = ({ navigation }) => {
 
   const onRefresh = () => {
     setRefreshing(true);
-    getGroupInfo({ state }, state.group.id).then((group) => {
-      setRefreshing(false);
-      dispatch({ type: 'SET_GROUP', payload: group });
-    });
+    Promise.all(
+      [getGroupInfo({ state }, state.group.id),
+        getGroupDebts({ state }, state.group.id)]
+    )
+      .then(([groupInfo, debtInfo]) => {
+        setRefreshing(false);
+        dispatch({ type: 'SET_GROUP', payload: { ...groupInfo, ...debtInfo } });
+      });
   };
 
   return (

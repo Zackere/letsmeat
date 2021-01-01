@@ -8,7 +8,26 @@ import { getUsersInfo } from '../../Requests';
 import { store } from '../../Store';
 import UserCard from '../../User';
 
-const GroupMembers = ({ members, navigation }) => {
+const DebtCard = ({ value = 1500 }) => {
+  if (!value) return null;
+  return (
+    <Card style={{ marginHorizontal: 30, marginTop: -10 }}>
+      <Button>
+        {value > 0 ? `Owes you ${value / 100}` : `You owe ${-value / 100}`}
+      </Button>
+    </Card>
+  );
+};
+
+const getDebtValue = (state, id) => {
+  const myId = state.user.id;
+  if (myId === id) return null;
+  if (state.group.debts[id] && state.group.debts[id][myId]) return state.group.debts[id][myId];
+  if (state.group.debts[myId] && state.group.debts[myId][id]) return state.group.debts[myId][id];
+  return 0;
+};
+
+const GroupMembers = ({ members, navigation, debts = [] }) => {
   const { state } = useContext(store);
   const [membersInfo, setMembersInfo] = useState(members);
 
@@ -26,10 +45,14 @@ const GroupMembers = ({ members, navigation }) => {
       <Card.Title title="Members" />
       <Card.Content>
         {membersInfo.slice(0, MEMBERS_TO_SHOW).map((m) => (
-          <UserCard
-            key={m.id}
-            user={m}
-          />
+          <React.Fragment key={m.id}>
+            <UserCard
+              user={m}
+            />
+            <DebtCard
+              value={getDebtValue(state, m.id)}
+            />
+          </React.Fragment>
         ))}
       </Card.Content>
       <Card.Actions style={{ justifyContent: 'space-evenly' }}>
