@@ -35,7 +35,7 @@ const SettingsScroll = ({ navigation }) => {
     <Surface style={styles.groupsContainer}>
       <ScrollView>
         <GroupMembers members={state.group.users} navigation={navigation} />
-        <Locations locations={state.group.locations} />
+        {/* <Locations locations={state.group.locations} /> */}
         <LeaveGroup confirmAction={() => {
           leaveGroup({ state }, state.group.id)
             .then(() => dispatch({ type: 'REMOVE_GROUP', groupId: state.group.id }))

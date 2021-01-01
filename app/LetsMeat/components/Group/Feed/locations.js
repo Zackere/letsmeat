@@ -10,16 +10,38 @@ import { getLocationsInfo } from '../../Requests';
 import { store } from '../../Store';
 
 const Locations = ({
-  customLocations, googleLocations, onAdd, onVote, showButtons = true, onRate
+  customLocations, googleLocations, onAdd, onVote, showButtons = true, onRate, order
 }) => {
   const { state } = useContext(store);
   const [loading, setLoading] = useState(true);
   const [locationsInfo, setLocationsInfo] = useState(null);
 
+  let locationsOrdered = [];
+  if (locationsInfo) {
+    if (order) {
+      order.forEach(({ google_maps_location_id, custom_location_id }) => {
+        let element;
+        if (google_maps_location_id) {
+          element = locationsInfo.google_maps_location_information.find((l) => (l.details && (l.details.place_id === google_maps_location_id)));
+        } else {
+          element = locationsInfo.custom_location_infomation.find((l) => l.id === custom_location_id);
+        }
+        console.log(element);
+        locationsOrdered.push(element);
+      });
+    } else {
+      locationsOrdered = [...locationsInfo.custom_location_infomation,
+        ...locationsInfo.google_maps_location_informatio];
+    }
+  }
+
   useEffect(() => {
     setLoading(true);
     getLocationsInfo({ state }, customLocations, googleLocations)
-      .then((info) => { setLocationsInfo(info); setLoading(false); });
+      .then((info) => {
+        setLocationsInfo(info); setLoading(false);
+        console.log(info);
+      });
   }, [customLocations, googleLocations, state]);
 
   return (
@@ -27,7 +49,29 @@ const Locations = ({
       : (
         <>
           <View>
-            {locationsInfo.custom_location_infomation.map((l) => (
+            {
+              locationsOrdered.map((l) => (l.details ? (
+                <GMapsCard
+                  location={l}
+                  key={l.details.place_id}
+                  onPress={() => {
+                    console.log({ gmapsId: l.details.place_id });
+                    onRate({ gmapsId: l.details.place_id });
+                  }}
+                />
+              ) : (
+                <CustomLocationCard
+                  location={l}
+                  key={l.id}
+                  onPress={() => {
+                    console.log(l.id);
+                    console.log('asuydgasdvtgvasghjd');
+                    onRate({ customId: l.id });
+                  }}
+                />
+              )))
+            }
+            {/* {locationsInfo.custom_location_infomation.map((l) => (
               <CustomLocationCard
                 location={l}
                 key={l.id}
@@ -47,7 +91,7 @@ const Locations = ({
                   onRate({ gmapsId: l.details.place_id });
                 }}
               />
-            ))}
+            ))} */}
           </View>
           {showButtons
             ? (

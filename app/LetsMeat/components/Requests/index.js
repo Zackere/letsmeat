@@ -134,6 +134,8 @@ const castVote = ({ state }, eventId, times, locations) => post({ state }, '/Vot
     }
   });
 
+const getResults = ({ state }, eventId) => get({ state }, '/Votes/result', { event_id: eventId }).then(extractData);
+
 const searchLocation = ({ state }, groupId, query, sessionToken) => get({ state },
   '/Locations/search',
   { group_id: groupId, query_string: query, sessiontoken: sessionToken })
@@ -182,7 +184,7 @@ export {
   searchUsers, getUsersInfo, updatePrefs,
   sendInvitation, getInvitations, rejectInvitation, acceptInvitation,
   uploadImage, getImagesInfo, deleteImage,
-  getVote, getVoteTimes, getVoteLocations, castVote,
+  getVote, getVoteTimes, getVoteLocations, castVote, getResults,
   searchLocation, createLocationGoogle, createLocationCustom, getLocationsInfo, rateLocation,
   addDebt, getPendingDebts, rejectDebt, acceptDebt
 };

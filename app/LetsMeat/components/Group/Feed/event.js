@@ -7,7 +7,7 @@ import {
 } from 'react-native-paper';
 import ModalButton from '../../Buttons';
 import {
-  getEventInfo, updateEvent, deleteEvent
+  getEventInfo, updateEvent, deleteEvent, getResults
 } from '../../Requests';
 import { store } from '../../Store';
 import Creator from './creator';
@@ -29,6 +29,7 @@ const EventView = ({ navigation, route }) => {
   const [eventDetails, setEventDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [results, setResults] = useState(false);
 
   const finished = state.event.deadline < new Date();
 
@@ -42,6 +43,11 @@ const EventView = ({ navigation, route }) => {
       dispatch({ type: 'SET_EVENT', payload: event });
       setEventDetails(true);
     });
+    getResults({ state }, state.event.id).then((results) => {
+      setResults(results);
+      console.log('results');
+      console.log(results);
+    });
   };
 
   useEffect(loadData, [state.user.tokenId, deleting, dispatch]);
@@ -53,40 +59,40 @@ const EventView = ({ navigation, route }) => {
           ? (
             <>
               <Title style={styles.eventTitle}>{state.event.name}</Title>
-              <Card elevation={0}>
-                <Card.Title title={finished ? 'Final Voting Results' : 'Current Voting Results'} />
-                <Results event={state.event} />
-              </Card>
-              <Deadline time={state.event.deadline} />
-              <Creator userId={state.event.creator_id} />
-              <Card style={styles.section} elevation={0}>
-                <Card.Title title="Candidate Locations" />
-                <Locations
-                  googleLocations={state.event.candidate_google_maps_locations}
-                  customLocations={state.event.candidate_custom_locations}
-                  onRate={({ gmapsId, customId }) => navigation.navigate('RateLocation', { gmapsId, customId })}
-                  onAdd={() => navigation.navigate('AddLocation', { eventId: state.event.id, groupId: state.group.id })}
-                  onVote={() => navigation.navigate('VoteLocation', { eventId: state.event.id, groupId: state.group.id })}
-                />
-              </Card>
-              <Card style={styles.section} elevation={0}>
-                <Card.Title title="Candidate Times" />
-                <Times
-                  loading={loading}
-                  times={state.event.candidate_times.map((t) => new Date(t))}
-                  onVote={() => {
-                    navigation.navigate('VoteTime', {
-                      eventId: state.event.id
-                    });
-                  }}
-                  onAddTime={(time) => {
-                    setLoading(true);
-                    return updateEvent({ state }, { ...state.event, candidate_times: [time] })
-                      .then((event) => dispatch({ type: 'SET_EVENT', payload: event }))
-                      .finally(() => setLoading(false));
-                  }}
-                  deadline={new Date(state.event.deadline)}
-                />
+              <Card elevation={0} style={{ margin: 5 }}>
+                <Card.Title title={finished ? 'Results' : 'Candidates'} style={{ marginBottom: 0 }} />
+                <Card style={{ ...styles.section, marginTop: 0 }} elevation={0}>
+                  <Card.Title title="Locations" style={{ marginTop: 0 }} />
+                  <Locations
+                    googleLocations={state.event.candidate_google_maps_locations}
+                    customLocations={state.event.candidate_custom_locations}
+                    order={results ? results.locations : undefined}
+                    onRate={({ gmapsId, customId }) => navigation.navigate('RateLocation', { gmapsId, customId })}
+                    onAdd={() => navigation.navigate('AddLocation', { eventId: state.event.id, groupId: state.group.id })}
+                    onVote={() => navigation.navigate('VoteLocation', { eventId: state.event.id, groupId: state.group.id })}
+                  />
+                </Card>
+                <Card style={styles.section} elevation={0}>
+                  <Card.Title title="Times" />
+                  <Times
+                    loading={loading}
+                    times={state.event.candidate_times.map((t) => new Date(t))}
+                    onVote={() => {
+                      navigation.navigate('VoteTime', {
+                        eventId: state.event.id
+                      });
+                    }}
+                    onAddTime={(time) => {
+                      setLoading(true);
+                      return updateEvent({ state }, { ...state.event, candidate_times: [time] })
+                        .then((event) => dispatch({ type: 'SET_EVENT', payload: event }))
+                        .finally(() => setLoading(false));
+                    }}
+                    deadline={new Date(state.event.deadline)}
+                  />
+                </Card>
+                <Deadline time={state.event.deadline} />
+                <Creator userId={state.event.creator_id} />
               </Card>
               <Debts
                 onAdd={() => {
