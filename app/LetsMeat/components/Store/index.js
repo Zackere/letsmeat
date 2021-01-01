@@ -9,7 +9,8 @@ const initialState = {
   group: {},
   event: {},
   invitations: [],
-  debts: []
+  debts: [],
+  shouldReloadEventView: true
 };
 const store = createContext(initialState);
 const { Provider } = store;
@@ -103,6 +104,26 @@ const StateProvider = ({ children }) => {
         };
         return newState;
       }
+      case 'REMOVE_IMAGE': {
+        const newState = {
+          ...state,
+          event: {
+            ...state.event,
+            images: state.event.images.filter((i) => i !== action.imageId)
+          }
+        };
+        return newState;
+      }
+      case 'ADD_IMAGE_TO_EVENT': {
+        const newState = {
+          ...state,
+          event: {
+            ...state.event,
+            images: [action.imageId, ...state.event.images]
+          }
+        };
+        return newState;
+      }
       case 'SET_DEBTS': {
         const newState = {
           ...state,
@@ -124,6 +145,17 @@ const StateProvider = ({ children }) => {
         };
         return newState;
       }
+      case 'REMOVE_EVENT': {
+        const newState = {
+          ...state,
+          group: {
+            ...state.group,
+            events: state.group.events.filter((e) => e.id !== action.eventId)
+          },
+        };
+        console.log(newState.group.events);
+        return newState;
+      }
       case 'UPDATE_GROUP_INFO': {
         const groups = [...state.groups];
         const groupIndex = state.groups.findIndex((g) => g.id === action.groupId);
@@ -139,6 +171,30 @@ const StateProvider = ({ children }) => {
         const newState = {
           ...state,
           groups: [action.group, ...state.groups],
+        };
+        return newState;
+      }
+      case 'RELOAD_EVENT_VIEW': {
+        const newState = {
+          ...state,
+          shouldReloadEventView: true
+        };
+        return newState;
+      }
+      case 'RELOADED_EVENT_VIEW': {
+        const newState = {
+          ...state,
+          shouldReloadEventView: false
+        };
+        return newState;
+      }
+      case 'ADD_EVENT': {
+        const newState = {
+          ...state,
+          group: {
+            ...state.group,
+            events: [action.event, ...state.group.events]
+          },
         };
         return newState;
       }

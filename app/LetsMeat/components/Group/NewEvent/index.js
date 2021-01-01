@@ -57,13 +57,13 @@ const SetNameDialog = ({
 };
 
 const NewEventContent = ({ navigation }) => {
-  const { state } = useContext(store);
+  const DEFAULT_DEADLINE = null;
+  const DEFAULT_NAME = null;
+
+  const { state, dispatch } = useContext(store);
   const [pickerVisible, setPickerVisible] = useState(false);
-  const hidePicker = () => setPickerVisible(false);
   const showPicker = () => setPickerVisible(true);
   const [dialogVisible, setDialogVisible] = useState(true);
-  const hideDialog = () => setDialogVisible(false);
-  const showDialog = () => setDialogVisible(true);
   const [name, setName] = useState(null);
   const [deadline, setDeadline] = useState(null);
   const [justOpened, setJustOpened] = useState(false);
@@ -73,6 +73,14 @@ const NewEventContent = ({ navigation }) => {
       showPicker();
     }
   };
+
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      setDeadline(DEFAULT_DEADLINE);
+      setName(DEFAULT_NAME);
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const onNameSet = (newName) => {
     if (justOpened) {
@@ -84,19 +92,25 @@ const NewEventContent = ({ navigation }) => {
     setName(newName);
   };
 
-  const onDateDismiss = () => {
-    setJustOpened(false);
-  };
+  // const onDateDismiss = () => {
+  //   setJustOpened(false);
+  // };
 
-  const onDateSet = (date) => {
-    setJustOpened(false);
-    setDeadline(date);
-  };
+  // const onDateSet = (date) => {
+  //   setJustOpened(false);
+  //   setDeadline(date);
+  // };
 
   return (
     <Surface style={styles.container}>
       <Title style={styles.eventTitle}>{name}</Title>
-      {deadline ? <TimeCard time={deadline} /> : (<Card><Text>You need to supply some deadline</Text></Card>)}
+      {deadline
+        ? <TimeCard time={deadline} />
+        : (
+          <Card style={{ margin: 10 }}>
+            <Text>You need to supply some deadline</Text>
+          </Card>
+        )}
       <Button onPress={() => {
         setDialogVisible(true);
       }}
@@ -110,7 +124,9 @@ const NewEventContent = ({ navigation }) => {
         Set event deadline
       </Button>
       <Button onPress={() => {
-        createEvent({ state }, state.group.id, name, deadline).then(navigation.navigate('Feed'));
+        createEvent({ state }, state.group.id, name, deadline)
+          .then(() => dispatch({ type: 'ADD_EVENT', event: { name, deadline: `${deadline}` } }))
+          .then(navigation.navigate('Feed'));
       }}
       >
         Create Event

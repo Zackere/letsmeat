@@ -48,7 +48,7 @@ const RenderGroup = ({
         getGroupInfo({ state }, groupId)
           .then((group) => {
             dispatch({ type: 'SET_GROUP', payload: group });
-            navigation.navigate('Home');
+            navigation.navigate('Home', { screen: 'Feed' });
           }).catch(console.log);
       }}
     >
@@ -82,32 +82,20 @@ const RenderGroup = ({
 export const Groups = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
   const groupsLoaded = state.groups;
-  // const load = () => {
-  //   setLoadingGroups(true);
-  //   getGroups({ state, dispatch }).then(onGetGroups);
-  // };
-
-  // navigation.addListener('focus', ());
-
-  // const [groups, setGroups] = useState([]);
   useFocusEffect(() => {
     if (groupsLoaded) setLoadingGroups(false);
   });
   const [loadingGroups, setLoadingGroups] = useState(true);
 
-  const onGetGroups = (groups) => {
-    // groups.foreach(g => getGroupInfo({state}, g.id))
-    // setGroups(groups);
-    // Promise.all(groups.map(g => getGroupInfo({state}, g.id)))
-    console.log(groups);
-    dispatch({ type: 'SET_GROUPS', payload: groups });
-    setLoadingGroups(false);
-  };
-
   useEffect(() => {
-    if (!groupsLoaded) getGroups({ state, dispatch }).then(onGetGroups);
-    else setLoadingGroups(false);
-  }, []);
+    if (!groupsLoaded) {
+      getGroups({ state, dispatch }).then((groups) => {
+        console.log(groups);
+        dispatch({ type: 'SET_GROUPS', payload: groups });
+        setLoadingGroups(false);
+      });
+    } else setLoadingGroups(false);
+  }, [state, groupsLoaded, dispatch]);
 
   return (
     loadingGroups

@@ -7,11 +7,11 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {
   ActivityIndicator, Button, Card
 } from 'react-native-paper';
-import { getImagesInfo, uploadImage } from '../../Requests';
+import { getImagesInfo, uploadImage, deleteImage } from '../../Requests';
 import { store } from '../../Store';
 
 const DebtImage = ({ id }) => {
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
   const [imageData, setImageData] = useState(null);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
@@ -34,43 +34,75 @@ const DebtImage = ({ id }) => {
               source={{ uri: imageData.image_url }}
             />
           </Card.Content>
+          <Card.Actions style={{ justifyContent: 'space-evenly' }}>
+            <Button onPress={
+              () => {
+                deleteImage({ state }, id).then(() => {
+                  dispatch({ type: 'REMOVE_IMAGE', imageId: id });
+                });
+              }
+            }
+            >
+              <Icon name="delete" size={25} />
+            </Button>
+          </Card.Actions>
         </Card>
       )
       : <ActivityIndicator />
   );
 };
 
-const Images = ({ images }) => (images ? images.map((i) => <DebtImage key={i} id={i} />) : <></>);
+const Images = ({ images }) => {
+  const [mutableImages, setImages] = useState(images);
+
+  return (images
+    ? images.map((id) => (
+      <DebtImage
+        key={id}
+        id={id}
+      />
+    ))
+    : <></>);
+};
 
 const Debts = ({ images, onAdd }) => {
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
+  const [loading, setLoading] = useState(true);
+
   return (
     <Card style={styles.section} elevation={0}>
       <Card.Title title="Debts" />
-      <Card.Content>
-        <Images images={images} />
-        <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
-          <Button
-            style={styles.addButton}
-            onPress={onAdd
-            }
-          >
-            <Icon name="cash-usd" size={25} />
-          </Button>
-          <Button
-            style={styles.addButton}
-            onPress={
+      <Images
+        images={images}
+      />
+      <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
+        <Button
+          style={styles.addButton}
+          onPress={onAdd}
+        >
+          <Icon name="cash-usd" size={25} />
+        </Button>
+        <Button
+          style={styles.addButton}
+          onPress={
           () => {
             ImagePicker.openPicker({
               cropping: true
-            }).then((i) => uploadImage({ state }, state.event.id, i));
+            })
+              .then((i) => uploadImage({ state }, state.event.id, i))
+              .then((data) => {
+                dispatch({ type: 'ADD_IMAGE_TO_EVENT', imageId: data.image_id });
+              })
+              .catch((e) => {
+                if (e.code === 'E_PICKER_CANCELLED') return;
+                throw e;
+              });
           }
         }
-          >
-            <Icon name="image-plus" size={25} />
-          </Button>
-        </View>
-      </Card.Content>
+        >
+          <Icon name="image-plus" size={25} />
+        </Button>
+      </View>
     </Card>
   );
 };

@@ -8,13 +8,13 @@ import { getUsersInfo } from '../../Requests';
 import { store } from '../../Store';
 import UserCard from '../../User';
 
-
 const GroupMembers = ({ members, navigation }) => {
   const { state } = useContext(store);
   const [membersInfo, setMembersInfo] = useState(members);
+
   useEffect(() => {
     getUsersInfo({ state }, members.map((m) => m.id)).then(setMembersInfo);
-  }, []);
+  }, [members, state]);
 
   const MEMBERS_TO_SHOW = 3;
 
@@ -27,6 +27,7 @@ const GroupMembers = ({ members, navigation }) => {
       <Card.Content>
         {membersInfo.slice(0, MEMBERS_TO_SHOW).map((m) => (
           <UserCard
+            key={m.id}
             user={m}
           />
         ))}

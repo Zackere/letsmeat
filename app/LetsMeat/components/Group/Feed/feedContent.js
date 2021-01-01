@@ -1,5 +1,7 @@
 import React, { useContext } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text } from 'react-native';
+import {
+  RefreshControl, ScrollView, StyleSheet, Text
+} from 'react-native';
 import { Card, Surface } from 'react-native-paper';
 import { getGroupInfo } from '../../Requests';
 import { store } from '../../Store';
@@ -34,7 +36,6 @@ const FeedContent = ({ navigation }) => {
   return (
     <Surface style={styles.container}>
       <ScrollView
-        // styles={styles.container}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }

@@ -79,6 +79,8 @@ const getEventInfo = ({ state }, eventId) => get({ state }, '/Events/info', { id
 
 const updateEvent = ({ state }, event) => patch({ state }, '/Events/update', event).then(extractData);
 
+const deleteEvent = ({ state }, id) => _delete({ state }, '/Events/delete', { id });
+
 const searchUsers = ({ state }, name) => get({ state }, '/Users/search', { name }).then(extractData);
 
 const getUsersInfo = ({ state }, ids) => post({ state }, '/Users/info', { ids: (Array.isArray(ids) ? ids : [ids]) }).then(extractData);
@@ -102,7 +104,7 @@ const uploadImage = ({ state }, eventId, image) => {
   };
   const form = new FormData();
   form.append('file', { uri: image.path, type: image.mime, name: getNameFromPath(image.path) });
-  fetch(`${baseURL}Images/upload?${new URLSearchParams({ token: state.user.token, event_id: eventId })}`, {
+  return fetch(`${baseURL}Images/upload?${new URLSearchParams({ token: state.user.token, event_id: eventId })}`, {
     method: 'POST',
     headers: {
       Accept: 'text/',
@@ -113,6 +115,8 @@ const uploadImage = ({ state }, eventId, image) => {
 };
 
 const getImagesInfo = ({ state }, ids) => post({ state }, '/Images/info', { image_ids: (Array.isArray(ids) ? ids : [ids]) }).then(extractData);
+
+const deleteImage = ({ state }, id) => _delete({ state }, '/Images/delete', { id });
 
 const getVote = ({ state }, eventId) => get({ state }, '/Votes/get', { event_id: eventId }).then(extractData);
 
@@ -147,6 +151,12 @@ const getLocationsInfo = ({ state }, customIds, googleIds) => post({ state },
   })
   .then(extractData);
 
+const rateLocation = ({ state }, taste, price, amountOfFood, waitingTime, gmapsId, customId) => post({ state },
+  '/Locations/rate',
+  {
+    taste, price, amount_of_food: amountOfFood, waitingTime, google_maps_id: gmapsId, custom_location_id: customId
+  }).then(extractData);
+
 const addDebt = ({ state }, groupId, eventId, fromId, toId, amount, description, imageId) => post({ state }, '/Debts/add',
   {
     group_id: groupId,
@@ -168,11 +178,11 @@ const acceptDebt = ({ state }, debtId) => post({ state }, '/Debts/approve', { de
 export {
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups, leaveGroup, joinGroup,
-  createEvent, getEventInfo, updateEvent,
+  createEvent, getEventInfo, updateEvent, deleteEvent,
   searchUsers, getUsersInfo, updatePrefs,
   sendInvitation, getInvitations, rejectInvitation, acceptInvitation,
-  uploadImage, getImagesInfo,
+  uploadImage, getImagesInfo, deleteImage,
   getVote, getVoteTimes, getVoteLocations, castVote,
-  searchLocation, createLocationGoogle, createLocationCustom, getLocationsInfo,
+  searchLocation, createLocationGoogle, createLocationCustom, getLocationsInfo, rateLocation,
   addDebt, getPendingDebts, rejectDebt, acceptDebt
 };

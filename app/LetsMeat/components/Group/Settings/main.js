@@ -1,57 +1,11 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import {
-  Button, Card, Dialog, Paragraph, Portal, Surface
-} from 'react-native-paper';
+import { Surface } from 'react-native-paper';
 import { deleteGroup, leaveGroup } from '../../Requests';
 import { store } from '../../Store';
 import GroupMembers from './members';
-
-const ModalButton = ({
-  style, modalText, confirmAction, confirmText, icon, buttonText
-}) => {
-  const [visible, setVisible] = useState(false);
-  const showDialog = () => setVisible(true);
-  const hideDialog = () => setVisible(false);
-
-  return (
-    <>
-      <Card
-        style={{ ...styles.cardButton, ...style }}
-        onPress={showDialog}
-      >
-        <Card.Content style={{ flexDirection: 'row', height: '100%', alignItems: 'center' }}>
-          <MaterialCommunityIcons
-            name={icon}
-            size={20}
-          />
-          <Paragraph>
-            {buttonText}
-          </Paragraph>
-        </Card.Content>
-      </Card>
-      <Portal>
-        <Dialog visible={visible} onDismiss={hideDialog}>
-          <Dialog.Title>Warning</Dialog.Title>
-          <Dialog.Content>
-            <Paragraph>{modalText}</Paragraph>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={hideDialog}>Abort</Button>
-            <Button onPress={() => {
-              confirmAction();
-              hideDialog();
-            }}
-            >
-              {confirmText}
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
-    </>
-  );
-};
+import Locations from './locations';
+import ModalButton from '../../Buttons';
 
 const DeleteGroup = ({ confirmAction }) => (
   <ModalButton
@@ -81,6 +35,7 @@ const SettingsScroll = ({ navigation }) => {
     <Surface style={styles.groupsContainer}>
       <ScrollView>
         <GroupMembers members={state.group.users} navigation={navigation} />
+        <Locations locations={state.group.locations} />
         <LeaveGroup confirmAction={() => {
           leaveGroup({ state }, state.group.id)
             .then(() => dispatch({ type: 'REMOVE_GROUP', groupId: state.group.id }))

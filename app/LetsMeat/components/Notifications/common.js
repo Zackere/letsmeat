@@ -37,11 +37,11 @@ const NotificationAction = ({ acceptAction, rejectAction }) => {
   );
 };
 
-const NotificationContent = ({ node, loading }) => (
+const NotificationContent = ({ content, loading }) => (
   <Card.Content>
     { loading
-      ? { node }
-      : <ActivityIndicator />}
+      ? <ActivityIndicator />
+      : { content }}
   </Card.Content>
 );
 
@@ -57,19 +57,18 @@ export const Invitation = ({ invitation, full = false }) => {
 
   return (
     <Card style={{ margin: 5 }}>
-      <Card.Content>
-        { (user && group)
-          ? (
-            <Paragraph>
-              <Subheading>{user.name}</Subheading>
-              {'\t'}
-              <Caption>invites you to join</Caption>
-              {'\n'}
-              <Subheading>{group.name}</Subheading>
-            </Paragraph>
-          )
-          : <ActivityIndicator />}
-      </Card.Content>
+      <NotificationContent
+        loading={!user || !group}
+        content={(!user || !group) ? (
+          <Paragraph>
+            <Subheading>{user.name}</Subheading>
+            {'\t'}
+            <Caption>invites you to join</Caption>
+            {'\n'}
+            <Subheading>{group.name}</Subheading>
+          </Paragraph>
+        ) : null}
+      />
       <NotificationAction
         rejectAction={() => rejectInvitation({ state }, group.id)
           .then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }))}
@@ -90,19 +89,18 @@ export const Debt = ({ debt, full = false }) => {
 
   return (
     <Card style={{ margin: 5 }}>
-      <Card.Content>
-        { (user)
-          ? (
-            <Paragraph>
-              <Subheading>{user.name}</Subheading>
-              {'\t'}
-              <Caption>wants you to pay</Caption>
-              {'\n'}
-              <Subheading>{(debt.amount / 100).toFixed(2)}</Subheading>
-            </Paragraph>
-          )
-          : <ActivityIndicator />}
-      </Card.Content>
+      <NotificationContent
+        loading={!user}
+        content={user ? (
+          <Paragraph>
+            <Subheading>{user.name}</Subheading>
+            {'\t'}
+            <Caption>wants you to pay</Caption>
+            {'\n'}
+            <Subheading>{(debt.amount / 100).toFixed(2)}</Subheading>
+          </Paragraph>
+        ) : null}
+      />
       <NotificationAction
         rejectAction={() => rejectDebt({ state }, debt.id)
           .then(() => dispatch({ type: 'REMOVE_DEBT', debtId: debt.id }))}

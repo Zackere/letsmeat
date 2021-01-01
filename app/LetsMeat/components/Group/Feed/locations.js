@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
@@ -9,7 +10,7 @@ import { getLocationsInfo } from '../../Requests';
 import { store } from '../../Store';
 
 const Locations = ({
-  customLocations, googleLocations, onAdd, onVote
+  customLocations, googleLocations, onAdd, onVote, showButtons = true, onRate
 }) => {
   const { state } = useContext(store);
   const [loading, setLoading] = useState(true);
@@ -26,17 +27,47 @@ const Locations = ({
       : (
         <>
           <View>
-            {locationsInfo.custom_location_infomation.map((l) => <CustomLocationCard location={l} key={l.id} />)}
-            {locationsInfo.google_maps_location_information.map((l) => <GMapsCard location={l} key={l.details.place_id} />)}
+            {locationsInfo.custom_location_infomation.map((l) => (
+              <CustomLocationCard
+                location={l}
+                key={l.id}
+                onPress={() => {
+                  console.log(l.id);
+                  console.log('asuydgasdvtgvasghjd');
+                  onRate({ customId: l.id });
+                }}
+              />
+            ))}
+            {locationsInfo.google_maps_location_information.map((l) => (
+              <GMapsCard
+                location={l}
+                key={l.details.place_id}
+                onPress={() => {
+                  console.log({ gmapsId: l.details.place_id });
+                  onRate({ gmapsId: l.details.place_id });
+                }}
+              />
+            ))}
           </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
-            <Button style={styles.addButton} onPress={onAdd}>
-              <Icon name="plus" size={25} />
-            </Button>
-            <Button style={styles.addButton} onPress={onVote}>
-              <Icon name="vote" size={25} />
-            </Button>
-          </View>
+          {showButtons
+            ? (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
+                <Button
+                  style={styles.addButton}
+                  onPress={onAdd}
+                >
+                  <Icon name="plus" size={25} />
+                </Button>
+                <Button
+                  style={styles.addButton}
+                  onPress={onVote}
+                  disabled={customLocations.length
+                + googleLocations.length === 0}
+                >
+                  <Icon name="vote" size={25} />
+                </Button>
+              </View>
+            ) : null}
         </>
       )
   );
