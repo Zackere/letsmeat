@@ -6,10 +6,12 @@ import { Header } from '../../Header';
 import { store } from '../../Store';
 import Invite from './invite';
 import SettingsScroll from './main';
+import SendTransfer from './sendTransfer';
+import { MembersScreen } from './members';
 
 const Stack = createStackNavigator();
 
-const SCREENS_WITHOUT_TABS = new Set(['Invite']);
+const SCREENS_WITHOUT_TABS = new Set(['Invite', 'Members', 'SendTransfer']);
 
 const Settings = ({ navigation, route }) => {
   const { state } = useContext(store);
@@ -25,8 +27,8 @@ const Settings = ({ navigation, route }) => {
     <Stack.Navigator
       initialRouteName="Settings"
       headerMode="float"
-      headerTitle="XD"
       screenOptions={{
+        headerTitle: state.group.name,
         header: ({ scene, previous, navigation }) => (
           <Header scene={scene} previous={previous} navigation={navigation} />
         ),
@@ -35,14 +37,19 @@ const Settings = ({ navigation, route }) => {
       <Stack.Screen
         name="Settings"
         component={SettingsScroll}
-        options={{ headerTitle: state.group.name }}
       />
       <Stack.Screen
         name="Invite"
         component={Invite}
-        options={{ headerTitle: state.group.name }}
       />
-
+      <Stack.Screen
+        name="SendTransfer"
+        component={SendTransfer}
+      />
+      <Stack.Screen
+        name="Members"
+        component={MembersScreen}
+      />
     </Stack.Navigator>
   );
 };

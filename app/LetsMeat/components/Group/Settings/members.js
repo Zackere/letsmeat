@@ -2,22 +2,13 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import {
-  Button, Card
+  Button, Card, Surface
 } from 'react-native-paper';
 import { getUsersInfo } from '../../Requests';
 import { store } from '../../Store';
 import UserCard from '../../User';
-
-const DebtCard = ({ value = 1500 }) => {
-  if (!value) return null;
-  return (
-    <Card style={{ marginHorizontal: 30, marginTop: -10 }}>
-      <Button>
-        {value > 0 ? `Owes you ${value / 100}` : `You owe ${-value / 100}`}
-      </Button>
-    </Card>
-  );
-};
+import DebtCard from '../../Debts';
+import BackgroundContainer from '../../Background';
 
 const getDebtValue = (state, id) => {
   const myId = state.user.id;
@@ -27,7 +18,13 @@ const getDebtValue = (state, id) => {
   return 0;
 };
 
-const GroupMembers = ({ members, navigation, debts = [] }) => {
+export const GroupMembers = ({
+  members,
+  navigation,
+  displayContainer = true,
+  membersToDisplay = 3,
+  showAll = false
+}) => {
   const { state } = useContext(store);
   const [membersInfo, setMembersInfo] = useState(members);
 
@@ -35,43 +32,80 @@ const GroupMembers = ({ members, navigation, debts = [] }) => {
     getUsersInfo({ state }, members.map((m) => m.id)).then(setMembersInfo);
   }, [members, state]);
 
-  const MEMBERS_TO_SHOW = 3;
+  const membersSlice = showAll ? membersInfo : membersInfo.slice(0, membersToDisplay);
+
+  const list = membersSlice.map((m) => (
+    <React.Fragment key={m.id}>
+      <UserCard
+        user={m}
+        actions={m.id !== state.user.id ? (
+          <Button onPress={
+        () => navigation.navigate('SendTransfer', {
+          user: m,
+          amount: getDebtValue(state, m.id)
+        })
+      }
+          >
+            Send Transfer
+          </Button>
+        ) : undefined}
+      />
+      <DebtCard
+        value={getDebtValue(state, m.id)}
+      />
+    </React.Fragment>
+  ));
 
   return (
-    <Card
-      elevation={0}
-      style={styles.emptyCard}
-    >
-      <Card.Title title="Members" />
-      <Card.Content>
-        {membersInfo.slice(0, MEMBERS_TO_SHOW).map((m) => (
-          <React.Fragment key={m.id}>
-            <UserCard
-              user={m}
-            />
-            <DebtCard
-              value={getDebtValue(state, m.id)}
-            />
-          </React.Fragment>
-        ))}
-      </Card.Content>
-      <Card.Actions style={{ justifyContent: 'space-evenly' }}>
-        <Button onPress={() => navigation.navigate('Invite')}>
-          <Icon name="plus" size={25} />
-        </Button>
-        {
-          (membersInfo.length > MEMBERS_TO_SHOW)
-            ? (
+    <>
+      {
+      displayContainer
+        ? (
+          <Card
+            elevation={1}
+            style={styles.emptyCard}
+          >
+            <Card.Title title="Members" />
+            <Card.Content>
+              {list}
+            </Card.Content>
+            <Card.Actions style={{ justifyContent: 'space-evenly' }}>
               <Button onPress={() => navigation.navigate('Invite')}>
-                <Icon name="dots-horizontal" size={25} />
+                <Icon name="plus" size={25} />
               </Button>
-            )
-            : null
+              {
+            (membersInfo.length > membersToDisplay)
+              ? (
+                <Button onPress={() => navigation.navigate('Members')}>
+                  <Icon name="dots-horizontal" size={25} />
+                </Button>
+              )
+              : null
         }
-      </Card.Actions>
-    </Card>
+            </Card.Actions>
+          </Card>
+        ) : list
+  }
+    </>
   );
 };
+
+export const MembersScreen = ({ navigation }) => {
+  const { state, dispatch } = useContext(store);
+
+  return (
+    <BackgroundContainer>
+      <GroupMembers
+        members={state.group.users}
+        debts={state.group.debts}
+        navigation={navigation}
+        displayContainer={false}
+        showAll
+      />
+    </BackgroundContainer>
+  );
+};
+
 const styles = StyleSheet.create({
   progressBar: {
     width: '100%',
@@ -90,7 +124,8 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   emptyCard: {
-    margin: 10
+    margin: 10,
+    backgroundColor: 'rgba(200, 200, 200, 0.9)'
   },
   user: {
     margin: 5

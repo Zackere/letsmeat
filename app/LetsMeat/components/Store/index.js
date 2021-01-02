@@ -10,7 +10,8 @@ const initialState = {
   event: {},
   invitations: [],
   debts: [],
-  shouldReloadEventView: true
+  shouldReloadEventView: true,
+  shouldReloadFeed: true
 };
 const store = createContext(initialState);
 const { Provider } = store;

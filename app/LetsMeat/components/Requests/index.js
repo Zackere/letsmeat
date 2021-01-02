@@ -159,7 +159,7 @@ const rateLocation = ({ state }, taste, price, amountOfFood, waitingTime, gmapsI
     taste, price, amount_of_food: amountOfFood, waitingTime, google_maps_id: gmapsId, custom_location_id: customId
   }).then(extractData);
 
-const addDebt = ({ state }, groupId, eventId, fromId, toId, amount, description, imageId) => post({ state }, '/Debts/add',
+const addDebt = ({ state }, groupId, eventId, fromId, toId, amount, description, imageId, debtType = 1) => post({ state }, '/Debts/add',
   {
     group_id: groupId,
     event_id: eventId,
@@ -167,7 +167,8 @@ const addDebt = ({ state }, groupId, eventId, fromId, toId, amount, description,
     to_id: toId,
     amount,
     description,
-    image_id: imageId
+    image_debt_id: imageId,
+    debt_type: debtType
   })
   .then(extractData);
 
@@ -179,6 +180,13 @@ const acceptDebt = ({ state }, debtId) => post({ state }, '/Debts/approve', { de
 
 const getGroupDebts = ({ state }, groupId, normalize = true) => get({ state }, '/Debts/groupinfo', { id: groupId, normalize }).then(extractData);
 
+const deleteImageDebt = ({ state }, id) => _delete({ state }, '/Images/delete_image_debt', { id });
+
+const updateImageDebt = ({ state }, debt) => patch({ state }, '/Images/update_image_debt', debt).then(extractData);
+
+const createImageDebt = ({ state }, amount, description, imageId) => post({ state },
+  '/Images/create_image_debt', { amount, description, image_id: imageId });
+
 export {
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups, leaveGroup, joinGroup,
@@ -189,4 +197,5 @@ export {
   getVote, getVoteTimes, getVoteLocations, castVote, getResults,
   searchLocation, createLocationGoogle, createLocationCustom, getLocationsInfo, rateLocation,
   addDebt, getPendingDebts, rejectDebt, acceptDebt, getGroupDebts,
+  deleteImageDebt, updateImageDebt, createImageDebt
 };

@@ -5,30 +5,43 @@ import {
 import {
   Button, Card, Surface, TextInput, ToggleButton
 } from 'react-native-paper';
-import { addDebt } from '../../Requests';
+import { addDebt, createImageDebt, updateImageDebt } from '../../Requests';
 import { store } from '../../Store';
 import UserCard, { UserPicker } from '../../User';
 
 const AddDebt = ({ navigation, route }) => {
   const { state } = useContext(store);
-  const { eventId, imageId } = route.params;
+  const { eventId, imageId, debt } = route.params;
 
   const [direction, setDirection] = useState('IOwe');
-  const [amount, setAmount] = useState('');
-  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState(debt ? `${debt.amount / 100}` : '');
+  const [description, setDescription] = useState(debt ? `${debt.description}` : '');
   const [userPickerOpen, setUserPickerOpen] = useState(false);
   const [user, setUser] = useState(null);
 
+  // const pressAddDebt = () => {
+  //   const [from, to] = direction === 'IOwe' ? [state.user.id, user.id] : [user.id, state.user.id];
+  //   addDebt({ state }, state.group.id, eventId, from, to, parseFloat(amount) * 100, description, imageId).then(() => navigation.goBack());
+  // };
+
   const pressAddDebt = () => {
-    const [from, to] = direction === 'IOwe' ? [state.user.id, user.id] : [user.id, state.user.id];
-    addDebt({ state }, state.group.id, eventId, from, to, parseFloat(amount) * 100, description, imageId).then(() => navigation.goBack());
+    // const [from, to] = direction === 'IOwe' ? [state.user.id, user.id] : [user.id, state.user.id];
+    if (debt) {
+      updateImageDebt({ state }, { ...debt, amount: parseFloat(amount) * 100, description }).then(() => {
+        navigation.goBack();
+      });
+    } else {
+      createImageDebt({ state }, parseFloat(amount) * 100, description, imageId).then(() => {
+        navigation.goBack();
+      });
+    }
   };
 
   const buttonText = direction === 'IOwe' ? 'Select the person you owe' : 'Select the person who owes you';
 
   return (
     <Surface style={styles.container}>
-      <ToggleButton.Row style={{
+      {/* <ToggleButton.Row style={{
         justifyContent: 'center',
         marginVertical: 10,
         flexDirection: 'row',
@@ -54,8 +67,8 @@ const AddDebt = ({ navigation, route }) => {
       {
       user
         ? <UserCard user={user} /> : <Card />
-    }
-      <Button onPress={() => setUserPickerOpen(true)}>{buttonText}</Button>
+    } */}
+      {/* <Button onPress={() => setUserPickerOpen(true)}>{buttonText}</Button> */}
       <TextInput
         mode="outlined"
         label="Amount"
@@ -75,12 +88,12 @@ const AddDebt = ({ navigation, route }) => {
         placeholder="Those two wonderful hot-dogs :)"
       />
       <Button onPress={pressAddDebt}>Add Debt</Button>
-      <UserPicker
+      {/* <UserPicker
         userIds={state.group.users.map((u) => u.id).filter((id) => id !== state.user.id)}
         dialogVisible={userPickerOpen}
         onDismiss={() => setUserPickerOpen(false)}
         setUser={setUser}
-      />
+      /> */}
     </Surface>
   );
 };

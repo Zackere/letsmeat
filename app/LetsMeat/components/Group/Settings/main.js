@@ -1,11 +1,10 @@
 import React, { useContext } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import { Surface } from 'react-native-paper';
+import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
+import ModalButton from '../../Buttons';
 import { deleteGroup, leaveGroup } from '../../Requests';
 import { store } from '../../Store';
-import GroupMembers from './members';
-import Locations from './locations';
-import ModalButton from '../../Buttons';
+import { GroupMembers } from './members';
 
 const DeleteGroup = ({ confirmAction }) => (
   <ModalButton
@@ -32,7 +31,7 @@ const SettingsScroll = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
 
   return (
-    <Surface style={styles.groupsContainer}>
+    <BackgroundContainer>
       <ScrollView>
         <GroupMembers members={state.group.users} debts={state.group.debts} navigation={navigation} />
         <LeaveGroup confirmAction={() => {
@@ -48,15 +47,16 @@ const SettingsScroll = ({ navigation }) => {
             .then(() => navigation.navigate('SelectGroup'));
         }}
         />
+        <ScrollPlaceholder />
       </ScrollView>
-    </Surface>
+    </BackgroundContainer>
   );
 };
 
 const styles = StyleSheet.create({
   groupsContainer: {
     width: '100%',
-    height: '100%'
+    height: '100%',
   },
   fab: {
     position: 'absolute',
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     height: 50,
   },
   delete: {
-    backgroundColor: '#fc3503'
+    backgroundColor: 'rgba(255, 0, 0, 0.8)'
   },
   leave: {
     backgroundColor: '#fc3503'

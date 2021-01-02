@@ -11,10 +11,14 @@ import VoteLocation from './voteLocation';
 import CreateLocation from './createLocation';
 import AddDebt from './addDebt';
 import RateLocation from './rateLocation';
+import { NewEventContent } from '../NewEvent';
 
 const Stack = createStackNavigator();
 
-const SCREENS_WITHOUT_TABS = new Set(['Event', 'VoteTime', 'VoteLocation', 'AddLocation', 'CreateLocation', 'AddDebt', 'RateLocation']);
+const SCREENS_WITHOUT_TABS = new Set(['Event',
+  'VoteTime', 'VoteLocation', 'AddLocation',
+  'CreateLocation', 'AddDebt', 'RateLocation',
+  'NewEvent']);
 
 const Feed = ({ navigation, route }) => {
   const { state } = useContext(store);
@@ -70,6 +74,10 @@ const Feed = ({ navigation, route }) => {
       <Stack.Screen
         name="RateLocation"
         component={RateLocation}
+      />
+      <Stack.Screen
+        name="NewEvent"
+        component={NewEventContent}
       />
     </Stack.Navigator>
   );

@@ -1,22 +1,23 @@
 import React, { useContext } from 'react';
 import {
-  RefreshControl, ScrollView, StyleSheet, Text
+  RefreshControl, ScrollView, StyleSheet, Text, View
 } from 'react-native';
-import { Card, Surface } from 'react-native-paper';
+import {
+  Card, FAB, Surface, Title
+} from 'react-native-paper';
+import { useFocusEffect } from '@react-navigation/native';
 import { getGroupInfo, getGroupDebts } from '../../Requests';
 import { store } from '../../Store';
+import { TimeCard } from './times';
+import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
 
 const Event = ({ event, onPress }) => (
-  <Card
-    key={event.id}
-    style={styles.card}
-    onPress={onPress}
-  >
-    <Card.Title title={event.name} />
+  <Card elevation={1} style={{ margin: 10, backgroundColor: 'rgba(230, 230, 230, 0.9)' }} onPress={onPress}>
     <Card.Content>
-      <Text>
-        {event.deadline}
-      </Text>
+      <View style={{ margin: 20, marginTop: 10 }}>
+        <Title style={{ fontSize: 30 }}>{event.name}</Title>
+      </View>
+      <TimeCard time={new Date(event.deadline)} />
     </Card.Content>
   </Card>
 );
@@ -35,27 +36,40 @@ const FeedContent = ({ navigation }) => {
         setRefreshing(false);
         dispatch({ type: 'SET_GROUP', payload: { ...groupInfo, ...debtInfo } });
       });
+    return () => {};
   };
 
+  useFocusEffect(React.useCallback(() => { onRefresh(); }, [state.group.id]));
+
   return (
-    <Surface style={styles.container}>
+    <BackgroundContainer>
+
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+        }
       >
-        {state.group.events && state.group.events.map((e) => (
-          <Event
-            key={e.id}
-            event={e}
-            onPress={() => {
-              dispatch({ type: 'SET_EVENT', payload: e });
-              navigation.navigate('Event');
-            }}
-          />
-        ))}
+        <>
+          {state.group.events && state.group.events.map((e) => (
+            <Event
+              key={e.id}
+              event={e}
+              onPress={() => {
+                dispatch({ type: 'SET_EVENT', payload: e });
+                navigation.navigate('Event');
+              }}
+            />
+          ))}
+          <ScrollPlaceholder height={150} />
+        </>
       </ScrollView>
-    </Surface>
+      <FAB
+        style={styles.fab}
+        icon="plus"
+        label="New Event"
+        onPress={() => { navigation.navigate('NewEvent'); }}
+      />
+    </BackgroundContainer>
   );
 };
 
@@ -66,6 +80,12 @@ const styles = StyleSheet.create({
   },
   card: {
     margin: 25
+  },
+  fab: {
+    margin: 30,
+    position: 'absolute',
+    bottom: 30,
+    right: 0
   }
 });
 

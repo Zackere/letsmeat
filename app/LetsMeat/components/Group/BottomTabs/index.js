@@ -31,6 +31,17 @@ const getActiveRouteState = function (route) {
 export const BottomTabs = ({ navigation, route }) => (
   <Tab.Navigator
     initialRouteName="Feed"
+    tabBarOptions={{
+      style: {
+        position: 'absolute',
+        backgroundColor: 'rgba(200, 200, 200, 0.7)',
+        left: 0,
+        bottom: 0,
+        right: 0,
+        elevation: 0,
+        borderTopWidth: 0
+      }
+    }}
   >
     <Tab.Screen
       name="Feed"
@@ -40,13 +51,13 @@ export const BottomTabs = ({ navigation, route }) => (
         tabBarIcon: makeIcon('home-account'),
       }}
     />
-    <Tab.Screen
+    {/* <Tab.Screen
       name="New Event"
       component={NewEvent}
       options={{
         tabBarIcon: makeIcon('calendar-plus'),
       }}
-    />
+    /> */}
     <Tab.Screen
       name="Group Info"
       component={Settings}

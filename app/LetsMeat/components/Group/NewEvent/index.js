@@ -56,7 +56,7 @@ const SetNameDialog = ({
   );
 };
 
-const NewEventContent = ({ navigation }) => {
+export const NewEventContent = ({ navigation }) => {
   const DEFAULT_DEADLINE = null;
   const DEFAULT_NAME = null;
 
@@ -92,42 +92,33 @@ const NewEventContent = ({ navigation }) => {
     setName(newName);
   };
 
-  // const onDateDismiss = () => {
-  //   setJustOpened(false);
-  // };
-
-  // const onDateSet = (date) => {
-  //   setJustOpened(false);
-  //   setDeadline(date);
-  // };
+  const inputValid = deadline && name && deadline > new Date();
 
   return (
     <Surface style={styles.container}>
-      <Title style={styles.eventTitle}>{name}</Title>
+      <Title style={styles.eventTitle}>{name || 'You should supply a name for your event'}</Title>
       {deadline
         ? <TimeCard time={deadline} />
         : (
           <Card style={{ margin: 10 }}>
-            <Text>You need to supply some deadline</Text>
+            <Card.Title title="The event should have some deadline" />
           </Card>
         )}
-      <Button onPress={() => {
-        setDialogVisible(true);
-      }}
-      >
-        Set title
-      </Button>
+      <TextInput onChangeText={setName} style={{ margin: 5 }} mode="outlined" label="Event name" />
       <Button onPress={() => {
         setPickerVisible(true);
       }}
       >
         Set event deadline
       </Button>
-      <Button onPress={() => {
-        createEvent({ state }, state.group.id, name, deadline)
-          .then(() => dispatch({ type: 'ADD_EVENT', event: { name, deadline: `${deadline}` } }))
-          .then(navigation.navigate('Feed'));
-      }}
+      <Button
+        disabled={!inputValid}
+        onPress={() => {
+          createEvent({ state }, state.group.id, name, deadline)
+            // .then(() => dispatch({ type: 'ADD_EVENT', event: { name, deadline: `${deadline}` } }))
+            // .then(navigation.navigate('Feed'));
+            .then(() => navigation.goBack());
+        }}
       >
         Create Event
       </Button>
@@ -137,12 +128,6 @@ const NewEventContent = ({ navigation }) => {
         setPickerVisible={setPickerVisible}
         minimumDate={new Date()}
         setValue={setDeadline}
-      />
-      <SetNameDialog
-        dialogVisible={dialogVisible}
-        setDialogVisible={setDialogVisible}
-        onAccept={onNameSet}
-        onDismiss={onNameDismiss}
       />
     </Surface>
   );
@@ -178,7 +163,8 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 30,
     marginHorizontal: 20,
-    marginTop: 20
+    marginTop: 20,
+    marginBottom: 30
   },
   textInput: {
     margin: 20

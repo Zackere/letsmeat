@@ -33,9 +33,9 @@ const EventView = ({ navigation, route }) => {
 
   const finished = state.event.deadline < new Date();
 
-  React.useLayoutEffect(() => {
-    navigation.setOptions({ tabBarVisible: false });
-  }, [navigation, route]);
+  // React.useLayoutEffect(() => {
+  //   navigation.setOptions({ tabBarVisible: false });
+  // }, [navigation, route]);
 
   const loadData = () => {
     if (deleting) return;
@@ -45,8 +45,6 @@ const EventView = ({ navigation, route }) => {
     });
     getResults({ state }, state.event.id).then((results) => {
       setResults(results);
-      console.log('results');
-      console.log(results);
     });
   };
 
@@ -101,6 +99,7 @@ const EventView = ({ navigation, route }) => {
                   });
                 }}
                 images={state.event.images || []}
+                navigation={navigation}
               />
               {state.event.creator_id === state.user.id
                 ? (
@@ -141,7 +140,8 @@ const styles = StyleSheet.create({
     margin: 10
   },
   card: {
-    margin: 25
+    margin: 25,
+    backgroundColor: 'rgba(200, 200, 200, 0.9)'
   },
   addButton: {
     marginBottom: 10

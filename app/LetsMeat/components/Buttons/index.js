@@ -70,9 +70,10 @@ const styles = StyleSheet.create({
   cardButton: {
     margin: 25,
     height: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)'
   },
   delete: {
-    backgroundColor: '#fc3503'
+    backgroundColor: 'rgba(255, 128, 128, 0.9)'
   },
   leave: {
     backgroundColor: '#fc3503'
