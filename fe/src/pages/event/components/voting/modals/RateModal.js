@@ -68,7 +68,6 @@ class RateModal extends Component {
     return (
       <Modal
         show={this.props.show}
-        size="sm"
         aria-labelledby="contained-modal-title-vcenter"
         onHide={this.closeModal}
         centered

@@ -30,16 +30,15 @@ class Debts extends Component {
   componentDidMount() {
     this.setState({ loading: true })
     getGroup(this.props.token, this.props.groupId).then(group => {
-      this.setState({ users: group.users, loading: false })
+      this.setState({ users: group.users })
       this.getDebts(true)
     })
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.update !== prevProps.update) {
-      this.getDebts()
-      //then open modal
-    }
+      this.getDebts(true)
+    } 
   }
 
   getDebts = openModal => {
@@ -53,7 +52,7 @@ class Debts extends Component {
         return res.image_debts[0]
       })
       .then(debt => {
-        console.log(openModal)
+        console.log('open modal', openModal)
         if (openModal) this.setState({ selectedDebt: debt, modalOpened: true })
       })
   }
@@ -77,6 +76,7 @@ class Debts extends Component {
 
   render() {
     const debts = this.state.debts
+
     if (!this.state.selectedDebt) return <div />
     return (
       <>
@@ -111,9 +111,7 @@ class Debts extends Component {
                         <Dropdown.Toggle as={Toggle} />
                         {debt.image_uploaded_by_id !== this.props.user.id ? (
                           <Dropdown.Menu size="sm" title="">
-                            <Dropdown.Item >
-                              Assign to me
-                            </Dropdown.Item>
+                            <Dropdown.Item>Assign to me</Dropdown.Item>
                           </Dropdown.Menu>
                         ) : (
                           <Dropdown.Menu size="sm" title="">

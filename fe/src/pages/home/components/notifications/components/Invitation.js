@@ -63,7 +63,8 @@ class Invitation extends Component {
       <div className="flex-column w-100 h-100">
         <Loading show={this.state.loading} />
         <p>
-          <b> {this.state.userName}</b> invites you to join group{' '}
+          <b> {this.state.userName}</b>{' '}
+          <small> invites you to join group</small>
           <b> {this.state.groupName}</b>
         </p>
         <div className="d-flex float-right">

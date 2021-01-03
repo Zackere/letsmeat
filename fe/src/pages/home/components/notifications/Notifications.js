@@ -58,7 +58,7 @@ class Notifications extends Component {
     const notifications = [...this.state.notifications]
 
     const index = notifications.findIndex(
-      n => !n.debt_id && n.group_id === group_id
+      n => !n.id && n.group_id === group_id
     )
 
     notifications.splice(index, 1)
@@ -67,11 +67,11 @@ class Notifications extends Component {
     this.props.reloadGroups()
   }
 
-  removeTransaction = debt_id => {
+  removeTransaction = id => {
     const notifications = [...this.state.notifications]
 
     const index = notifications.findIndex(
-      n => n.debt_id && n.debt_id === debt_id
+      n => n.id && n.id === id
     )
 
     notifications.splice(index, 1)
@@ -128,6 +128,7 @@ class Notifications extends Component {
                       group_id={n.group_id}
                       debt_id={n.id}
                       amount={n.amount / 100}
+                      type = {n.debt_type}
                       description={n.description}
                       removeTransaction={this.removeTransaction}
                     />
