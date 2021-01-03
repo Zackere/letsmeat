@@ -106,7 +106,7 @@ export const Groups = ({ navigation }) => {
       )
       : (
         <>
-          <BackgroundContainer backgroundVariant={2}>
+          <BackgroundContainer backgroundVariant="office">
             <FlatList
               data={state.groups}
               renderItem={({ item, separators }) => (

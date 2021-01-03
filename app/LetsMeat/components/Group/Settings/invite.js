@@ -10,9 +10,11 @@ import { ScrollView } from 'react-native-gesture-handler';
 import {
   Card, Chip, Searchbar, Surface, Button, Avatar, FAB
 } from 'react-native-paper';
+import { set } from 'react-native-reanimated';
 import { searchUsers, sendInvitation } from '../../Requests';
 import { store } from '../../Store';
 import UserCard from '../../User';
+import BackgroundContainer from '../../Background';
 
 const SelectedUsers = ({ users, onClose }) => (
   <View style={styles.selectedUserContainer}>
@@ -21,7 +23,7 @@ const SelectedUsers = ({ users, onClose }) => (
         <Chip
           key={user.id}
           avatar={<Avatar.Image source={{ uri: user.picture_url }} size={24} />}
-          onClose={onClose}
+          onClose={() => onClose(user.id)}
         >
           <Text>
             {user.name}
@@ -33,7 +35,9 @@ const SelectedUsers = ({ users, onClose }) => (
   </View>
 );
 
-const Invite = ({ navigation }) => {
+const Invite = ({ navigation, route }) => {
+  const _mounted = useRef(false);
+
   const { state } = useContext(store);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,25 +48,35 @@ const Invite = ({ navigation }) => {
   let debounceResult = null;
 
   const getSearchResults = useCallback(() => {
-    searchUsers({ state }, persistentSearchQuery.current).then((results) => setSearchResults(results));
-  }, []);
+    searchUsers({ state }, persistentSearchQuery.current).then((results) => {
+      if (!_mounted.current) return;
+      setSearchResults(results);
+    });
+  }, [state]);
 
   const debouncedSearch = useCallback(debounce(getSearchResults, 1000), []);
 
   const onChangeSearch = (query) => {
     setSearchQuery(query);
     persistentSearchQuery.current = query;
+    if (query.length <= 3) return;
     debounceResult = debouncedSearch();
   };
 
   const invite = (user) => () => {
     if (selectedUsers.find((u) => u.id === user.id)) return;
+    console.log(user);
     setSelectedUsers([...selectedUsers, user]);
   };
 
+  useEffect(() => {
+    _mounted.current = true;
+    return () => { _mounted.current = false; };
+  }, []);
+
   return (
-    <Surface style={styles.container}>
-      <SelectedUsers users={selectedUsers} />
+    <BackgroundContainer backgroundVariant="searching">
+      <SelectedUsers users={selectedUsers} onClose={(id) => { setSelectedUsers(selectedUsers.filter((u) => u.id !== id)); }} />
       <Searchbar
         style={styles.searchbar}
         placeholder="Search"
@@ -70,16 +84,32 @@ const Invite = ({ navigation }) => {
         value={searchQuery}
       />
       <ScrollView>
-        {searchResults && searchResults.map((result) => (
-          <UserCard
-            user={result}
-            actions={(
-              <Button onPress={invite(result)}>
-                Invite
-              </Button>
+        {searchResults && searchResults.map((result) => {
+          let disabled = false;
+          let message = 'Invite';
+          if (state.group.users.find((u) => u.id === result.id)) {
+            disabled = true;
+            message = 'Already a member';
+          }
+          if (selectedUsers.find((u) => u.id === result.id)) {
+            disabled = true;
+            message = 'Will be invited';
+          }
+          return (
+            <UserCard
+              key={result.id}
+              user={result}
+              actions={(
+                <Button
+                  disabled={disabled}
+                  onPress={invite(result)}
+                >
+                  {message}
+                </Button>
             )}
-          />
-        ))}
+            />
+          );
+        })}
       </ScrollView>
       <FAB
         style={styles.fab}
@@ -93,7 +123,7 @@ const Invite = ({ navigation }) => {
           navigation.goBack();
         }}
       />
-    </Surface>
+    </BackgroundContainer>
   );
 };
 
@@ -112,7 +142,11 @@ const styles = StyleSheet.create({
     margin: 5
   },
   fab: {
-    margin: 10, right: 0, position: 'absolute', bottom: 0
+    margin: 20,
+    marginBottom: 80,
+    right: 0,
+    position: 'absolute',
+    bottom: 0,
   }
 });
 

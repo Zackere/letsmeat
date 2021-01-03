@@ -1,0 +1,1 @@
+export const MAX_DEBT_DESCRIPTION_LENGTH = 255;

@@ -125,7 +125,8 @@ const styles = StyleSheet.create({
     height: '100%'
   },
   userCard: {
-    margin: 20
+    margin: 20,
+    backgroundColor: 'rgba(240, 240, 240, 0.9)'
   },
   content: {
     marginTop: 10,

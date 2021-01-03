@@ -5,6 +5,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import {
   ActivityIndicator, Card, Surface, Title
 } from 'react-native-paper';
+import BackgroundContainer from '../../Background';
 import ModalButton from '../../Buttons';
 import {
   getEventInfo, updateEvent, deleteEvent, getResults
@@ -51,15 +52,15 @@ const EventView = ({ navigation, route }) => {
   useEffect(loadData, [state.user.tokenId, deleting, dispatch]);
 
   return (
-    <Surface style={styles.container}>
+    <BackgroundContainer>
       <ScrollView style={styles.container}>
         { eventDetails
           ? (
             <>
               <Title style={styles.eventTitle}>{state.event.name}</Title>
-              <Card elevation={0} style={{ margin: 5 }}>
+              <Card elevation={0} style={{ margin: 5, backgroundColor: 'rgba(200, 200, 200, 0.9)' }}>
                 <Card.Title title={finished ? 'Results' : 'Candidates'} style={{ marginBottom: 0 }} />
-                <Card style={{ ...styles.section, marginTop: 0 }} elevation={0}>
+                <Card style={{ ...styles.section, marginTop: 0, backgroundColor: 'transparent' }} elevation={0}>
                   <Card.Title title="Locations" style={{ marginTop: 0 }} />
                   <Locations
                     googleLocations={state.event.candidate_google_maps_locations}
@@ -122,7 +123,7 @@ const EventView = ({ navigation, route }) => {
           )
           : (<ActivityIndicator />)}
       </ScrollView>
-    </Surface>
+    </BackgroundContainer>
   );
 };
 

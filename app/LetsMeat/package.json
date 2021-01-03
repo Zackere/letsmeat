@@ -22,6 +22,7 @@
     "@react-navigation/native": "^5.8.10",
     "@react-navigation/stack": "^5.12.1",
     "@unimodules/core": "^5.5.1",
+    "awesome-debounce-promise": "^2.1.0",
     "axios": "^0.21.0",
     "debounce": "^1.2.0",
     "expo-asset": "^8.2.0",

@@ -1,4 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, {
+  useContext, useEffect, useState, useRef
+} from 'react';
 import { StyleSheet } from 'react-native';
 import {
   ActivityIndicator,
@@ -12,7 +14,17 @@ import {
 import { store } from '../Store';
 
 const NotificationAction = ({ acceptAction, rejectAction, full }) => {
+  const mounted = useRef(false);
   const [active, setActive] = useState(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  });
+
+  const finishAction = () => {
+    if (!mounted.current) return;
+    setActive(false);
+  };
 
   return (
     <Card.Actions style={{ justifyContent: full ? 'space-around' : undefined }}>
@@ -21,7 +33,7 @@ const NotificationAction = ({ acceptAction, rejectAction, full }) => {
         color="red"
         onPress={() => {
           setActive(true);
-          rejectAction().finally(() => setActive(false));
+          rejectAction().finally(finishAction);
         }}
       >
         Refuse
@@ -30,7 +42,7 @@ const NotificationAction = ({ acceptAction, rejectAction, full }) => {
         disabled={active}
         onPress={() => {
           setActive(true);
-          acceptAction().finally(() => setActive(false));
+          acceptAction().finally(finishAction);
         }}
       >
         Accept
@@ -57,13 +69,15 @@ export const Invitation = ({ invitation, full = false }) => {
     getGroupInfo({ state }, invitation.group_id).then(setGroup);
   }, [state, invitation.from_id, invitation.group_id]);
 
+  const loaded = user && group;
+
   return (
     <Card style={{ margin: 5 }}>
-      {full ? <Card.Title>{`${user.name} invites you to join ${group.name}`}</Card.Title>
+      {(full && loaded) ? <Card.Title>{`${user.name} invites you to join ${group.name}`}</Card.Title>
         : (
           <NotificationContent
-            loading={!user || !group}
-            content={(!user || !group) ? (
+            loading={!loaded}
+            content={loaded ? (
               <Paragraph>
                 <Subheading>{user.name}</Subheading>
                 {'\t'}
@@ -85,17 +99,24 @@ export const Invitation = ({ invitation, full = false }) => {
 };
 
 export const Debt = ({ debt, full = false }) => {
+  const mounted = useRef(false);
   const { state, dispatch } = useContext(store);
   const [user, setUser] = useState(null);
   const [image, setImage] = useState(null);
 
   useEffect(() => {
-    getUsersInfo({ state }, debt.to_id).then((users) => setUser(users[0]));
+    mounted.current = true;
+    getUsersInfo({ state }, debt.to_id).then((users) => {
+      if (!mounted.current) return;
+      setUser(users[0]);
+    });
     if (full && debt.image_id) {
       getImagesInfo({ state }, debt.image_id).then(([response]) => {
+        if (!mounted.current) return;
         setImage(response);
       });
     }
+    return () => { mounted.current = false; };
   }, [debt.to_id, state, full, debt.image_id]);
 
   const request = (debt.debt_type === 0) ? 'wants you to pay' : 'wants you to confirm they transferred';

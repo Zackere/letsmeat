@@ -6,7 +6,9 @@ const initialState = {
     signedIn: false,
   },
   groups: null,
-  group: {},
+  group: {
+    debts: []
+  },
   event: {},
   invitations: [],
   debts: [],
@@ -73,7 +75,10 @@ const StateProvider = ({ children }) => {
       case 'SET_GROUP': {
         const newState = {
           ...state,
-          group: action.payload,
+          group: {
+            ...action.payload,
+            debts: action.payload.groups || []
+          },
         };
         return newState;
       }

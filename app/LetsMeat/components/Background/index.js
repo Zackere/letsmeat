@@ -1,28 +1,37 @@
 import React from 'react';
-import { ImageBackground, View } from 'react-native';
+import { ImageBackground, View, Dimensions } from 'react-native';
 import { Surface } from 'react-native-paper';
 
-export const BackgroundContainer = ({ backgroundVariant = 1, children }) => {
+export const BackgroundContainer = ({ backgroundVariant = 'food', children }) => {
   let source;
   switch (backgroundVariant) {
-    case 1:
+    case 'food':
       source = require('../../images/background1.jpg');
       break;
-    case 2:
+    case 'office':
       source = require('../../images/background2.jpg');
       break;
-    case 3:
+    case 'money':
       source = require('../../images/background3.jpg');
       break;
-    case 4:
+    case 'settings':
       source = require('../../images/background4.jpg');
+      break;
+    case 'searching':
+      source = require('../../images/background5.jpg');
       break;
     default:
       source = require('../../images/background1.jpg');
   }
   return (
     <ImageBackground
-      style={{ width: '100%', height: '100%' }}
+      style={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: Dimensions.get('window').width,
+        height: Dimensions.get('window').height,
+      }}
   // source={{ uri: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80' }}
       source={source}
     >

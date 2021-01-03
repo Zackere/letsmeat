@@ -16,7 +16,7 @@ const Notifications = ({ navigation }) => {
     .sort((a, b) => getNotificationTimestamp(b) - getNotificationTimestamp(a));
 
   return (
-    <BackgroundContainer backgroundVariant={3}>
+    <BackgroundContainer backgroundVariant="money">
       {notifications.length > 0
         ? (
           <>

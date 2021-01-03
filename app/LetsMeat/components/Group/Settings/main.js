@@ -47,7 +47,7 @@ const SettingsScroll = ({ navigation }) => {
             .then(() => navigation.navigate('SelectGroup'));
         }}
         />
-        <ScrollPlaceholder />
+        <ScrollPlaceholder height={100} />
       </ScrollView>
     </BackgroundContainer>
   );

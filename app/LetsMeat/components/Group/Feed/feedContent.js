@@ -60,7 +60,7 @@ const FeedContent = ({ navigation }) => {
               }}
             />
           ))}
-          <ScrollPlaceholder height={150} />
+          <ScrollPlaceholder height={200} />
         </>
       </ScrollView>
       <FAB
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   fab: {
     margin: 30,
     position: 'absolute',
-    bottom: 30,
+    bottom: 100,
     right: 0
   }
 });

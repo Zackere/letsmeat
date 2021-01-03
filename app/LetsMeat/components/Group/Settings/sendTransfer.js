@@ -8,8 +8,9 @@ import {
 import { addDebt, createImageDebt, updateImageDebt } from '../../Requests';
 import { store } from '../../Store';
 import UserCard, { UserPicker } from '../../User';
-import { formatAmount, parseAmount } from '../../../helpers/money';
+import { formatAmount, isAmountValid, parseAmount } from '../../../helpers/money';
 import { BackgroundContainer } from '../../Background';
+import { MAX_DEBT_DESCRIPTION_LENGTH } from '../../../constants';
 
 export const SendTransfer = ({ navigation, route }) => {
   const { state } = useContext(store);
@@ -20,13 +21,16 @@ export const SendTransfer = ({ navigation, route }) => {
   const [amount, setAmount] = useState(route.params.amount ? formatAmount(route.params.amount) : '');
   const [description, setDescription] = useState('');
 
+  const valid = isAmountValid(amount) && description.length <= MAX_DEBT_DESCRIPTION_LENGTH;
+
   const pressConfirm = () => {
-    addDebt({ state }, state.group.id, null, state.user.id, user.id, parseFloat(amount), description, null, 1);
+    if (!valid) return;
+    addDebt({ state }, state.group.id, null, state.user.id, user.id, parseAmount(amount), description, null, 1);
+    navigation.goBack();
   };
 
   return (
     <BackgroundContainer>
-
       {user ? (
         <UserCard
           user={user}
@@ -39,18 +43,25 @@ export const SendTransfer = ({ navigation, route }) => {
         value={`${amount}`}
         onChangeText={setAmount}
         placeholder="10,25"
-        // right={<Icon name="currency-usd" size={25} color="black" />}
         keyboardType="numeric"
+        error={amount && !isAmountValid(amount)}
       />
       <TextInput
         mode="outlined"
         label="Description"
         style={{ margin: 10 }}
         value={description}
-        onChangeText={setDescription}
-        placeholder="Those two wonderful hot-dogs :)"
+        onChangeText={(text) => setDescription(text.slice(0, MAX_DEBT_DESCRIPTION_LENGTH))}
+        placeholder="Thank you for all the fish"
       />
-      <Button mode="outlined" onPress={pressConfirm}>Send request for transfer confirmation</Button>
+      <Button
+        disabled={!valid}
+        mode="contained"
+        style={{ margin: 10 }}
+        onPress={pressConfirm}
+      >
+        Send request for transfer confirmation
+      </Button>
     </BackgroundContainer>
   );
 };

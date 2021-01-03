@@ -36,14 +36,14 @@ const PreferencesContent = ({ navigation }) => {
       rightAction: () => {
         updatePrefs({ state }, prefs).then(
           () => dispatch({ type: 'UPDATE_PREFS', prefs })
-        ).catch(console.log);
+        );
       }
     });
   }, [navigation, prefs, state, dispatch]);
 
   return (
 
-    <BackgroundContainer backgroundVariant={4}>
+    <BackgroundContainer backgroundVariant="settings">
       <UserCard user={{ ...state.user, picture_url: state.user.photo, prefs }} />
       <Card style={styles.card}>
         <Card.Title title="What's important to you?" />
