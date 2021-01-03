@@ -8,6 +8,7 @@ import { TouchableHighlight } from 'react-native-gesture-handler';
 import {
   Card, FAB, Paragraph, Surface, Badge, ActivityIndicator
 } from 'react-native-paper';
+import BackgroundContainer from '../../Background';
 import { getGroupInfo, getGroups } from '../../Requests';
 import { store } from '../../Store';
 
@@ -64,7 +65,6 @@ const RenderGroup = ({
             style={{ marginLeft: -10, marginTop: 10, fontSize: 15 }}
           >
             {group.users && group.users.length}
-            {/* {additionalGroupInfostate && additionalGroupInfo.users.length} */}
           </Badge>
           <MaterialCommunityIcons size={30} name="map-marker-outline" />
           <Badge
@@ -106,17 +106,14 @@ export const Groups = ({ navigation }) => {
       )
       : (
         <>
-          <Surface style={styles.groupsContainer}>
+          <BackgroundContainer backgroundVariant={2}>
             <FlatList
               data={state.groups}
               renderItem={({ item, separators }) => (
                 <RenderGroup
-                  // item={item}
                   groupId={item.id}
                   separators={separators}
                   navigation={navigation}
-                  // dispatch={dispatch}
-                  // state={state}
                 />
               )}
               ListEmptyComponent={() => (
@@ -134,7 +131,7 @@ export const Groups = ({ navigation }) => {
                 </Card>
               )}
             />
-          </Surface>
+          </BackgroundContainer>
           <FAB
             style={styles.fab}
             icon="plus"

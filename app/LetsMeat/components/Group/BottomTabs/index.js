@@ -32,9 +32,14 @@ export const BottomTabs = ({ navigation, route }) => (
   <Tab.Navigator
     initialRouteName="Feed"
     tabBarOptions={{
+      activeTintColor: 'rgba(240, 240, 240, 1)',
+      inactiveTintColor: 'rgba(30, 30, 30, 1)',
+      labelStyle: {
+        fontSize: 12
+      },
       style: {
         position: 'absolute',
-        backgroundColor: 'rgba(200, 200, 200, 0.7)',
+        backgroundColor: 'rgba(160, 160, 160, 0.7)',
         left: 0,
         bottom: 0,
         right: 0,
@@ -51,13 +56,6 @@ export const BottomTabs = ({ navigation, route }) => (
         tabBarIcon: makeIcon('home-account'),
       }}
     />
-    {/* <Tab.Screen
-      name="New Event"
-      component={NewEvent}
-      options={{
-        tabBarIcon: makeIcon('calendar-plus'),
-      }}
-    /> */}
     <Tab.Screen
       name="Group Info"
       component={Settings}

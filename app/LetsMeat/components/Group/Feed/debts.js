@@ -146,19 +146,15 @@ const DebtImage = ({ id, navigation }) => {
   );
 };
 
-const Images = ({ images, navigation }) => {
-  const [mutableImages, setImages] = useState(images);
-
-  return (images
-    ? images.map((id) => (
-      <DebtImage
-        navigation={navigation}
-        key={id}
-        id={id}
-      />
-    ))
-    : <></>);
-};
+const Images = ({ images, navigation }) => (images
+  ? images.map((id) => (
+    <DebtImage
+      navigation={navigation}
+      key={id}
+      id={id}
+    />
+  ))
+  : <></>);
 
 const Debts = ({ images, onAdd, navigation }) => {
   const { state, dispatch } = useContext(store);
@@ -172,12 +168,6 @@ const Debts = ({ images, onAdd, navigation }) => {
         images={images}
       />
       <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
-        {/* <Button
-          style={styles.addButton}
-          onPress={onAdd}
-        >
-          <Icon name="cash-usd" size={25} />
-        </Button> */}
         <Button
           style={styles.addButton}
           onPress={

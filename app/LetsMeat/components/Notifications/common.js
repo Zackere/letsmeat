@@ -1,19 +1,21 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
 import {
   ActivityIndicator,
   Button, Caption, Card,
   Paragraph, Subheading
 } from 'react-native-paper';
+import { formatAmount } from '../../helpers/money';
 import {
-  acceptDebt, acceptInvitation, getGroupInfo, getUsersInfo, rejectDebt, rejectInvitation
+  acceptDebt, acceptInvitation, getGroupInfo, getImagesInfo, getUsersInfo, rejectDebt, rejectInvitation
 } from '../Requests';
 import { store } from '../Store';
 
-const NotificationAction = ({ acceptAction, rejectAction }) => {
+const NotificationAction = ({ acceptAction, rejectAction, full }) => {
   const [active, setActive] = useState(false);
 
   return (
-    <Card.Actions>
+    <Card.Actions style={{ justifyContent: full ? 'space-around' : undefined }}>
       <Button
         disabled={active}
         color="red"
@@ -41,7 +43,7 @@ const NotificationContent = ({ content, loading }) => (
   <Card.Content>
     { loading
       ? <ActivityIndicator />
-      : { content }}
+      : content }
   </Card.Content>
 );
 
@@ -57,18 +59,21 @@ export const Invitation = ({ invitation, full = false }) => {
 
   return (
     <Card style={{ margin: 5 }}>
-      <NotificationContent
-        loading={!user || !group}
-        content={(!user || !group) ? (
-          <Paragraph>
-            <Subheading>{user.name}</Subheading>
-            {'\t'}
-            <Caption>invites you to join</Caption>
-            {'\n'}
-            <Subheading>{group.name}</Subheading>
-          </Paragraph>
-        ) : null}
-      />
+      {full ? <Card.Title>{`${user.name} invites you to join ${group.name}`}</Card.Title>
+        : (
+          <NotificationContent
+            loading={!user || !group}
+            content={(!user || !group) ? (
+              <Paragraph>
+                <Subheading>{user.name}</Subheading>
+                {'\t'}
+                <Caption>invites you to join</Caption>
+                {'\n'}
+                <Subheading>{group.name}</Subheading>
+              </Paragraph>
+            ) : null}
+          />
+        )}
       <NotificationAction
         rejectAction={() => rejectInvitation({ state }, group.id)
           .then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }))}
@@ -82,26 +87,45 @@ export const Invitation = ({ invitation, full = false }) => {
 export const Debt = ({ debt, full = false }) => {
   const { state, dispatch } = useContext(store);
   const [user, setUser] = useState(null);
+  const [image, setImage] = useState(null);
 
   useEffect(() => {
-    getUsersInfo({ state }, debt.from_id).then((users) => setUser(users[0]));
-  }, [debt.from_id, state]);
+    getUsersInfo({ state }, debt.to_id).then((users) => setUser(users[0]));
+    if (full && debt.image_id) {
+      getImagesInfo({ state }, debt.image_id).then(([response]) => {
+        setImage(response);
+      });
+    }
+  }, [debt.to_id, state, full, debt.image_id]);
+
+  const request = (debt.debt_type === 0) ? 'wants you to pay' : 'wants you to confirm they transferred';
 
   return (
-    <Card style={{ margin: 5 }}>
+    <Card style={full ? styles.full : styles.small}>
+      {full && user && <Card.Title multiline titleNumberOfLines={3} title={`${user.name} ${request} ${formatAmount(debt.amount)}`} />}
       <NotificationContent
         loading={!user}
         content={user ? (
-          <Paragraph>
-            <Subheading>{user.name}</Subheading>
-            {'\t'}
-            <Caption>wants you to pay</Caption>
-            {'\n'}
-            <Subheading>{(debt.amount / 100).toFixed(2)}</Subheading>
-          </Paragraph>
+          <>
+            {full ? (
+              <Paragraph margin={5}>
+                {debt.description}
+              </Paragraph>
+            )
+              : (
+                <Paragraph>
+                  <Subheading>{user.name}</Subheading>
+                  {'\t'}
+                  <Caption>{request}</Caption>
+                  {'\n'}
+                  <Subheading>{formatAmount(debt.amount)}</Subheading>
+                </Paragraph>
+              )}
+          </>
         ) : null}
       />
       <NotificationAction
+        full={full}
         rejectAction={() => rejectDebt({ state }, debt.id)
           .then(() => dispatch({ type: 'REMOVE_DEBT', debtId: debt.id }))}
         acceptAction={() => acceptDebt({ state }, debt.id)
@@ -119,5 +143,15 @@ export const Notification = (
 ) => (item.kind === 'invitation'
   ? <Invitation invitation={item} full={full} />
   : <Debt debt={item} full={full} />);
+
+const styles = StyleSheet.create({
+  full: {
+    margin: 10,
+    backgroundColor: 'rgba(230, 230, 230, 0.9)'
+  },
+  small: {
+    margin: 5
+  }
+});
 
 export default Notification;

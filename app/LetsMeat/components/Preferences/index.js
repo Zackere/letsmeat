@@ -7,11 +7,12 @@ import { Header } from '../Header';
 import { store } from '../Store';
 import UserCard from '../User';
 import { updatePrefs } from '../Requests';
+import BackgroundContainer from '../Background';
 
 const PrefSetter = ({
   prefName, displayName, setPrefs, prefs
 }) => (
-  <Card style={styles.card} elevation={0}>
+  <Card style={styles.setterCard} elevation={0}>
     <Card.Title title={displayName} />
     <Slider
       style={styles.slider}
@@ -42,7 +43,7 @@ const PreferencesContent = ({ navigation }) => {
 
   return (
 
-    <Surface style={styles.container}>
+    <BackgroundContainer backgroundVariant={4}>
       <UserCard user={{ ...state.user, picture_url: state.user.photo, prefs }} />
       <Card style={styles.card}>
         <Card.Title title="What's important to you?" />
@@ -51,7 +52,8 @@ const PreferencesContent = ({ navigation }) => {
         <PrefSetter prefName="amount_of_food" displayName="Portion Size" setPrefs={setPrefs} prefs={prefs} />
         <PrefSetter prefName="taste" displayName="Taste" setPrefs={setPrefs} prefs={prefs} />
       </Card>
-    </Surface>
+    </BackgroundContainer>
+
   );
 };
 
@@ -86,11 +88,17 @@ const styles = StyleSheet.create({
   },
   card: {
     marginTop: 5,
-    margin: 20
+    margin: 20,
+    backgroundColor: 'rgba(240, 240, 240, 0.9)'
   },
   slider: {
-    margin: 10
-  }
+    margin: 10,
+  },
+  setterCard: {
+    marginTop: 5,
+    margin: 20,
+    backgroundColor: 'rgba(240, 240, 240, 0)'
+  },
 });
 
 export default Preferences;

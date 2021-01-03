@@ -5,6 +5,7 @@ import {
   Surface
 } from 'react-native-paper';
 import { getNotificationTimestamp } from '../../helpers/notifications';
+import BackgroundContainer from '../Background';
 import { store } from '../Store';
 import { Notification } from './common';
 
@@ -15,7 +16,7 @@ const Notifications = ({ navigation }) => {
     .sort((a, b) => getNotificationTimestamp(b) - getNotificationTimestamp(a));
 
   return (
-    <Surface style={styles.container}>
+    <BackgroundContainer backgroundVariant={3}>
       {notifications.length > 0
         ? (
           <>
@@ -24,6 +25,7 @@ const Notifications = ({ navigation }) => {
                 <Notification
                   item={item}
                   key={`${item.group_id}${item.id}`}
+                  full
                 />
               ))}
           </>
@@ -33,7 +35,7 @@ const Notifications = ({ navigation }) => {
             <Caption>You have no pending notifications</Caption>
           </View>
         )}
-    </Surface>
+    </BackgroundContainer>
   );
 };
 
