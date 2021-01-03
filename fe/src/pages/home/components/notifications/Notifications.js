@@ -2,10 +2,12 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { ListGroup, Button } from 'react-bootstrap'
 
-import Notification from './components/Notification'
+import Invitation from './components/Invitation'
+import Debt from './components/Debt'
 import SetPreferences from './modals/SetPreferences'
 
 import { getInvitations } from '../../../../services/invitationService'
+import { getPendingDebts } from '../../../../services/debtService'
 
 class Notifications extends Component {
   constructor(props) {
@@ -17,9 +19,27 @@ class Notifications extends Component {
   }
 
   componentDidMount() {
-    getInvitations(this.props.token).then(notifications => {
-      this.setState({ notifications })
+    getInvitations(this.props.token).then(invitations => {
+      getPendingDebts(this.props.token).then(res => {
+        const notifications = this.sortNotifications(
+          invitations,
+          res.pending_debts
+        )
+        this.setState({ notifications })
+      })
     })
+  }
+
+  sortNotifications = (inv, deb) => {
+    const notifications = [...inv, ...deb]
+
+    notifications.sort(
+      (a, b) =>
+        new Date(b.timestamp || b.sent).valueOf() -
+        new Date(a.timestamp || a.sent).valueOf()
+    )
+
+    return notifications
   }
 
   toUpper(str) {
@@ -34,12 +54,12 @@ class Notifications extends Component {
 
   closePreferencesModal = () => this.setState({ preferencesModalOpened: false })
 
-  removeNotification = group_id => {
+  removeInvitation = group_id => {
     const notifications = [...this.state.notifications]
 
-    console.log(group_id)
-
-    const index = notifications.findIndex(n => n.group_id == group_id)
+    const index = notifications.findIndex(
+      n => !n.debt_id && n.group_id === group_id
+    )
 
     notifications.splice(index, 1)
 
@@ -47,7 +67,20 @@ class Notifications extends Component {
     this.props.reloadGroups()
   }
 
+  removeTransaction = debt_id => {
+    const notifications = [...this.state.notifications]
+
+    const index = notifications.findIndex(
+      n => n.debt_id && n.debt_id === debt_id
+    )
+
+    notifications.splice(index, 1)
+
+    this.setState({ notifications })
+  }
+
   render() {
+
     return (
       <>
         <SetPreferences
@@ -88,15 +121,23 @@ class Notifications extends Component {
               style={{ maxHeight: '55vh', height: '100%' }}
             >
               {this.state.notifications.map(n => (
-                <ListGroup.Item
-                  className="rounded-0"
-                  key={n.group_id}
-                >
-                  <Notification
-                    from_id={n.from_id}
-                    group_id={n.group_id}
-                    removeNotification={this.removeNotification}
-                  />
+                <ListGroup.Item className="rounded-0" key={n.group_id}>
+                  {n.amount ? (
+                    <Debt
+                      from_id={n.to_id}
+                      group_id={n.group_id}
+                      debt_id={n.id}
+                      amount={n.amount / 100}
+                      description={n.description}
+                      removeTransaction={this.removeTransaction}
+                    />
+                  ) : (
+                    <Invitation
+                      from_id={n.from_id}
+                      group_id={n.group_id}
+                      removeInvitation={this.removeInvitation}
+                    />
+                  )}
                 </ListGroup.Item>
               ))}
               {this.state.notifications.length > 0 ? (

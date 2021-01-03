@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Container, Button } from 'react-bootstrap'
+import { Button } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { withToastManager } from 'react-toast-notifications'
 
@@ -99,9 +99,9 @@ class Group extends Component {
           closeModal={this.closeEventModal}
           groupId={this.state.group.id}
         />
-        <div className="row mx-0" style={{ height: '94vh'}}>
+        <div className="row mx-0" style={{ height: '94vh' }}>
           <div
-            className="col-3 pt-3 px-0 border border-right"
+            className="col-3 pt-3 px-0 border border-right h-100"
             style={{ background: 'white' }}
           >
             <div className="h-25 py-5 flex-column border-bottom">
@@ -127,12 +127,20 @@ class Group extends Component {
               />
             </div>
           </div>
-          <div className="col-9 p-5">
+          <div
+            className="col-9 py-5 h-100"
+            style={{
+              color: '#343a40',
+              paddingLeft: '270px',
+              paddingRight: '270px',
+            }}
+          >
             <h4>Events</h4>
             <ControlPanel
               buttonAction={this.eventButtonAction}
               searchName="Find event"
               searchAction={this.eventSearchAction}
+              buttonColor="white"
             />
             <EventsList
               events={this.state.events}

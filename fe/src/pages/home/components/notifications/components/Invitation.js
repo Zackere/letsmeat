@@ -10,7 +10,7 @@ import { getUsers } from '../../../../../services/userService'
 import { getGroup, joinGroup } from '../../../../../services/groupsService'
 import { rejectInvitation } from '../../../../../services/invitationService'
 
-class Notification extends Component {
+class Invitation extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -33,7 +33,7 @@ class Notification extends Component {
   joinGroup = () => {
     joinGroup(this.props.token, this.props.group_id).then(res => {
       if (res.ok) {
-        this.props.removeNotification(this.props.group_id)
+        this.props.removeInvitation(this.props.group_id)
         success(
           'Now you are a member of ' + this.state.groupName,
           this.props.toastManager
@@ -47,7 +47,7 @@ class Notification extends Component {
   rejectInvitation = () => {
     rejectInvitation(this.props.token, this.props.group_id).then(res => {
       if (res.ok) {
-        this.props.removeNotification(this.props.group_id)
+        this.props.removeInvitation(this.props.group_id)
         success(
           'Rejected invitation to group ' + this.state.groupName,
           this.props.toastManager
@@ -90,4 +90,4 @@ class Notification extends Component {
 const mapStateToProps = state => ({
   token: state.token,
 })
-export default withToastManager(connect(mapStateToProps, null)(Notification))
+export default withToastManager(connect(mapStateToProps, null)(Invitation))

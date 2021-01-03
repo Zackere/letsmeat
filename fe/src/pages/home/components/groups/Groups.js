@@ -32,7 +32,7 @@ class Groups extends Component {
   }
 
   componentDidUpdate(previousProps) {
-    previousProps.reload != this.props.reload && this.getGroups()
+    previousProps.reload !== this.props.reload && this.getGroups()
   }
 
   getGroups = () => {
@@ -127,7 +127,7 @@ class Groups extends Component {
       <Container fluid={true}>
         <Loading show={this.state.loading} />
         <div className="mt-5">
-          <h4>Groups</h4>
+          <h4 style={{color: '#343a40'}}>Groups</h4>
         </div>
         <AddGroup
           show={this.state.addModalOpened}
@@ -139,6 +139,7 @@ class Groups extends Component {
           buttonAction={this.buttonAction}
           searchName="Find group"
           searchAction={this.searchAction}
+          buttonColor='white'
         />
         <ListGroup className="list-scroll">
           {this.state.groups.map(group => (

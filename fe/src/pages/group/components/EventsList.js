@@ -40,7 +40,6 @@ class EventsList extends Component {
 
   render() {
     const events = this.props.events
-    const user = this.props.user
     return (
       <>
         <Loading show={this.state.loading} />

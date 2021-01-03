@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Spinner } from 'react-bootstrap'
 import './Loading.css'
 
-export default class ControlPanel extends Component {
+export default class Loading extends Component {
   render() {
     return this.props.show ? (
       <div className="overlay">

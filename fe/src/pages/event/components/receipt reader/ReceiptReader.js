@@ -5,7 +5,7 @@ import ImageUploader from 'react-images-upload'
 
 import { Button } from 'react-bootstrap'
 
-import Loading from '../../../common/loading/Loading'
+//import Loading from '../../../../common/loading/Loading'
 
 import './ReceiptReader.css'
 
@@ -19,7 +19,11 @@ class ReceiptReader extends Component {
   }
 
   selectPicture = picture => {
-        this.setState({ picture })
+    this.setState({ picture })
+  }
+
+  processReceipt = () => {
+    this.props.processReceipt(this.state.picture[0])
   }
 
   render() {
@@ -32,7 +36,7 @@ class ReceiptReader extends Component {
           label=""
           buttonText="Choose receipt photo"
           onChange={this.selectPicture}
-          imgExtension={['.jpg', '.gif', '.png', '.gif']}
+          imgExtension={['.jpg', '.png']}
           maxFileSize={5242880}
         />
 
@@ -40,6 +44,7 @@ class ReceiptReader extends Component {
           variant="link"
           className="rounded-0"
           disabled={!this.state.picture.length}
+          onClick={this.processReceipt}
         >
           Process receipt
         </Button>

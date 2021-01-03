@@ -23,7 +23,13 @@ class Bar extends Component {
 
   render() {
     return (
-      <Navbar bg="dark" variant="dark" expand="lg" className="px-5">
+      <Navbar
+        bg="dark"
+        variant="dark"
+        expand="lg"
+        className="px-5"
+        style={{ height: '6vh' }}
+      >
         <Navbar.Brand href="/">Let's vomeat</Navbar.Brand>
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">

@@ -4,17 +4,14 @@ import { Modal, Button, Form } from 'react-bootstrap'
 import { withToastManager } from 'react-toast-notifications'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
-import { success, error } from '../../../common/toasts/toasts'
 
 class ShowBalance extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      loading: false,
       message: '',
       amount: 0,
-      debt: props.debt,
     }
   }
 
@@ -23,11 +20,15 @@ class ShowBalance extends Component {
     this.props.closeModal()
   }
 
-  sendMoney = () => console.log('I am sending money')
+  sendMoney = () => {
+    this.closeModal()
+    this.props.sendMoney(this.state.amount * 100, this.state.message)
+  }
 
   render() {
-    const debt = this.state.debt
+    const debt = this.props.debt
     const user = this.props.user
+
     return (
       <Modal
         show={this.props.show}
@@ -51,6 +52,7 @@ class ShowBalance extends Component {
                 <Form.Label>Amount</Form.Label>
                 <Form.Control
                   type="number"
+                  min={0}
                   placeholder="Enter amount you want to send"
                   value={this.state.amount}
                   onChange={e => this.setState({ amount: e.target.value })}
@@ -83,7 +85,6 @@ class ShowBalance extends Component {
 
 const mapStateToProps = state => ({
   token: state.token,
-  me: state.user,
 })
 
 export default withToastManager(connect(mapStateToProps, null)(ShowBalance))

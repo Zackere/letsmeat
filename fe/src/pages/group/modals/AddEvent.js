@@ -11,13 +11,16 @@ import 'react-datepicker/dist/react-datepicker.css'
 
 import { success, error } from '../../../common/toasts/toasts'
 
-class InviteUser extends Component {
+class AddEvent extends Component {
   constructor(props) {
     super(props)
 
+    const date = new Date()
+    date.setMinutes(Math.ceil(date.getMinutes() / 10) * 10, 0, 0)
+
     this.state = {
       name: '',
-      date: new Date(),
+      date,
     }
   }
 
@@ -41,9 +44,9 @@ class InviteUser extends Component {
       this.props.groupId,
       this.props.token
     )
-      .then(id => {
+      .then(res => {
         const event = {
-          id,
+          id: res.id,
           name: this.state.name,
           deadline: this.state.date,
         }
@@ -62,7 +65,15 @@ class InviteUser extends Component {
       })
   }
 
-  setSelectedUsers = users => this.setState({ selected: users })
+  timeFilter = time => {
+    const currentDate = new Date(time)
+    const selectedDate = this.state.date
+
+    if (selectedDate.getDate() === new Date().getDate()) {
+      return currentDate.getTime() >= selectedDate.getTime()
+    }
+    return currentDate.getTime() < selectedDate.getTime()
+  }
 
   render() {
     return (
@@ -101,8 +112,10 @@ class InviteUser extends Component {
                 onChange={this.dateChanged}
                 showTimeSelect
                 timeFormat="HH:mm"
-                timeIntervals={30}
-                timeCaption="time"
+                timeIntervals={10}
+                filterTime={this.timeFilter}
+                minDate={new Date()}
+                timeCaption="Time"
                 dateFormat="dd MMMM yyyy, HH:mm"
               />
             </div>
@@ -125,4 +138,4 @@ const mapStateToProps = state => ({
   token: state.token,
 })
 
-export default withToastManager(connect(mapStateToProps, null)(InviteUser))
+export default withToastManager(connect(mapStateToProps, null)(AddEvent))

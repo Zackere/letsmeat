@@ -1,4 +1,5 @@
 export const basicFormat = dateString => {
+
   const date = new Date(dateString)
   let minutes = date.getMinutes()
   let hours = date.getHours()
@@ -35,33 +36,32 @@ const weekDays = number => {
       return 'Sat.'
     default:
       return 'Sun.'
-
   }
 }
 
 const month = number => {
   switch (number) {
-    case 1:
+    case 0:
       return 'Jan.'
-    case 2:
+    case 1:
       return 'Feb.'
-    case 3:
+    case 2:
       return 'Mar.'
-    case 4:
+    case 3:
       return 'Apr.'
-    case 5:
+    case 4:
       return 'May'
-    case 6:
+    case 5:
       return 'Jun.'
-    case 7:
+    case 6:
       return 'Jul.'
-    case 8:
+    case 7:
       return 'Aug.'
-    case 9:
+    case 8:
       return 'Sep.'
-    case 10:
+    case 9:
       return 'Oct.'
-    case 11:
+    case 10:
       return 'Nov.'
     default:
       return 'Dec.'
