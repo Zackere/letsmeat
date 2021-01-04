@@ -10,96 +10,22 @@ import {
 import { formatAmount } from '../../../helpers/money';
 import {
   getImagesInfo,
-  uploadImage, deleteImage, deleteImageDebt, createImageDebt, addDebt, getPendingDebts, getUsersInfo, getEventDebts
+  uploadImage, deleteImage, deleteImageDebt, createImageDebt, addDebt, getPendingDebts, getUsersInfo, getEventDebts, updateImageDebt
 } from '../../Requests';
 import { store } from '../../Store';
 import { UserPicker } from '../../User';
 
-// const Debt = ({
-//   debt, owner = false, assignedTo, onAssign, onClaim, onEdit, navigation, imageId
-// }) => {
-//   const { state } = useContext(store);
-//   const [visible, setVisible] = useState(true);
-//   const [userPickerOpen, setUserPickerOpen] = useState(false);
-//   const [user, setUser] = useState(assignedTo || null);
-//   if (debt.amount === 8100) { console.log(assignedTo); console.log(debt); }
-
-//   return (
-//     visible ? (
-//       <>
-//         <Card style={{ margin: 5 }}>
-//           <Card.Title title={debt.amount / 100} />
-//           <Card.Content>
-//             <Caption>
-//               {debt.satisfied
-//                 ? (
-//                   user && `This debt has been accepted by
-//                 ${user.name}`
-//                 )
-//                 : (user
-//                   ? (user && `This debt has been assigned to ${user.name}`)
-//                   : 'No one has claimed this debt yet')}
-//             </Caption>
-//             <Paragraph>
-//               {debt.description}
-//             </Paragraph>
-//           </Card.Content>
-//           <Card.Actions style={{ justifyContent: 'space-evenly' }}>
-//             {!owner && (
-//             <Button
-//               onPress={onClaim}
-//             >
-//               Claim
-//             </Button>
-//             )}
-//             {owner && (
-//             <>
-//               <Button
-//                 onPress={() => setUserPickerOpen(true)}
-//               >
-//                 Assign
-//               </Button>
-//               <Button
-//                 onPress={() => {
-//                   navigation.navigate('AddDebt', { imageId, debt });
-//                 }}
-//               >
-//                 Edit
-//               </Button>
-//               <Button
-//                 color="red"
-//                 onPress={() => {
-//                   deleteImageDebt({ state }, debt.id).then(setVisible(false));
-//                 }}
-//               >
-//                 Delete
-//               </Button>
-//             </>
-//             )}
-//           </Card.Actions>
-//         </Card>
-//         <UserPicker
-//           userIds={state.group.users.map((u) => u.id).filter((id) => id !== state.user.id)}
-//           dialogVisible={userPickerOpen}
-//           onDismiss={() => setUserPickerOpen(false)}
-//           setUser={(newUser) => {
-//             addDebt({ state }, state.group.id, state.event.id, newUser.id, state.user.id, null, null, debt.id, 0)
-//               .then(() => setUser(newUser));
-//           }}
-//         />
-//       </>
-//     ) : null);
-// };
+const reloadDebts = (state, dispatch) => { dispatch({ type: 'SET_EVENT', payload: { ...state.event, images: [...state.event.images] } }); };
 
 const Debt = ({
-  image, debt, users, navigation, setDebts, setImages
+  image, debt, users, navigation
 }) => {
   const { state, dispatch } = useContext(store);
   const [visible, setVisible] = useState(true);
   const [userPickerOpen, setUserPickerOpen] = useState(false);
   let assignedUser;
   if (debt.pending_debt) {
-    assignedUser = users.find((u) => u.id === debt.pending_debt.to_id);
+    assignedUser = users.find((u) => u.id === debt.pending_debt.from_id);
   }
 
   const owner = image.uploaded_by === state.user.id;
@@ -117,7 +43,7 @@ const Debt = ({
                   : 'Someone agreed to pay for this'
               )
               : (assignedUser
-                ? (assignedUser && `This debt has been assigned to ${assignedUser.name}`)
+                ? (assignedUser && `This debt is assigned to ${assignedUser.name}`)
                 : 'No one has claimed this debt yet')
           }
           />
@@ -144,109 +70,42 @@ const Debt = ({
                 <Button
                   color="red"
                   onPress={() => {
-                    deleteImageDebt({ state }, debt.id).then(setVisible(false));
+                    deleteImageDebt({ state }, debt.id).then(() => { setVisible(false); });
                   }}
                 >
                   Delete
                 </Button>
               </>
             ) : (
+              !debt.satisfied && (!debt.pending_debt || debt.pending_debt.from_id) !== state.user.id && (
               <Button
-                onPress={() => { dispatch({ type: 'SET_EVENT', payload: state.event }); }}
+                onPress={() => {
+                  addDebt({ state },
+                    state.group.id, state.event.id,
+                    state.user.id, image.uploaded_by,
+                    null, null, debt.id, 0).then(
+                    () => reloadDebts(state, dispatch)
+                  );
+                }}
               >
                 Claim
               </Button>
+              )
             )}
           </Card.Actions>
         </Card>
-        {/* <UserPicker
+        <UserPicker
           userIds={state.group.users.map((u) => u.id).filter((id) => id !== state.user.id)}
           dialogVisible={userPickerOpen}
           onDismiss={() => setUserPickerOpen(false)}
           setUser={(newUser) => {
             addDebt({ state }, state.group.id, state.event.id, newUser.id, state.user.id, null, null, debt.id, 0)
-              .then(() => setUser(newUser));
+              .then(() => reloadDebts(state, dispatch));
           }}
-        /> */}
+        />
       </>
     ) : null);
 };
-
-// const DebtImage = ({ id, navigation }) => {
-//   const { state, dispatch } = useContext(store);
-//   const [imageData, setImageData] = useState(null);
-//   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
-//   const [users, setUsers] = useState([]);
-//   const [debts, setDebts] = useState([]);
-
-//   useEffect(() => {
-//     getImagesInfo({ state }, id).then((info) => {
-//       getPendingDebts({ state }, info[0].debts_from_image.map((d) => d.id))
-//         .then((debts) => {
-//           setDebts(debts);
-//           return debts.map((d) => d.from_id);
-//         })
-//         .then((fromIds) => getUsersInfo({ state }, fromIds))
-//         .then((users) => {
-//           // console.log('Users');
-//           // console.log(users);
-//           setUsers(users);
-//         });
-//       Image.getSize(info[0].image_url, (width, height) => {
-//         setImageSize({ width, height });
-//         setImageData(info[0]);
-//       });
-//     });
-//   }, [id, state]);
-
-//   return (
-//     imageData
-//       ? (
-//         <Card style={{ margin: 5 }}>
-//           <Card.Content>
-//             <Image
-//               style={{ width: '100%', height: undefined, aspectRatio: imageSize.width / imageSize.height || 0 }}
-//               source={{ uri: imageData.image_url }}
-//             />
-//           </Card.Content>
-//           <Card.Content>
-//             {(debts || [])
-//               .map((d) => (
-//                 <Debt
-//                   debt={d}
-//                   key={d.id}
-//                   owner={state.user.id === imageData.uploaded_by}
-//                   navigation={navigation}
-//                   imageId={id}
-//                   assignedTo={users.find((u) => d.from_id === u.id)}
-//                 />
-//               ))}
-//           </Card.Content>
-//           <Card.Actions style={{ justifyContent: 'space-evenly' }}>
-//             <Button onPress={
-//               () => {
-//                 navigation.navigate('AddDebt', { eventId: state.event.id, imageId: id });
-//               }
-//             }
-//             >
-//               <Icon name="plus" size={25} />
-//             </Button>
-//             <Button onPress={
-//               () => {
-//                 deleteImage({ state }, id).then(() => {
-//                   dispatch({ type: 'REMOVE_IMAGE', imageId: id });
-//                 });
-//               }
-//             }
-//             >
-//               <Icon name="delete" size={25} />
-//             </Button>
-//           </Card.Actions>
-//         </Card>
-//       )
-//       : <ActivityIndicator />
-//   );
-// };
 
 const DebtImage = ({
   image, users, debts, navigation, setDebts, setImages
@@ -306,19 +165,8 @@ const DebtImage = ({
   );
 };
 
-const Images = ({ images, navigation }) => (images
-  ? images.map((id) => (
-    <DebtImage
-      navigation={navigation}
-      key={id}
-      id={id}
-    />
-  ))
-  : <></>);
-
 const Debts = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
-  const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [debts, setDebts] = useState([]);
   const [images, setImages] = useState([]);
@@ -339,13 +187,9 @@ const Debts = ({ navigation }) => {
   }, [state.event.images, state.user.token]);
 
   return (
+
     <Card style={styles.section} elevation={0}>
       <Card.Title title="Debts" />
-      {/* <Images
-        navigation={navigation}
-        images={images}
-      /> */}
-      {/* {images && images.map((i) => <Paragraph key={i.image_id}>{i.image_id}</Paragraph>)} */}
       {(images) && images.map((i) => (
         <DebtImage
           key={i.image_id}
@@ -366,9 +210,7 @@ const Debts = ({ navigation }) => {
               cropping: true
             })
               .then((i) => uploadImage({ state }, state.event.id, i))
-              .then((data) => {
-                dispatch({ type: 'ADD_IMAGE_TO_EVENT', imageId: data.image_id });
-              })
+              .then(() => reloadDebts(state, dispatch))
               .catch((e) => {
                 if (e.code === 'E_PICKER_CANCELLED') return;
                 throw e;
@@ -378,6 +220,7 @@ const Debts = ({ navigation }) => {
         >
           <Icon name="image-plus" size={25} />
         </Button>
+
       </View>
     </Card>
   );

@@ -83,7 +83,6 @@ export const UserPicker = ({
   useEffect(() => {
     getUsersInfo({ state }, userIds).then((users) => {
       setUsers(users);
-      console.log(users);
       setLoading(false);
     });
   }, [state, userIds]);
