@@ -5,7 +5,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import {
   ActivityIndicator, Card, Surface, Title
 } from 'react-native-paper';
-import BackgroundContainer from '../../Background';
+import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
 import ModalButton from '../../Buttons';
 import {
   getEventInfo, updateEvent, deleteEvent, getResults
@@ -113,6 +113,7 @@ const EventView = ({ navigation, route }) => {
                     confirmText="Delete"
                   />
                 ) : null}
+              <ScrollPlaceholder height={75} />
             </>
           )
           : (<ActivityIndicator />)}

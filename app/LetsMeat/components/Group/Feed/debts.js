@@ -152,11 +152,11 @@ const DebtImage = ({
         </Button>
         <Button onPress={
                 () => {
-                  deleteImage({ state }, id).then(() => {
-                    dispatch({ type: 'REMOVE_IMAGE', imageId: id });
+                  deleteImage({ state }, image.image_id).then(() => {
+                    dispatch({ type: 'REMOVE_IMAGE', imageId: image.image_id });
                   });
                 }
-              }
+        }
         >
           <Icon name="delete" size={25} />
         </Button>
@@ -210,7 +210,7 @@ const Debts = ({ navigation }) => {
               cropping: true
             })
               .then((i) => uploadImage({ state }, state.event.id, i))
-              .then(() => reloadDebts(state, dispatch))
+              .then((r) => dispatch({ type: 'ADD_IMAGE_TO_EVENT', imageId: r.image_id }))
               .catch((e) => {
                 if (e.code === 'E_PICKER_CANCELLED') return;
                 throw e;
