@@ -3,14 +3,14 @@ import {
   StyleSheet
 } from 'react-native';
 import {
-  Button, Card, Surface, TextInput, ToggleButton
+  Button, TextInput
 } from 'react-native-paper';
-import { addDebt, createImageDebt, updateImageDebt } from '../../Requests';
-import { store } from '../../Store';
-import UserCard, { UserPicker } from '../../User';
+import { MAX_DEBT_DESCRIPTION_LENGTH } from '../../../constants';
 import { formatAmount, isAmountValid, parseAmount } from '../../../helpers/money';
 import { BackgroundContainer } from '../../Background';
-import { MAX_DEBT_DESCRIPTION_LENGTH } from '../../../constants';
+import { addDebt } from '../../Requests';
+import { store } from '../../Store';
+import UserCard from '../../User';
 
 export const SendTransfer = ({ navigation, route }) => {
   const { state } = useContext(store);
@@ -65,24 +65,5 @@ export const SendTransfer = ({ navigation, route }) => {
     </BackgroundContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    height: '100%',
-    width: '100%'
-  },
-  searchbar: {
-    margin: 5
-  },
-  searchResult: {
-    margin: 5
-  },
-  selectedUserContainer: {
-    margin: 5
-  },
-  fab: {
-    margin: 10, right: 0, position: 'absolute', bottom: 0
-  }
-});
 
 export default SendTransfer;

@@ -39,7 +39,7 @@ const FeedContent = ({ navigation }) => {
     return () => {};
   };
 
-  useFocusEffect(React.useCallback(() => { onRefresh(); }, [state.group.id]));
+  // useFocusEffect(React.useCallback(() => { onRefresh(); }, [state.group.id]));
 
   return (
     <BackgroundContainer>

@@ -108,10 +108,11 @@ const Debt = ({
 };
 
 const DebtImage = ({
-  image, users, debts, navigation, setDebts, setImages
+  image, users, debts, navigation, setDebts, setImages, containerStyle
 }) => {
   const { state, dispatch } = useContext(store);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     Image.getSize(image.image_url, (width, height) => {
@@ -120,12 +121,18 @@ const DebtImage = ({
   }, [image.image_url]);
 
   return (
-    <Card style={{ margin: 5 }}>
+    <Card style={containerStyle}>
       <Card.Content>
-        <Image
-          style={{ width: '100%', height: undefined, aspectRatio: imageSize.width / imageSize.height || 0 }}
-          source={{ uri: image.image_url }}
-        />
+        {visible
+          ? (
+            <>
+              <Image
+                style={{ width: '100%', height: undefined, aspectRatio: imageSize.width / imageSize.height || 0 }}
+                source={{ uri: image.image_url }}
+              />
+              <Button onPress={() => setVisible(false)}>Hide Image</Button>
+            </>
+          ) : <Button onPress={() => setVisible(true)}>Show Image</Button>}
       </Card.Content>
       <Card.Content>
         {(debts.filter((d) => d.image_id === image.image_id))
@@ -165,63 +172,68 @@ const DebtImage = ({
   );
 };
 
-const Debts = ({ navigation }) => {
+const Debts = ({ navigation, containerStyle, debtStyle }) => {
   const { state, dispatch } = useContext(store);
   const [users, setUsers] = useState([]);
   const [debts, setDebts] = useState([]);
   const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const [imagesInfo, debtsInfo] = await Promise.all([
         getImagesInfo({ state }, state.event.images), getEventDebts({ state }, state.event.id)]);
+      setImages(imagesInfo);
+      setDebts(debtsInfo);
       const usersInfo = await getUsersInfo({ state }, [
         ...imagesInfo.map((info) => info.uploaded_by),
         ...debtsInfo.filter((debt) => debt.pending_debt).map((debt) => debt.pending_debt.from_id),
         ...debtsInfo.filter((debt) => debt.pending_debt).map((debt) => debt.pending_debt.to_id),
       ]);
       setUsers(usersInfo);
-      setDebts(debtsInfo);
-      setImages(imagesInfo);
+      setLoading(false);
     })();
-  }, [state.event.images, state.user.token]);
+  }, [state.event.images, state.user.tokenId]);
 
   return (
-
-    <Card style={styles.section} elevation={0}>
+    <Card style={containerStyle} elevation={0}>
       <Card.Title title="Debts" />
-      {(images) && images.map((i) => (
-        <DebtImage
-          key={i.image_id}
-          image={i}
-          setImages={setImages}
-          users={users}
-          debts={debts}
-          setDebts={setDebts}
-          navigation={navigation}
-        />
-      ))}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
-        <Button
-          style={styles.addButton}
-          onPress={
-          () => {
-            ImagePicker.openPicker({
-              cropping: true
-            })
-              .then((i) => uploadImage({ state }, state.event.id, i))
-              .then((r) => dispatch({ type: 'ADD_IMAGE_TO_EVENT', imageId: r.image_id }))
-              .catch((e) => {
-                if (e.code === 'E_PICKER_CANCELLED') return;
-                throw e;
-              });
-          }
-        }
-        >
-          <Icon name="image-plus" size={25} />
-        </Button>
-
-      </View>
+      { loading ? <ActivityIndicator style={{ margin: 30 }} /> : (
+        <>
+          {images.map((i) => (
+            <DebtImage
+              key={i.image_id}
+              image={i}
+              setImages={setImages}
+              users={users}
+              debts={debts}
+              setDebts={setDebts}
+              navigation={navigation}
+              containerStyle={debtStyle}
+            />
+          ))}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
+            <Button
+              style={styles.addButton}
+              onPress={
+    () => {
+      ImagePicker.openPicker({
+        cropping: true
+      })
+        .then((i) => uploadImage({ state }, state.event.id, i))
+        .then((r) => dispatch({ type: 'ADD_IMAGE_TO_EVENT', imageId: r.image_id }))
+        .catch((e) => {
+          if (e.code === 'E_PICKER_CANCELLED') return;
+          throw e;
+        });
+    }
+  }
+            >
+              <Icon name="image-plus" size={25} />
+            </Button>
+          </View>
+        </>
+      )}
     </Card>
   );
 };
@@ -248,6 +260,9 @@ const styles = StyleSheet.create({
   timeCard: {
     margin: 5,
     justifyContent: 'center'
+  },
+  debtContainer: {
+    color: 'rgba(200, 200, 200, 0.7)'
   }
 });
 

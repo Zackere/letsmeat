@@ -1,14 +1,13 @@
-import { useFocusEffect } from '@react-navigation/native';
 import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import {
-  ActivityIndicator, Card, Surface, Title
+  ActivityIndicator, Card, Title
 } from 'react-native-paper';
-import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
-import ModalButton from '../../Buttons';
+import { BackgroundContainer, ScrollPlaceholder } from '../../Background';
+import { ModalButton } from '../../Buttons';
 import {
-  getEventInfo, updateEvent, deleteEvent, getResults
+  deleteEvent, getEventInfo, getResults, updateEvent
 } from '../../Requests';
 import { store } from '../../Store';
 import Creator from './creator';
@@ -17,15 +16,7 @@ import Debts from './debts';
 import Locations from './locations';
 import Times from './times';
 
-const Results = ({ event }) => (
-  <Locations
-    showButtons={false}
-    googleLocations={event.candidate_google_maps_locations}
-    customLocations={event.candidate_custom_locations}
-  />
-);
-
-const EventView = ({ navigation, route }) => {
+const EventView = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
   const [eventDetails, setEventDetails] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -33,10 +24,6 @@ const EventView = ({ navigation, route }) => {
   const [results, setResults] = useState(false);
 
   const finished = state.event.deadline < new Date();
-
-  // React.useLayoutEffect(() => {
-  //   navigation.setOptions({ tabBarVisible: false });
-  // }, [navigation, route]);
 
   const loadData = () => {
     if (deleting) return;
@@ -54,14 +41,18 @@ const EventView = ({ navigation, route }) => {
   return (
     <BackgroundContainer>
       <ScrollView style={styles.container}>
+        <Card style={styles.outerSection}>
+          <Card.Content>
+            <Title style={styles.eventTitle}>{state.event.name}</Title>
+          </Card.Content>
+        </Card>
         { eventDetails
           ? (
             <>
-              <Title style={styles.eventTitle}>{state.event.name}</Title>
-              <Card elevation={0} style={{ margin: 5, backgroundColor: 'rgba(200, 200, 200, 0.9)' }}>
+              <Card elevation={0} style={styles.outerSection}>
                 <Card.Title title={finished ? 'Results' : 'Candidates'} style={{ marginBottom: 0 }} />
-                <Card style={{ ...styles.section, marginTop: 0, backgroundColor: 'transparent' }} elevation={0}>
-                  <Card.Title title="Locations" style={{ marginTop: 0 }} />
+                <Card style={{ ...styles.innerSection, marginTop: 0 }} elevation={0}>
+                  <Card.Title title="Locations" />
                   <Locations
                     googleLocations={state.event.candidate_google_maps_locations}
                     customLocations={state.event.candidate_custom_locations}
@@ -69,9 +60,10 @@ const EventView = ({ navigation, route }) => {
                     onRate={({ gmapsId, customId }) => navigation.navigate('RateLocation', { gmapsId, customId })}
                     onAdd={() => navigation.navigate('AddLocation', { eventId: state.event.id, groupId: state.group.id })}
                     onVote={() => navigation.navigate('VoteLocation', { eventId: state.event.id, groupId: state.group.id })}
+                    containerStyle={styles.innerSection}
                   />
                 </Card>
-                <Card style={styles.section} elevation={0}>
+                <Card style={styles.innerSection} elevation={0}>
                   <Card.Title title="Times" />
                   <Times
                     loading={loading}
@@ -83,23 +75,31 @@ const EventView = ({ navigation, route }) => {
                     }}
                     onAddTime={(time) => {
                       setLoading(true);
-                      return updateEvent({ state }, { ...state.event, candidate_times: [time] })
+                      return updateEvent({ state }, { id: state.event.id, candidate_times: [time] })
                         .then((event) => dispatch({ type: 'SET_EVENT', payload: event }))
                         .finally(() => setLoading(false));
                     }}
                     deadline={new Date(state.event.deadline)}
                   />
                 </Card>
-                <Deadline time={state.event.deadline} />
-                <Creator userId={state.event.creator_id} />
+                <Deadline
+                  time={state.event.deadline}
+                  containerStyle={styles.innerSection}
+                />
+                <Creator
+                  userId={state.event.creator_id}
+                  containerStyle={styles.innerSection}
+                />
               </Card>
               <Debts
+                containerStyle={styles.outerSection}
+                debtStyle={styles.innerSection}
                 navigation={navigation}
               />
               {state.event.creator_id === state.user.id
                 ? (
                   <ModalButton
-                    style={{ backgroundColor: 'red' }}
+                    style={styles.deleteButton}
                     modalText="Are you sure you want to delete the event?"
                     icon="delete-forever"
                     buttonText="DELETE"
@@ -124,28 +124,26 @@ const EventView = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   eventTitle: {
+    color: 'black',
     fontSize: 30,
-    marginHorizontal: 20,
-    marginTop: 20
+    margin: 20,
+    textAlign: 'center'
   },
   container: {
     width: '100%',
     height: '100%'
   },
-  section: {
-    margin: 10
+  outerSection: {
+    margin: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)'
   },
-  card: {
-    margin: 25,
-    backgroundColor: 'rgba(200, 200, 200, 0.9)'
+  innerSection: {
+    margin: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)'
   },
-  addButton: {
-    marginBottom: 10
+  deleteButton: {
+    backgroundColor: 'red'
   },
-  timeCard: {
-    margin: 5,
-    justifyContent: 'center'
-  }
 });
 
 export default EventView;

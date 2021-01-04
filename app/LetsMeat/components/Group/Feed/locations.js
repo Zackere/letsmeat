@@ -10,7 +10,10 @@ import { getLocationsInfo } from '../../Requests';
 import { store } from '../../Store';
 
 const Locations = ({
-  customLocations, googleLocations, onAdd, onVote, showButtons = true, onRate, order
+  customLocations, googleLocations,
+  onAdd, onVote, onRate,
+  showButtons = true,
+  order, containerStyle
 }) => {
   const { state } = useContext(store);
   const [loading, setLoading] = useState(true);
@@ -26,7 +29,6 @@ const Locations = ({
         } else {
           element = locationsInfo.custom_location_infomation.find((l) => l.id === custom_location_id);
         }
-        console.log(element);
         locationsOrdered.push(element);
       });
     } else {
@@ -40,7 +42,6 @@ const Locations = ({
     getLocationsInfo({ state }, customLocations, googleLocations)
       .then((info) => {
         setLocationsInfo(info); setLoading(false);
-        console.log(info);
       });
   }, [customLocations, googleLocations, state]);
 
@@ -64,34 +65,11 @@ const Locations = ({
                   location={l}
                   key={l.id}
                   onPress={() => {
-                    console.log(l.id);
-                    console.log('asuydgasdvtgvasghjd');
                     onRate({ customId: l.id });
                   }}
                 />
               )))
             }
-            {/* {locationsInfo.custom_location_infomation.map((l) => (
-              <CustomLocationCard
-                location={l}
-                key={l.id}
-                onPress={() => {
-                  console.log(l.id);
-                  console.log('asuydgasdvtgvasghjd');
-                  onRate({ customId: l.id });
-                }}
-              />
-            ))}
-            {locationsInfo.google_maps_location_information.map((l) => (
-              <GMapsCard
-                location={l}
-                key={l.details.place_id}
-                onPress={() => {
-                  console.log({ gmapsId: l.details.place_id });
-                  onRate({ gmapsId: l.details.place_id });
-                }}
-              />
-            ))} */}
           </View>
           {showButtons
             ? (
