@@ -183,6 +183,7 @@ class EditDebts extends Component {
                     placeholder="Enter amount you paid"
                     value={debts[index].amount}
                     onChange={e => this.setAmount(e.target.value)}
+                    disabled={debts[index].satisfied}
                   />
                 </Form.Group>
                 <Form.Group>
@@ -192,6 +193,7 @@ class EditDebts extends Component {
                     placeholder="Enter description"
                     value={debts[index].description}
                     onChange={e => this.setDescription(e.target.value)}
+                    disabled={debts[index].satisfied}
                   />
                 </Form.Group>
                 <Form.Group>
@@ -200,6 +202,7 @@ class EditDebts extends Component {
                     as="select"
                     value={assignedTo[index]}
                     onChange={e => this.setAssignedTo(e.target.value)}
+                    disabled={debts[index].satisfied}
                   >
                     <option disabled value={0}>
                       Not assigned

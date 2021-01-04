@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import { withToastManager } from 'react-toast-notifications'
-import { ListGroup, Dropdown } from 'react-bootstrap'
+import { ListGroup, Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap'
 
 import { getImageDebts } from '../../../../services/eventService'
 import { getGroup } from '../../../../services/groupsService'
@@ -38,7 +38,7 @@ class Debts extends Component {
   componentDidUpdate(prevProps) {
     if (this.props.update !== prevProps.update) {
       this.getDebts(true)
-    } 
+    }
   }
 
   getDebts = openModal => {
@@ -68,10 +68,21 @@ class Debts extends Component {
     const id = this.state.selectedDebt.image_id
 
     for (const debt of this.state.debts) {
-      if (debt.image_id === id && !debt.satisfied) debts.push(debt)
+      if (debt.image_id === id) debts.push(debt)
     }
 
     return debts
+  }
+
+  getTooltipText = debt => {
+    console.log(debt)
+    if (!debt.pending_debt) return 'Unassigned'
+
+    const user = this.state.users.find(u => debt.pending_debt.from_id === u.id)
+
+    if (debt.satisfied) return user.name + ' is assigned to this'
+
+    return user.name + ' must confirm it is thier'
   }
 
   render() {
@@ -94,35 +105,51 @@ class Debts extends Component {
         <ListGroup className="list-scroll" style={{ height: '40vh' }}>
           {debts &&
             debts.map(debt => (
-              <ListGroup.Item key={debt.id} action>
-                <div
-                  onClick={() => this.openModal(debt)}
-                  className="row align-items-center"
-                >
-                  <div className="d-flex flex-column col-9 mx-auto">
-                    <span>{debt.amount / 100 + 'zł'}</span>
-                    <small>{debt.description}</small>
-                  </div>
+              <ListGroup.Item
+                key={debt.id}
+                style={{ borderLeft: debt.satisfied ? '5px solid green' : '' }}
+                action
+              >
+                <div className="row align-items-center">
+                  <OverlayTrigger
+                    key={debt.id}
+                    overlay={
+                      <Tooltip id={`tooltip-${debt.id}`}>
+                        {this.getTooltipText(debt)}
+                      </Tooltip>
+                    }
+                  >
+                    <div
+                      className="d-flex flex-column col-9 mx-auto"
+                      onClick={() => this.openModal(debt)}
+                    >
+                      <span>{debt.amount / 100 + 'zł'}</span>
+                      <small>{debt.description}</small>
+                    </div>
+                  </OverlayTrigger>
                   <div className="col-3">
-                    {debt.satisfied ? (
-                      <div>Debt already assigned</div>
-                    ) : (
-                      <Dropdown>
-                        <Dropdown.Toggle as={Toggle} />
-                        {debt.image_uploaded_by_id !== this.props.user.id ? (
-                          <Dropdown.Menu size="sm" title="">
-                            <Dropdown.Item>Assign to me</Dropdown.Item>
-                          </Dropdown.Menu>
-                        ) : (
-                          <Dropdown.Menu size="sm" title="">
-                            <Dropdown.Item onClick={() => this.openModal(debt)}>
-                              Show
-                            </Dropdown.Item>
-                            <Dropdown.Item>Delete</Dropdown.Item>
-                          </Dropdown.Menu>
-                        )}
-                      </Dropdown>
-                    )}
+                    <Dropdown>
+                      <Dropdown.Toggle as={Toggle} />
+                      {debt.image_uploaded_by_id !== this.props.user.id ? (
+                        <Dropdown.Menu size="sm" title="">
+                          <Dropdown.Item disabled={debt.satisfied}>
+                            Assign to me
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      ) : (
+                        <Dropdown.Menu size="sm" title="">
+                          <Dropdown.Item
+                            onClick={() => this.openModal(debt)}
+                            disabled={debt.satisfied}
+                          >
+                            Show
+                          </Dropdown.Item>
+                          <Dropdown.Item disabled={debt.satisfied}>
+                            Delete
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      )}
+                    </Dropdown>
                   </div>
                 </div>
               </ListGroup.Item>
