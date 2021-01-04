@@ -10,7 +10,7 @@ import { store } from '../../Store';
 import UserCard, { UserPicker } from '../../User';
 
 const AddDebt = ({ navigation, route }) => {
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
   const { eventId, imageId, debt } = route.params;
 
   const [direction, setDirection] = useState('IOwe');
@@ -24,14 +24,18 @@ const AddDebt = ({ navigation, route }) => {
   //   addDebt({ state }, state.group.id, eventId, from, to, parseFloat(amount) * 100, description, imageId).then(() => navigation.goBack());
   // };
 
+  const reloadDebts = () => dispatch({ type: 'SET_EVENT', payload: { ...state.event, images: [...state.event.images] } });
+
   const pressAddDebt = () => {
     // const [from, to] = direction === 'IOwe' ? [state.user.id, user.id] : [user.id, state.user.id];
     if (debt) {
       updateImageDebt({ state }, { ...debt, amount: parseFloat(amount) * 100, description }).then(() => {
+        reloadDebts();
         navigation.goBack();
       });
     } else {
       createImageDebt({ state }, parseFloat(amount) * 100, description, imageId).then(() => {
+        reloadDebts();
         navigation.goBack();
       });
     }

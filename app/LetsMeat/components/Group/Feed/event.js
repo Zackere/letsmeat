@@ -94,12 +94,6 @@ const EventView = ({ navigation, route }) => {
                 <Creator userId={state.event.creator_id} />
               </Card>
               <Debts
-                onAdd={() => {
-                  navigation.navigate('AddDebt', {
-                    eventId: state.event.id
-                  });
-                }}
-                images={state.event.images || []}
                 navigation={navigation}
               />
               {state.event.creator_id === state.user.id

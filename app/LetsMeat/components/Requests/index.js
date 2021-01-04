@@ -187,6 +187,10 @@ const updateImageDebt = ({ state }, debt) => patch({ state }, '/Images/update_im
 const createImageDebt = ({ state }, amount, description, imageId) => post({ state },
   '/Images/create_image_debt', { amount, description, image_id: imageId });
 
+const getEventDebts = ({ state }, eventId) => get({ state }, '/Events/image_debts', { event_id: eventId })
+  .then(extractData)
+  .then((debts) => debts.image_debts);
+
 export {
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups, leaveGroup, joinGroup,
@@ -197,5 +201,5 @@ export {
   getVote, getVoteTimes, getVoteLocations, castVote, getResults,
   searchLocation, createLocationGoogle, createLocationCustom, getLocationsInfo, rateLocation,
   addDebt, getPendingDebts, rejectDebt, acceptDebt, getGroupDebts,
-  deleteImageDebt, updateImageDebt, createImageDebt
+  deleteImageDebt, updateImageDebt, createImageDebt, getEventDebts
 };

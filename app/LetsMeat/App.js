@@ -23,13 +23,13 @@ import { StateProvider, store } from './components/Store';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
-const PERSISTENCE_KEY = 'NAVIGATION_STATE';
+const WEB_CLIENT_ID = '790166575655-222h23mpv6h7n7jhjkac6gj220e5kevt.apps.googleusercontent.com';
 
 const Navigation = () => {
   const { state, dispatch } = useContext(store);
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: '790166575655-222h23mpv6h7n7jhjkac6gj220e5kevt.apps.googleusercontent.com'
+      webClientId: WEB_CLIENT_ID
     });
     GoogleSignin.isSignedIn().then((signedIn) => {
       if (signedIn) {
@@ -49,7 +49,7 @@ const Navigation = () => {
         dispatch({ type: 'SET_LOADED' });
       }
     });
-  }, []);
+  }, [dispatch]);
 
   let mainComponent = null;
   if (state.loading) {
