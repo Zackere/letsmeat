@@ -61,7 +61,13 @@ const AddLocation = ({ navigation, route }) => {
         onChangeText={onChangeSearch}
         value={searchQuery}
       />
-      <Button onPress={() => { navigation.navigate('CreateLocation', { eventId }); }}>Or add a new custom location</Button>
+      <Button
+        style={styles.orButton}
+        mode="contained"
+        onPress={() => { navigation.navigate('CreateLocation', { eventId }); }}
+      >
+        Or add a new custom location
+      </Button>
       <ScrollView>
         {(searchResults && Object.keys(searchResults).length) ? (combineLocations(searchResults).map((result) => (
           <LocationCard
@@ -112,8 +118,9 @@ const styles = StyleSheet.create({
   selectedUserContainer: {
     margin: 5
   },
-  fab: {
-    margin: 10, right: 0, position: 'absolute', bottom: 0
+  orButton: {
+    margin: 5,
+    alignSelf: 'center'
   }
 });
 

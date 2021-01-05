@@ -34,6 +34,7 @@ const FeedContent = ({ navigation }) => {
     )
       .then(([groupInfo, debtInfo]) => {
         setRefreshing(false);
+        console.log(debtInfo);
         dispatch({ type: 'SET_GROUP', payload: { ...groupInfo, ...debtInfo } });
       });
     return () => {};
@@ -43,7 +44,6 @@ const FeedContent = ({ navigation }) => {
 
   return (
     <BackgroundContainer>
-
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

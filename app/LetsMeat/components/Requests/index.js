@@ -73,7 +73,7 @@ const deleteGroup = ({ state }, id) => _delete({ state }, '/Groups/delete/', { i
 
 const leaveGroup = ({ state }, id) => post({ state }, '/Groups/leave/', { id });
 
-const createEvent = ({ state }, groupId, name, deadline) => post({ state }, '/Events/create', { group_id: groupId, name, deadline });
+const createEvent = ({ state }, groupId, name, deadline) => post({ state }, '/Events/create', { group_id: groupId, name, deadline }).then(extractData);
 
 const getEventInfo = ({ state }, eventId) => get({ state }, '/Events/info', { id: eventId }).then(extractData);
 

@@ -1,6 +1,5 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
-import { StyleSheet } from 'react-native';
 import { Header } from '../Header';
 import NotificationsScreen from './notificationsScreen';
 
@@ -24,21 +23,4 @@ const Notifications = () => (
   </Stack.Navigator>
 );
 
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: '100%'
-  },
-  title: {
-    fontSize: 50,
-    margin: 50
-  },
-  card: {
-    marginTop: 5,
-    margin: 20
-  },
-  slider: {
-    margin: 10
-  }
-});
 export default Notifications;

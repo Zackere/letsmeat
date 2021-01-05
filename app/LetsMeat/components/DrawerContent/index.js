@@ -59,7 +59,7 @@ function DrawerContent({ navigation }) {
         {state.group && state.group.id && (
         <DrawerButton
           icon="account-multiple-outline"
-          label="Current Group"
+          label={state.group.name}
           onPress={() => navigation.navigate('Feed')}
         />
         )}

@@ -1,10 +1,10 @@
 import React from 'react';
-import { Image, Text, StyleSheet } from 'react-native';
-import { Card, Paragraph, TouchableRipple } from 'react-native-paper';
+import { Image, StyleSheet } from 'react-native';
+import { Card, Paragraph } from 'react-native-paper';
 
 export const GMapsPredictionCard = ({ location, onPress, onLongPress }) => (
   <Card style={styles.searchResult} onPress={onPress} onLongPress={onLongPress}>
-    <Card.Title title={location.structured_formatting.main_text} />
+    <Card.Title title={location.structured_formatting.main_text} titleNumberOfLines={3} />
     <Card.Content>
       <Paragraph>
         { location.description}
@@ -17,7 +17,7 @@ export const GMapsCard = ({
   location, onPress, onLongPress, highlight
 }) => (
   <Card style={styles.searchResult} onPress={onPress} onLongPress={onLongPress} elevation={highlight ? 5 : 1}>
-    <Card.Title title={location.details.name} />
+    <Card.Title title={location.details.name} titleNumberOfLines={3} />
     <Card.Content>
       <Paragraph>
         {location.details.formatted_address}
@@ -31,7 +31,7 @@ export const CustomLocationCard = ({
   location, onPress, onLongPress, highlight
 }) => (
   <Card style={styles.searchResult} onPress={onPress} onLongPress={onLongPress} elevation={highlight ? 5 : 1}>
-    <Card.Title title={location.name} />
+    <Card.Title title={location.name} titleNumberOfLines={3} />
     <Card.Content>
       <Paragraph>
         {location.address}
@@ -51,10 +51,6 @@ const LocationCard = ({
   return <Component location={location} onPress={onPress} onLongPress={onLongPress} highlight={highlight} />;
 };
 
-const AddKindToLocation = (location) => {
-
-};
-
 const styles = StyleSheet.create({
   container: {
     height: '100%',
@@ -64,7 +60,8 @@ const styles = StyleSheet.create({
     margin: 5
   },
   searchResult: {
-    margin: 5
+    margin: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)'
   },
   selectedUserContainer: {
     margin: 5

@@ -5,12 +5,12 @@ import {
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import {
-  ActivityIndicator, Button, Caption, Card, Paragraph
+  ActivityIndicator, Button, Card, Paragraph
 } from 'react-native-paper';
 import { formatAmount } from '../../../helpers/money';
 import {
-  getImagesInfo,
-  uploadImage, deleteImage, deleteImageDebt, createImageDebt, addDebt, getPendingDebts, getUsersInfo, getEventDebts, updateImageDebt
+  addDebt, deleteImage, deleteImageDebt, getEventDebts, getImagesInfo,
+  getUsersInfo, uploadImage
 } from '../../Requests';
 import { store } from '../../Store';
 import { UserPicker } from '../../User';

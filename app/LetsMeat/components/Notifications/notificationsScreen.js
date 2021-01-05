@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import {
   Caption,
   Surface
@@ -17,24 +18,26 @@ const Notifications = ({ navigation }) => {
 
   return (
     <BackgroundContainer backgroundVariant="money">
-      {notifications.length > 0
-        ? (
-          <>
-            {notifications
-              .map((item) => (
-                <Notification
-                  item={item}
-                  key={`${item.group_id}${item.id}`}
-                  full
-                />
-              ))}
-          </>
-        )
-        : (
-          <View style={{ alignItems: 'center', marginBottom: 10 }}>
-            <Caption>You have no pending notifications</Caption>
-          </View>
-        )}
+      <ScrollView>
+        {notifications.length > 0
+          ? (
+            <>
+              {notifications
+                .map((item) => (
+                  <Notification
+                    item={item}
+                    key={`${item.group_id}${item.id}`}
+                    full
+                  />
+                ))}
+            </>
+          )
+          : (
+            <View style={{ alignItems: 'center', marginBottom: 10 }}>
+              <Caption>You have no pending notifications</Caption>
+            </View>
+          )}
+      </ScrollView>
     </BackgroundContainer>
   );
 };

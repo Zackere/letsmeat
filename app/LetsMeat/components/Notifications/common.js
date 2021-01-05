@@ -1,7 +1,7 @@
 import React, {
-  useContext, useEffect, useState, useRef
+  useContext, useEffect, useRef, useState
 } from 'react';
-import { StyleSheet } from 'react-native';
+import { Image, StyleSheet } from 'react-native';
 import {
   ActivityIndicator,
   Button, Caption, Card,
@@ -36,7 +36,7 @@ const NotificationAction = ({ acceptAction, rejectAction, full }) => {
           rejectAction().finally(finishAction);
         }}
       >
-        Refuse
+        Reject
       </Button>
       <Button
         disabled={active}
@@ -60,24 +60,31 @@ const NotificationContent = ({ content, loading }) => (
 );
 
 export const Invitation = ({ invitation, full = false }) => {
+  const mounted = useRef(false);
   const { state, dispatch } = useContext(store);
   const [user, setUser] = useState(null);
   const [group, setGroup] = useState(null);
 
   useEffect(() => {
-    getUsersInfo({ state }, invitation.from_id).then((users) => setUser(users[0]));
-    getGroupInfo({ state }, invitation.group_id).then(setGroup);
+    mounted.current = true;
+    getUsersInfo({ state }, invitation.from_id).then((users) => {
+      if (!mounted.current) return;
+      setUser(users[0]);
+    });
+    getGroupInfo({ state }, invitation.group_id).then((group) => {
+      if (!mounted.current) return;
+      setGroup(group);
+    });
+    return () => { mounted.current = false; };
   }, [state, invitation.from_id, invitation.group_id]);
 
-  const loaded = user && group;
-
   return (
-    <Card style={{ margin: 5 }}>
-      {(full && loaded) ? <Card.Title>{`${user.name} invites you to join ${group.name}`}</Card.Title>
+    <Card style={full ? styles.full : styles.small}>
+      {(full && user && group) ? <Card.Title title={`${user.name} invites you to join ${group.name}`} />
         : (
           <NotificationContent
-            loading={!loaded}
-            content={loaded ? (
+            loading={!user || !group}
+            content={(user && group) ? (
               <Paragraph>
                 <Subheading>{user.name}</Subheading>
                 {'\t'}
@@ -89,6 +96,7 @@ export const Invitation = ({ invitation, full = false }) => {
           />
         )}
       <NotificationAction
+        full={full}
         rejectAction={() => rejectInvitation({ state }, group.id)
           .then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }))}
         acceptAction={() => acceptInvitation({ state }, group.id)
@@ -102,7 +110,10 @@ export const Debt = ({ debt, full = false }) => {
   const mounted = useRef(false);
   const { state, dispatch } = useContext(store);
   const [user, setUser] = useState(null);
+  const [group, setGroup] = useState(null);
   const [image, setImage] = useState(null);
+  const [imageVisible, setImageVisible] = useState(false);
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     mounted.current = true;
@@ -110,28 +121,48 @@ export const Debt = ({ debt, full = false }) => {
       if (!mounted.current) return;
       setUser(users[0]);
     });
+    getGroupInfo({ state }, debt.group_id).then((group) => {
+      if (!mounted.current) return;
+      setGroup(group);
+    });
     if (full && debt.image_id) {
       getImagesInfo({ state }, debt.image_id).then(([response]) => {
         if (!mounted.current) return;
-        setImage(response);
+        Image.getSize(response.image_url, (width, height) => {
+          setImageSize({ width, height });
+          setImage(response);
+        });
       });
     }
     return () => { mounted.current = false; };
-  }, [debt.to_id, state, full, debt.image_id]);
+  }, [debt.to_id, state, full, debt.image_id, debt.group_id]);
 
   const request = (debt.debt_type === 0) ? 'wants you to pay' : 'wants you to confirm they transferred';
 
   return (
     <Card style={full ? styles.full : styles.small}>
+      <Caption style={styles.groupName}>{group && group.name}</Caption>
       {full && user && <Card.Title multiline titleNumberOfLines={3} title={`${user.name} ${request} ${formatAmount(debt.amount)}`} />}
       <NotificationContent
-        loading={!user}
-        content={user ? (
+        loading={!user || !group}
+        content={(user && group) ? (
           <>
             {full ? (
-              <Paragraph margin={5}>
-                {debt.description}
-              </Paragraph>
+              <>
+                <Paragraph margin={5}>
+                  {debt.description}
+                </Paragraph>
+                {image && !imageVisible && <Button onPress={() => setImageVisible(true)}>Show image</Button>}
+                {image && imageVisible && (
+                <>
+                  <Image
+                    style={{ width: '100%', height: undefined, aspectRatio: imageSize.width / imageSize.height || 0 }}
+                    source={{ uri: image.image_url }}
+                  />
+                  <Button onPress={() => setImageVisible(false)}>Hide image</Button>
+                </>
+                )}
+              </>
             )
               : (
                 <Paragraph>
@@ -172,6 +203,10 @@ const styles = StyleSheet.create({
   },
   small: {
     margin: 5
+  },
+  groupName: {
+    margin: 10,
+    fontStyle: 'italic'
   }
 });
 

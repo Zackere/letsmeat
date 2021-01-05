@@ -36,7 +36,7 @@ const Notifications = ({ navigation }) => {
                   key={`${item.group_id}${item.id}`}
                 />
               ))}
-            {notifications.length > 2 && <Button onPress={() => navigation.navigate('Notifications')}>Show Details</Button>}
+            {notifications.length >= 1 && <Button onPress={() => navigation.navigate('Notifications')}>Show More</Button>}
           </>
         )
         : (

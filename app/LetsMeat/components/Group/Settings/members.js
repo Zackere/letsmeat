@@ -13,8 +13,12 @@ import BackgroundContainer from '../../Background';
 const getDebtValue = (state, id) => {
   const myId = state.user.id;
   if (myId === id) return null;
-  if (state.group.debts[id] && state.group.debts[id][myId]) return state.group.debts[id][myId];
-  if (state.group.debts[myId] && state.group.debts[myId][id]) return state.group.debts[myId][id];
+  if (state.group.debts[id] && state.group.debts[id][myId]) {
+    return state.group.debts[id][myId];
+  }
+  if (state.group.debts[myId] && state.group.debts[myId][id]) {
+    return -state.group.debts[myId][id];
+  }
   return 0;
 };
 
@@ -51,7 +55,9 @@ export const GroupMembers = ({
         ) : undefined}
       />
       <DebtCard
-        value={getDebtValue(state, m.id)}
+        value={
+          getDebtValue(state, m.id)
+        }
       />
     </React.Fragment>
   ));

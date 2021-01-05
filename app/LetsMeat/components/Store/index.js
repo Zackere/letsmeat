@@ -77,7 +77,7 @@ const StateProvider = ({ children }) => {
           ...state,
           group: {
             ...action.payload,
-            debts: action.payload.groups || []
+            debts: action.payload.debts || {}
           },
         };
         return newState;

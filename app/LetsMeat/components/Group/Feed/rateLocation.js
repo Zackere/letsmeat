@@ -6,9 +6,8 @@ import React, {
 import {
   StyleSheet
 } from 'react-native';
-import {
-  Surface, Card, ActivityIndicator, Button
-} from 'react-native-paper';
+import { ActivityIndicator, Button, Card } from 'react-native-paper';
+import { BackgroundContainer } from '../../Background';
 import LocationCard from '../../Location';
 import { getLocationsInfo, rateLocation } from '../../Requests';
 import { store } from '../../Store';
@@ -16,7 +15,7 @@ import { store } from '../../Store';
 const PrefSetter = ({
   prefName, displayName, setPrefs, prefs
 }) => (
-  <Card style={styles.card} elevation={0}>
+  <Card style={styles.slider} elevation={0}>
     <Card.Title title={displayName} />
     <Slider
       style={styles.slider}
@@ -31,7 +30,7 @@ const PrefSetter = ({
 );
 
 const RateLocation = ({ navigation, route }) => {
-  const { state, dispatch } = useContext(store);
+  const { state } = useContext(store);
   const { gmapsId, customId } = route.params;
   const [locationInfo, setLocationInfo] = useState(undefined);
   const [prefs, setPrefs] = useState({
@@ -49,7 +48,7 @@ const RateLocation = ({ navigation, route }) => {
   });
 
   return (
-    <Surface style={styles.container}>
+    <BackgroundContainer backgroundVariant="settings">
       {
         locationInfo ? <LocationCard location={locationInfo} /> : <ActivityIndicator />
       }
@@ -69,33 +68,19 @@ const RateLocation = ({ navigation, route }) => {
       >
         Rate
       </Button>
-    </Surface>
+    </BackgroundContainer>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    margin: 10
+    margin: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)'
   },
   slider: {
-    margin: 10
+    margin: 10,
+    backgroundColor: 'transparent'
   },
-  container: {
-    height: '100%',
-    width: '100%'
-  },
-  searchbar: {
-    margin: 5
-  },
-  searchResult: {
-    margin: 5
-  },
-  selectedUserContainer: {
-    margin: 5
-  },
-  fab: {
-    margin: 10, right: 0, position: 'absolute', bottom: 0
-  }
 });
 
 export default RateLocation;

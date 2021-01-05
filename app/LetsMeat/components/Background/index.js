@@ -20,6 +20,9 @@ export const BackgroundContainer = ({ backgroundVariant = 'food', children }) =>
     case 'searching':
       source = require('../../images/background5.jpg');
       break;
+    case 'fireworks':
+      source = require('../../images/background6.jpg');
+      break;
     default:
       source = require('../../images/background1.jpg');
   }
@@ -32,7 +35,6 @@ export const BackgroundContainer = ({ backgroundVariant = 'food', children }) =>
         width: Dimensions.get('window').width,
         height: Dimensions.get('window').height,
       }}
-  // source={{ uri: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80' }}
       source={source}
     >
       <Surface style={{ width: '100%', height: '100%', backgroundColor: 'rgba(200, 200, 200, 0.3)' }}>
