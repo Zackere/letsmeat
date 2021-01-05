@@ -36,11 +36,14 @@ const RenderGroup = ({
   groupId, navigation,
 }) => {
   const { state, dispatch } = useContext(store);
-  const group = state.groups && state.groups.find((g) => g.id === groupId);
+  const [group, setGroup] = useState(null);
 
   useEffect(() => {
-    if (group && !group.custom_locations) getGroupInfo({ state }, groupId).then((info) => dispatch({ type: 'UPDATE_GROUP_INFO', groupId, groupInfo: info }));
-  }, []);
+    getGroupInfo({ state }, groupId)
+      .then((info) => {
+        setGroup(info);
+      });
+  }, [state]);
 
   return (
     <Card
@@ -50,7 +53,7 @@ const RenderGroup = ({
           .then((group) => {
             dispatch({ type: 'SET_GROUP', payload: group });
             navigation.navigate('Home', { screen: 'Feed' });
-          }).catch(console.log);
+          });
       }}
     >
       <Card.Title title={group && group.name} />
@@ -64,14 +67,14 @@ const RenderGroup = ({
             size={20}
             style={{ marginLeft: -10, marginTop: 10, fontSize: 15 }}
           >
-            {group.users && group.users.length}
+            {group && group.users && group.users.length}
           </Badge>
           <MaterialCommunityIcons size={30} name="map-marker-outline" />
           <Badge
             size={20}
             style={{ marginLeft: -10, marginTop: 10, fontSize: 15 }}
           >
-            {group.custom_locations && group.custom_locations.length}
+            {group && group.custom_locations && group.custom_locations.length}
           </Badge>
         </View>
       </Card.Content>
@@ -90,7 +93,6 @@ export const Groups = ({ navigation }) => {
   useEffect(() => {
     if (!groupsLoaded) {
       getGroups({ state, dispatch }).then((groups) => {
-        console.log(groups);
         dispatch({ type: 'SET_GROUPS', payload: groups });
         setLoadingGroups(false);
       });
@@ -164,7 +166,8 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   emptyCard: {
-    margin: 25
+    margin: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)'
   }
 });
 

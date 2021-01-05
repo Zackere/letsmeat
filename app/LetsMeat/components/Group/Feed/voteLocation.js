@@ -8,6 +8,7 @@ import { ActivityIndicator, Surface } from 'react-native-paper';
 import { getLocationsInfo, getVoteLocations, castVote } from '../../Requests';
 import { store } from '../../Store';
 import LocationCard from '../../Location';
+import BackgroundContainer from '../../Background';
 
 const VoteLocation = ({ navigation, route }) => {
   const { state } = useContext(store);
@@ -85,7 +86,8 @@ const VoteLocation = ({ navigation, route }) => {
   const keyExtractor = (item) => `${item.kind === 'google_maps_locations' ? item.details.place_id : item.id}`;
 
   return (
-    <Surface style={styles.container}>
+
+    <BackgroundContainer backgroundVariant="vote">
       { loading ? <ActivityIndicator />
         : (
           <DraggableFlatList
@@ -97,7 +99,7 @@ const VoteLocation = ({ navigation, route }) => {
             onDragEnd={({ data }) => setLocations(data)}
           />
         )}
-    </Surface>
+    </BackgroundContainer>
   );
 };
 

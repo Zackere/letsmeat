@@ -1,6 +1,8 @@
 import React from 'react';
 import { Image, StyleSheet } from 'react-native';
-import { Card, Paragraph } from 'react-native-paper';
+import {
+  Avatar, Caption, Card, Paragraph
+} from 'react-native-paper';
 
 export const GMapsPredictionCard = ({ location, onPress, onLongPress }) => (
   <Card style={styles.searchResult} onPress={onPress} onLongPress={onLongPress}>
@@ -15,17 +17,55 @@ export const GMapsPredictionCard = ({ location, onPress, onLongPress }) => (
 
 export const GMapsCard = ({
   location, onPress, onLongPress, highlight
-}) => (
-  <Card style={styles.searchResult} onPress={onPress} onLongPress={onLongPress} elevation={highlight ? 5 : 1}>
-    <Card.Title title={location.details.name} titleNumberOfLines={3} />
-    <Card.Content>
-      <Paragraph>
-        {location.details.formatted_address}
-      </Paragraph>
-      <Image style={{ width: 20, height: 20 }} source={{ uri: location.details.icon }} />
-    </Card.Content>
-  </Card>
-);
+}) => {
+  const { rating } = location;
+
+  const getScore = (attribute) => ` ${Math.round(rating[attribute] / rating[`${attribute}_votes`])}`;
+
+  return (
+    <Card
+      style={styles.searchResult}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      elevation={highlight ? 5 : 1}
+    >
+      <Card.Title
+        title={location.details.name}
+        titleNumberOfLines={3}
+      />
+      <Card.Content>
+        <Paragraph>
+          {location.details.formatted_address}
+        </Paragraph>
+        <Card.Actions style={{ justifyContent: 'space-between' }}>
+          <Image style={{ width: 20, height: 20 }} source={{ uri: location.details.icon }} />
+          <Caption>
+            Portion:
+            {getScore('amount_of_food')}
+          </Caption>
+          <Caption>
+            Waiting time:
+            {getScore('waiting_time')}
+          </Caption>
+        </Card.Actions>
+        <Card.Actions style={{ justifyContent: 'space-between' }}>
+          <Caption>
+            Personalized overall:
+            {` ${Math.round(rating.personalized_score)}`}
+          </Caption>
+          <Caption>
+            Price:
+            {getScore('price')}
+          </Caption>
+          <Caption>
+            Taste:
+            {getScore('taste')}
+          </Caption>
+        </Card.Actions>
+      </Card.Content>
+    </Card>
+  );
+};
 
 export const CustomLocationCard = ({
   location, onPress, onLongPress, highlight

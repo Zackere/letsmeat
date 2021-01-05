@@ -7,7 +7,7 @@ import { formatAmount } from '../../helpers/money';
 export const DebtCard = ({ value }) => {
   if (!value) return null;
   return (
-    <Card style={{ marginHorizontal: 30, marginTop: -10 }}>
+    <Card style={{ marginHorizontal: 30, marginTop: -15, backgroundColor: 'rgba(255, 255, 255, 0.7)' }}>
       <Button>
         {value > 0 ? `Owes you ${formatAmount(value)}` : `You owe ${formatAmount(Math.abs(value))}`}
       </Button>

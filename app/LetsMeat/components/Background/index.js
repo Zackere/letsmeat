@@ -23,6 +23,9 @@ export const BackgroundContainer = ({ backgroundVariant = 'food', children }) =>
     case 'fireworks':
       source = require('../../images/background6.jpg');
       break;
+    case 'vote':
+      source = require('../../images/background7.jpg');
+      break;
     default:
       source = require('../../images/background1.jpg');
   }

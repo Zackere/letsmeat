@@ -38,29 +38,32 @@ export const GroupMembers = ({
 
   const membersSlice = showAll ? membersInfo : membersInfo.slice(0, membersToDisplay);
 
-  const list = membersSlice.map((m) => (
-    <React.Fragment key={m.id}>
-      <UserCard
-        user={m}
-        actions={m.id !== state.user.id ? (
-          <Button onPress={
+  const list = membersSlice.map((m) => {
+    const debtValue = getDebtValue(state, m.id);
+    return (
+      <React.Fragment key={m.id}>
+        <UserCard
+          user={m}
+          actions={m.id !== state.user.id ? (
+            <Button onPress={
         () => navigation.navigate('SendTransfer', {
           user: m,
-          amount: getDebtValue(state, m.id)
+          amount: (debtValue < 0 ? -debtValue : undefined)
         })
       }
-          >
-            Send Transfer
-          </Button>
-        ) : undefined}
-      />
-      <DebtCard
-        value={
-          getDebtValue(state, m.id)
+            >
+              Send Transfer
+            </Button>
+          ) : undefined}
+        />
+        <DebtCard
+          value={
+          debtValue
         }
-      />
-    </React.Fragment>
-  ));
+        />
+      </React.Fragment>
+    );
+  });
 
   return (
     <>

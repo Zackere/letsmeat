@@ -8,6 +8,7 @@ import DraggableFlatList from 'react-native-draggable-flatlist';
 import { TimeCard } from './times';
 import { store } from '../../Store';
 import { castVote, getVoteTimes } from '../../Requests';
+import BackgroundContainer from '../../Background';
 
 const VoteTime = ({ navigation, route }) => {
   const { state } = useContext(store);
@@ -46,7 +47,7 @@ const VoteTime = ({ navigation, route }) => {
   }, [state, eventId]);
 
   return (
-    <Surface style={styles.container}>
+    <BackgroundContainer backgroundVariant="vote">
       { loading ? <ActivityIndicator />
         : (
           <DraggableFlatList
@@ -58,7 +59,7 @@ const VoteTime = ({ navigation, route }) => {
             onDragEnd={({ data }) => setTimes(data)}
           />
         )}
-    </Surface>
+    </BackgroundContainer>
   );
 };
 

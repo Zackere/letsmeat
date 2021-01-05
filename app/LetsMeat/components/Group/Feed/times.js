@@ -173,6 +173,7 @@ const styles = StyleSheet.create({
   },
   timeCard: {
     margin: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     justifyContent: 'center'
   }
 });
