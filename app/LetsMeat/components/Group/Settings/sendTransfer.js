@@ -1,8 +1,5 @@
 import React, { useContext, useState } from 'react';
 import {
-  StyleSheet
-} from 'react-native';
-import {
   Button, TextInput
 } from 'react-native-paper';
 import { MAX_DEBT_DESCRIPTION_LENGTH } from '../../../constants';
@@ -25,12 +22,13 @@ export const SendTransfer = ({ navigation, route }) => {
 
   const pressConfirm = () => {
     if (!valid) return;
-    addDebt({ state }, state.group.id, null, state.user.id, user.id, parseAmount(amount), description, null, 1);
+    addDebt({ state },
+      state.group.id, null, state.user.id, user.id, parseAmount(amount), description, null, 1);
     navigation.goBack();
   };
 
   return (
-    <BackgroundContainer>
+    <BackgroundContainer backgroundVariant="money">
       {user ? (
         <UserCard
           user={user}

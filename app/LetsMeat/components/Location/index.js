@@ -4,6 +4,38 @@ import {
   Avatar, Caption, Card, Paragraph
 } from 'react-native-paper';
 
+const getScore = (rating, attribute) => ` ${Math.round(rating[attribute] / rating[`${attribute}_votes`]) || '-'}`;
+
+const Scores = ({ rating, iconUri }) => (
+  <>
+    <Card.Actions style={{ justifyContent: 'space-between' }}>
+      {iconUri && <Image style={{ width: 20, height: 20 }} source={{ uri: iconUri }} />}
+      <Caption>
+        Portion:
+        {getScore(rating, 'amount_of_food')}
+      </Caption>
+      <Caption>
+        Waiting time:
+        {getScore(rating, 'waiting_time')}
+      </Caption>
+    </Card.Actions>
+    <Card.Actions style={{ justifyContent: 'space-between' }}>
+      <Caption>
+        Personalized overall:
+        {` ${Math.round(rating.personalized_score)}`}
+      </Caption>
+      <Caption>
+        Price:
+        {getScore(rating, 'price')}
+      </Caption>
+      <Caption>
+        Taste:
+        {getScore(rating, 'taste')}
+      </Caption>
+    </Card.Actions>
+  </>
+);
+
 export const GMapsPredictionCard = ({ location, onPress, onLongPress }) => (
   <Card style={styles.searchResult} onPress={onPress} onLongPress={onLongPress}>
     <Card.Title title={location.structured_formatting.main_text} titleNumberOfLines={3} />
@@ -20,8 +52,6 @@ export const GMapsCard = ({
 }) => {
   const { rating } = location;
 
-  const getScore = (attribute) => ` ${Math.round(rating[attribute] / rating[`${attribute}_votes`])}`;
-
   return (
     <Card
       style={styles.searchResult}
@@ -37,31 +67,7 @@ export const GMapsCard = ({
         <Paragraph>
           {location.details.formatted_address}
         </Paragraph>
-        <Card.Actions style={{ justifyContent: 'space-between' }}>
-          <Image style={{ width: 20, height: 20 }} source={{ uri: location.details.icon }} />
-          <Caption>
-            Portion:
-            {getScore('amount_of_food')}
-          </Caption>
-          <Caption>
-            Waiting time:
-            {getScore('waiting_time')}
-          </Caption>
-        </Card.Actions>
-        <Card.Actions style={{ justifyContent: 'space-between' }}>
-          <Caption>
-            Personalized overall:
-            {` ${Math.round(rating.personalized_score)}`}
-          </Caption>
-          <Caption>
-            Price:
-            {getScore('price')}
-          </Caption>
-          <Caption>
-            Taste:
-            {getScore('taste')}
-          </Caption>
-        </Card.Actions>
+        <Scores iconUri={location.details.icon} rating={rating} />
       </Card.Content>
     </Card>
   );
@@ -70,12 +76,19 @@ export const GMapsCard = ({
 export const CustomLocationCard = ({
   location, onPress, onLongPress, highlight
 }) => (
-  <Card style={styles.searchResult} onPress={onPress} onLongPress={onLongPress} elevation={highlight ? 5 : 1}>
+  <Card
+    style={styles.searchResult}
+    onPress={onPress}
+    onLongPress={onLongPress}
+    elevation={highlight ? 5 : 1}
+  >
     <Card.Title title={location.name} titleNumberOfLines={3} />
     <Card.Content>
       <Paragraph>
         {location.address}
       </Paragraph>
+      {location.rating
+      && <Scores rating={location.rating} />}
     </Card.Content>
   </Card>
 );

@@ -59,7 +59,10 @@ const RateLocation = ({ navigation, route }) => {
         <PrefSetter prefName="amount_of_food" displayName="Portion Size" setPrefs={setPrefs} prefs={prefs} />
         <PrefSetter prefName="taste" displayName="Taste" setPrefs={setPrefs} prefs={prefs} />
       </Card>
-      <Button onPress={
+      <Button
+        mode="contained"
+        style={styles.button}
+        onPress={
         () => {
           rateLocation({ state }, prefs.taste, prefs.price, prefs.amount_of_food, prefs.waiting_time, gmapsId || undefined, customId || undefined)
             .then(() => navigation.goBack());
@@ -81,6 +84,9 @@ const styles = StyleSheet.create({
     margin: 10,
     backgroundColor: 'transparent'
   },
+  button: {
+    margin: 10
+  }
 });
 
 export default RateLocation;

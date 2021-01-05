@@ -4,6 +4,7 @@ import { Surface, TextInput, Button } from 'react-native-paper';
 import { CustomLocationCard } from '../../Location';
 import { store } from '../../Store';
 import { createLocationCustom, updateEvent } from '../../Requests';
+import BackgroundContainer from '../../Background';
 
 const CreateLocation = ({ navigation, route }) => {
   const { state } = useContext(store);
@@ -14,19 +15,23 @@ const CreateLocation = ({ navigation, route }) => {
   const groupId = state.group.id;
 
   return (
-    <Surface style={styles.container}>
+    <BackgroundContainer backgroundVariant="map">
       <CustomLocationCard location={{ name, address }} />
       <TextInput label="Name" style={styles.input} mode="outlined" onChangeText={setName} value={name} />
       <TextInput label="Address" style={styles.input} mode="outlined" onChangeText={setAddress} value={address} />
-      <Button onPress={() => {
-        createLocationCustom({ state }, groupId, name, address)
-          .then((location) => updateEvent({ state }, { id: eventId, custom_locations_ids: [location.id] }))
-          .then(() => navigation.pop(2));
-      }}
+      <Button
+        mode="contained"
+        style={styles.input}
+        disabled={!name}
+        onPress={() => {
+          createLocationCustom({ state }, groupId, name, address)
+            .then((location) => updateEvent({ state }, { id: eventId, custom_locations_ids: [location.id] }))
+            .then(() => navigation.pop(2));
+        }}
       >
         Add Location
       </Button>
-    </Surface>
+    </BackgroundContainer>
   );
 };
 

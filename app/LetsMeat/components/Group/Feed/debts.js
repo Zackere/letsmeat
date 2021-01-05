@@ -157,16 +157,21 @@ const DebtImage = ({
         >
           <Icon name="plus" size={25} />
         </Button>
-        <Button onPress={
-                () => {
-                  deleteImage({ state }, image.image_id).then(() => {
-                    dispatch({ type: 'REMOVE_IMAGE', imageId: image.image_id });
-                  });
-                }
+        {
+          image.uploaded_by === state.user.id
+          && (
+          <Button onPress={
+                  () => {
+                    deleteImage({ state }, image.image_id).then(() => {
+                      dispatch({ type: 'REMOVE_IMAGE', imageId: image.image_id });
+                    });
+                  }
+          }
+          >
+            <Icon name="delete" size={25} />
+          </Button>
+          )
         }
-        >
-          <Icon name="delete" size={25} />
-        </Button>
       </Card.Actions>
     </Card>
   );

@@ -53,7 +53,7 @@ const AddLocation = ({ navigation, route }) => {
   };
 
   return (
-    <BackgroundContainer>
+    <BackgroundContainer backgroundVariant="map">
 
       <Searchbar
         style={styles.searchbar}

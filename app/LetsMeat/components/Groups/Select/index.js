@@ -8,7 +8,7 @@ import { TouchableHighlight } from 'react-native-gesture-handler';
 import {
   Card, FAB, Paragraph, Surface, Badge, ActivityIndicator
 } from 'react-native-paper';
-import BackgroundContainer from '../../Background';
+import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
 import { getGroupInfo, getGroups } from '../../Requests';
 import { store } from '../../Store';
 
@@ -90,14 +90,16 @@ export const Groups = ({ navigation }) => {
   });
   const [loadingGroups, setLoadingGroups] = useState(true);
 
-  useEffect(() => {
+  const loadGroups = () => {
     if (!groupsLoaded) {
       getGroups({ state, dispatch }).then((groups) => {
         dispatch({ type: 'SET_GROUPS', payload: groups });
         setLoadingGroups(false);
       });
     } else setLoadingGroups(false);
-  }, [state, groupsLoaded, dispatch]);
+  };
+
+  useEffect(loadGroups, [state, groupsLoaded, dispatch]);
 
   return (
     loadingGroups
@@ -132,6 +134,7 @@ export const Groups = ({ navigation }) => {
                   </Card.Content>
                 </Card>
               )}
+              ListFooterComponent={() => <ScrollPlaceholder height={200} />}
             />
           </BackgroundContainer>
           <FAB

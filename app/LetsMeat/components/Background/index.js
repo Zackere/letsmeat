@@ -2,33 +2,28 @@ import React from 'react';
 import { ImageBackground, View, Dimensions } from 'react-native';
 import { Surface } from 'react-native-paper';
 
+const food = require('../../images/background1.jpg');
+const office = require('../../images/background2.jpg');
+const money = require('../../images/background3.jpg');
+const settings = require('../../images/background4.jpg');
+const searching = require('../../images/background5.jpg');
+const fireworks = require('../../images/background6.jpg');
+const vote = require('../../images/background7.jpg');
+const map = require('../../images/background8.jpg');
+
+export const backgrounds = {
+  food,
+  office,
+  money,
+  settings,
+  searching,
+  fireworks,
+  vote,
+  map
+};
+
 export const BackgroundContainer = ({ backgroundVariant = 'food', children }) => {
-  let source;
-  switch (backgroundVariant) {
-    case 'food':
-      source = require('../../images/background1.jpg');
-      break;
-    case 'office':
-      source = require('../../images/background2.jpg');
-      break;
-    case 'money':
-      source = require('../../images/background3.jpg');
-      break;
-    case 'settings':
-      source = require('../../images/background4.jpg');
-      break;
-    case 'searching':
-      source = require('../../images/background5.jpg');
-      break;
-    case 'fireworks':
-      source = require('../../images/background6.jpg');
-      break;
-    case 'vote':
-      source = require('../../images/background7.jpg');
-      break;
-    default:
-      source = require('../../images/background1.jpg');
-  }
+  const source = backgrounds[backgroundVariant] || food;
   return (
     <ImageBackground
       style={{
