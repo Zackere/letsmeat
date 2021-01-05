@@ -103,7 +103,8 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     height: '100%',
     justifyContent: 'flex-start',
-    alignContent: 'flex-start'
+    alignContent: 'flex-start',
+    backgroundColor: 'rgb(250, 250, 250)'
   },
   userInfo: {
     paddingLeft: 20,
