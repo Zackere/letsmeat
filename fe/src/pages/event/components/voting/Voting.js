@@ -74,9 +74,10 @@ class Voting extends Component {
     if (
       event.candidate_google_maps_locations &&
       event.candidate_google_maps_locations.find(c => c === p.place_id)
-    )
+    ) {
       error('This location is already added', this.props.toastManager)
-    else {
+      this.setState({ loading: false })
+    } else {
       const candidate_google_maps_locations = [
         p.place_id,
         ...event.candidate_google_maps_locations,
@@ -87,46 +88,35 @@ class Voting extends Component {
         this.props.token,
         this.state.sessiontoken,
         p.place_id
-      ).then(
-        () =>
-          updateEvent(this.props.token, event)
-            .then(res => {
-              if (res.ok) {
-                this.setState({
-                  event,
-                  sessiontoken: this.generateToken(),
-                  locations: [
-                    {
-                      google_maps_location_id: p.place_id,
-                      custom_location_id: null,
-                    },
-                    ...this.state.locations,
-                  ],
-                  loading: false,
-                })
-                success(
-                  'Event ' + event.name + ' updated successfully',
-                  this.props.toastManager
-                )
-              }
-            })
-            .catch(e =>
-              error(
-                'Failed to update event ' + event.name,
+      ).then(() =>
+        updateEvent(this.props.token, event)
+          .then(res => {
+            if (res.ok) {
+              this.setState({
+                event,
+                sessiontoken: this.generateToken(),
+                locations: [
+                  {
+                    google_maps_location_id: p.place_id,
+                    custom_location_id: null,
+                  },
+                  ...this.state.locations,
+                ],
+                loading: false,
+              })
+              success(
+                'Event ' + event.name + ' updated successfully',
                 this.props.toastManager
               )
+            }
+          })
+          .catch(e => {
+            error(
+              'Failed to update event ' + event.name,
+              this.props.toastManager
             )
-        // this.setState({
-        //   sessiontoken: this.generateToken(),
-        //   locations: [
-        //     {
-        //       google_maps_location_id: p.place_id,
-        //       custom_location_id: null,
-        //     },
-        //     ...this.state.locations,
-        //   ],
-        //   loading: false,
-        // })
+            this.setState({ loading: false })
+          })
       )
     }
   }
@@ -251,7 +241,7 @@ class Voting extends Component {
 
     return (
       <>
-        <Mask show={deadline < new Date()}/>
+        <Mask show={deadline < new Date()} />
         <Loading show={this.state.loading} />
         <RateModal
           show={this.state.modalOpened && deadline < new Date()}
@@ -260,7 +250,7 @@ class Voting extends Component {
         />
         <div className="d-flex pt-5">
           <div className="col-4">
-            <h5 style={{color: 'white'}}>Dates</h5>
+            <h5 style={{ color: 'white' }}>Dates</h5>
             <Dates
               dates={this.state.dates}
               deadline={deadline}

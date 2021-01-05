@@ -24,7 +24,7 @@ class Group extends Component {
       events: [],
       allEvents: [],
       invModalOpen: false,
-      eventModalOpen: false,
+      eventModalOpen: false
     }
   }
 
@@ -50,8 +50,9 @@ class Group extends Component {
   }
 
   eventSearchAction = e => {
-    const events = this.state.allEvents.filter(event =>
-      event.name.startsWith(e.target.value)
+    const events = this.state.allEvents.filter(
+      event =>
+        event.name.toLowerCase().search(e.target.value.toLowerCase()) !== -1
     )
 
     this.setState({ events })
@@ -118,7 +119,7 @@ class Group extends Component {
                 </Button>
               </div>
             </div>
-            <div className="flex-column h-75 p-5 mx-0 border-top">
+            <div className="flex-column h-75 p-5 mx-0">
               <h5 className="mb-4">Members</h5>
               <UsersList
                 users={this.state.users}
@@ -131,8 +132,8 @@ class Group extends Component {
             className="col-9 py-5 h-100"
             style={{
               color: '#343a40',
-              paddingLeft: '270px',
-              paddingRight: '270px',
+              paddingLeft: '15%',
+              paddingRight: '15%',
             }}
           >
             <h4>Events</h4>

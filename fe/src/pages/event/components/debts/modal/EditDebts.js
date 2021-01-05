@@ -7,7 +7,10 @@ import { IoIosArrowForward, IoIosArrowBack } from 'react-icons/io'
 
 import Loading from '../../../../../common/loading/Loading'
 
-import { updateImageDebt } from '../../../../../services/imageService'
+import {
+  updateImageDebt,
+  getImages,
+} from '../../../../../services/imageService'
 import { addDebt } from '../../../../../services/debtService'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -22,21 +25,28 @@ class EditDebts extends Component {
       index: 0,
       assignedUser: undefined,
       loading: false,
+      showReceipt: false,
+      imageUrl: '',
+      width: 0,
+      amountIsInvalid: false,
+      descriptionIsInvalid: false,
     }
   }
 
-  componentDidMount() {
-    this.updateAssignedTo()
-  }
+  _modalBody = React.createRef()
 
   componentDidUpdate(prevProps) {
     if (this.props.debts !== prevProps.debts && !this.state.loading) {
-      this.setState({ debts: this.props.debts })
-      this.updateAssignedTo()
+      const width = this._modalBody?.current?.clientWidth
+      this.setState({ width, loading: true })
+
+      getImages(this.props.token, [this.props.debts[0].image_id]).then(images =>
+        this.updateState(images[0].image_url)
+      )
     }
   }
 
-  updateAssignedTo = () => {
+  updateState = imageUrl => {
     const assignedTo = []
     const debts = [...this.props.debts].map(debt => {
       const d = Object.assign({}, debt)
@@ -52,24 +62,24 @@ class EditDebts extends Component {
         : assignedTo.push(0)
     }
 
-    this.setState({ assignedTo, debts, index })
+    this.setState({ assignedTo, debts, index, imageUrl, loading: false })
   }
 
   closeModal = () => {
-    this.setState({ index: 0 })
+    this.setState({ index: 0, showReceipt: false })
     this.props.closeModal()
   }
 
   setAmount = amount => {
     const debts = [...this.state.debts]
     debts[this.state.index].amount = amount
-    this.setState({ debts })
+    this.setState({ debts, amountIsInvalid: false })
   }
 
   setDescription = description => {
     const debts = [...this.state.debts]
     debts[this.state.index].description = description
-    this.setState({ debts })
+    this.setState({ debts, descriptionIsInvalid: false })
   }
 
   setAssignedTo = user_id => {
@@ -79,19 +89,53 @@ class EditDebts extends Component {
   }
 
   indexUp = () => {
-    const index = Math.min(this.state.index + 1, this.state.debts.length - 1)
-    this.setState({ index })
+    const index = this.state.index + 1
+    this.setState({
+      index,
+      descriptionIsInvalid: false,
+      amountIsInvalid: false,
+    })
   }
 
   indexDown = () => {
-    const index = Math.max(this.state.index - 1, 0)
-    this.setState({ index })
+    const index = this.state.index - 1
+    this.setState({
+      index,
+      descriptionIsInvalid: false,
+      amountIsInvalid: false,
+    })
+  }
+
+  amountIsInvalid = () => {
+    const debts = this.state.debts
+    const index = this.state.index
+    const amount = parseInt(debts[index].amount)
+    const amountIsInvalid = isNaN(amount) || amount <= 0
+
+    this.setState({ amountIsInvalid })
+    return amountIsInvalid
+  }
+
+  descriptionIsInvalid = () => {
+    const debts = this.state.debts
+    const index = this.state.index
+    const description = debts[index].description
+
+    const descriptionIsInvalid =
+      description.length <= 0 || description.length > 35
+
+    this.setState({ descriptionIsInvalid })
+    return descriptionIsInvalid
   }
 
   saveDebt = () => {
     const debts = this.state.debts
     const index = this.state.index
     const assignedTo = this.state.assignedTo
+    const descriptionIsInvalid = this.descriptionIsInvalid()
+    const amountIsInvalid = this.amountIsInvalid()
+
+    if (descriptionIsInvalid || amountIsInvalid) return
 
     this.setState({ loading: true })
 
@@ -114,13 +158,13 @@ class EditDebts extends Component {
 
     if (!assignedTo[index]) {
       updateImageDebt(this.props.token, imageDebt).then(() => {
-        this.props.getDebts()
+        this.props.getDebts(false, debts[index])
         this.setState({ loading: false })
       })
     } else {
       addDebt(this.props.token, debt).then(() => {
         updateImageDebt(this.props.token, imageDebt).then(() => {
-          this.props.getDebts()
+          this.props.getDebts(false, debts[index])
           this.setState({ loading: false })
         })
       })
@@ -131,10 +175,10 @@ class EditDebts extends Component {
     const debts = this.state.debts
     const index = this.state.index
     const assignedTo = this.state.assignedTo
+    const showReceipt = this.state.showReceipt
 
     return (
       <>
-        <Loading show={this.state.loading} />
         <Modal
           show={this.props.show}
           aria-labelledby="contained-modal-title-vcenter"
@@ -142,84 +186,122 @@ class EditDebts extends Component {
           centered
         >
           <Modal.Header closeButton>
-            <Modal.Title id="contained-modal-title-vcenter"></Modal.Title>
-            <div className="row d-flex justify-content-center w-100">
-              <Button
-                variant="link"
-                className="no-focus"
-                onClick={this.indexDown}
-              >
-                <IconContext.Provider
-                  value={{ size: '23px', color: '#343a40' }}
+            <div className="container">
+              <div className="row d-flex justify-content-center w-100">
+                <Button
+                  variant="link"
+                  className="no-focus"
+                  disabled={showReceipt || index === 0}
+                  onClick={this.indexDown}
                 >
-                  <IoIosArrowBack />
-                </IconContext.Provider>
-              </Button>
-              <div style={{ lineHeight: '50px', height: '50px' }}>
-                {index + 1 + '/' + debts.length}
+                  <IconContext.Provider
+                    value={{ size: '23px', color: '#343a40' }}
+                  >
+                    <IoIosArrowBack />
+                  </IconContext.Provider>
+                </Button>
+                <div style={{ lineHeight: '50px', height: '50px' }}>
+                  {index + 1 + '/' + debts.length}
+                </div>
+                <Button
+                  variant="link"
+                  className="no-focus"
+                  disabled={showReceipt || index === debts.length - 1}
+                  onClick={this.indexUp}
+                >
+                  <IconContext.Provider
+                    value={{ size: '23px', color: '#343a40' }}
+                  >
+                    <IoIosArrowForward />
+                  </IconContext.Provider>
+                </Button>
               </div>
-              <Button
-                variant="link"
-                className="no-focus"
-                onClick={this.indexUp}
-              >
-                <IconContext.Provider
-                  value={{ size: '23px', color: '#343a40' }}
+              <div className="row d-flex justify-content-center w-100">
+                <Button
+                  variant="link"
+                  onClick={() => this.setState({ showReceipt: !showReceipt })}
                 >
-                  <IoIosArrowForward />
-                </IconContext.Provider>
-              </Button>
+                  {!showReceipt ? 'Show receipt' : 'Show debts'}
+                </Button>
+              </div>
             </div>
           </Modal.Header>
-          <Modal.Body>
-            <div className="flex-column">
-              <h5>Debt</h5>
-              <Form>
-                <Form.Group>
-                  <Form.Label>Amount</Form.Label>
-                  <Form.Control
-                    type="number"
-                    min={0}
-                    placeholder="Enter amount you paid"
-                    value={debts[index].amount}
-                    onChange={e => this.setAmount(e.target.value)}
-                    disabled={debts[index].satisfied}
-                  />
-                </Form.Group>
-                <Form.Group>
-                  <Form.Label>Description</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter description"
-                    value={debts[index].description}
-                    onChange={e => this.setDescription(e.target.value)}
-                    disabled={debts[index].satisfied}
-                  />
-                </Form.Group>
-                <Form.Group>
-                  <Form.Label>Assigned to</Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={assignedTo[index]}
-                    onChange={e => this.setAssignedTo(e.target.value)}
-                    disabled={debts[index].satisfied}
-                  >
-                    <option disabled value={0}>
-                      Not assigned
-                    </option>
-                    {this.props.users.map(u => (
-                      <option value={u.id}>{u.name}</option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-              </Form>
-            </div>
+          <Modal.Body ref={this._modalBody}>
+            <Loading show={this.state.loading} />
+            {showReceipt ? (
+              <img
+                src={this.state.imageUrl}
+                style={{ width: '466px', height: 'auto', maxHeight: '500px' }}
+              />
+            ) : (
+              <div className="flex-column">
+                <h5>Debt</h5>
+                <Form>
+                  <Form.Group>
+                    <Form.Label>Amount</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min={0}
+                      placeholder="Enter amount you paid"
+                      value={debts[index].amount}
+                      onChange={e => this.setAmount(e.target.value)}
+                      disabled={debts[index].satisfied}
+                      isInvalid={this.state.amountIsInvalid}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      Amount must be possitive
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Form.Group>
+                    <Form.Label>Description</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Enter description"
+                      value={debts[index].description}
+                      onChange={e => this.setDescription(e.target.value)}
+                      disabled={debts[index].satisfied}
+                      isInvalid={this.state.descriptionIsInvalid}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {debts[index].description.length === 0
+                        ? 'Description cannot be empty'
+                        : 'Lenght cannot exceed 35 characters'}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Form.Group>
+                    <Form.Label>Assigned to</Form.Label>
+                    <Form.Control
+                      as="select"
+                      value={assignedTo[index]}
+                      onChange={e => this.setAssignedTo(e.target.value)}
+                      disabled={debts[index].satisfied}
+                    >
+                      <option disabled value={0}>
+                        Not assigned
+                      </option>
+                      {this.props.users.map(u => (
+                        <option
+                          disabled={u.id === this.props.user_id}
+                          value={u.id}
+                        >
+                          {u.name}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+                </Form>
+              </div>
+            )}
           </Modal.Body>
           <Modal.Footer>
             <Button variant="outline-secondary" onClick={this.closeModal}>
               Close
             </Button>
-            <Button variant="outline-primary" onClick={this.saveDebt}>
+            <Button
+              variant="outline-primary"
+              disabled={showReceipt}
+              onClick={this.saveDebt}
+            >
               Save
             </Button>
           </Modal.Footer>

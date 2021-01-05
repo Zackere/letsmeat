@@ -21,10 +21,10 @@ export default class Home extends Component {
           <Notifications reloadGroups={this.reloadGroups} />
         </div>
         <div
-          className="col-9 border-left h-100"
+          className="col-9 h-100"
           style={{
-            paddingLeft: '270px',
-            paddingRight: '270px',
+            paddingLeft: '15%',
+            paddingRight: '15%',
           }}
         >
           <Groups reload={this.state.reloadGroups} />

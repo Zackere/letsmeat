@@ -54,7 +54,7 @@ class Event extends Component {
                   <ReceiptReader processReceipt={this.processReceipt} />
                 </div>
               </div>
-              <div className="flex-column h-60 p-5 mx-0 border-top">
+              <div className="flex-column h-60 p-5 mx-0">
                 <h5 className="mb-4">Debts</h5>
                 <Debts
                   update={this.state.updateDebts}

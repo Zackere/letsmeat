@@ -61,14 +61,19 @@ class EventsList extends Component {
                     <Dropdown>
                       <Dropdown.Toggle as={Toggle} />
                       <Dropdown.Menu size="sm" title="">
-                        <Dropdown.Item onClick={() => this.goToEventPage(event.id)}>
+                        <Dropdown.Item
+                          onClick={() => this.goToEventPage(event.id)}
+                        >
                           Show
-                        </Dropdown.Item>{
-                        true &&
-                        <Dropdown.Item onClick={() => this.deleteEvent(event)}>
-                          Delete
                         </Dropdown.Item>
-                        }
+                        {true && (
+                          <Dropdown.Item
+                            onClick={() => this.deleteEvent(event)}
+                            disabled={this.props.user.id !== event.creator_id}
+                          >
+                            Delete
+                          </Dropdown.Item>
+                        )}
                       </Dropdown.Menu>
                     </Dropdown>
                   </div>
@@ -83,7 +88,9 @@ class EventsList extends Component {
 
 const mapStateToProps = state => ({
   token: state.token,
-  user: state.user
+  user: state.user,
 })
 
-export default withToastManager(withRouter(connect(mapStateToProps, null)(EventsList)))
+export default withToastManager(
+  withRouter(connect(mapStateToProps, null)(EventsList))
+)

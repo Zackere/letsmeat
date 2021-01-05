@@ -21,11 +21,12 @@ class AddEvent extends Component {
     this.state = {
       name: '',
       date,
+      isInvalid: false,
     }
   }
 
   nameChanged = event => {
-    this.setState({ name: event.target.value })
+    this.setState({ name: event.target.value, isInvalid: false })
   }
 
   dateChanged = date => {
@@ -33,11 +34,20 @@ class AddEvent extends Component {
   }
 
   closeModal = () => {
-    this.setState({ name: '' })
+    this.setState({ name: '', isInvalid: false })
     this.props.closeModal()
   }
 
+  isInvalid = () => {
+    const name = this.state.name
+    const isInvalid = name.length <= 0 || name.length > 25
+    this.setState({ isInvalid })
+    return isInvalid
+  }
+
   createEvent = () => {
+    if (this.isInvalid()) return
+
     addEvent(
       this.state.name,
       this.state.date,
@@ -49,6 +59,7 @@ class AddEvent extends Component {
           id: res.id,
           name: this.state.name,
           deadline: this.state.date,
+          creator_id: this.props.user.id,
         }
 
         this.props.addEvent(event)
@@ -99,7 +110,13 @@ class AddEvent extends Component {
                     placeholder="Enter name"
                     value={this.state.name}
                     onChange={this.nameChanged}
+                    isInvalid={this.state.isInvalid}
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {this.state.name.length === 0
+                      ? 'Event name cannot be empty'
+                      : 'Lenght cannot exceed 25 characters'}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Form>
             </div>
@@ -136,6 +153,7 @@ class AddEvent extends Component {
 
 const mapStateToProps = state => ({
   token: state.token,
+  user: state.user,
 })
 
 export default withToastManager(connect(mapStateToProps, null)(AddEvent))

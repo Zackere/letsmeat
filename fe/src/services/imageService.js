@@ -12,6 +12,20 @@ export const processReceipt = (token, event_id, file) => {
   })
 }
 
+export const getImages = (token, image_ids) => {
+  const url = base + '/Images/info?token=' + token
+
+  const body = { image_ids }
+
+  return fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  }).then(res => res.json())
+}
+
 export const updateImageDebt = (token, debt) => {
   const url = base + '/Images/update_image_debt?token=' + token
 
@@ -21,5 +35,19 @@ export const updateImageDebt = (token, debt) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(debt),
+  })
+}
+
+export const deleteImageDebt = (token, id) => {
+  const url = base + '/Images/delete_image_debt?token=' + token
+
+  const body = { id }
+
+  return fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
   })
 }

@@ -5,11 +5,14 @@ import { withToastManager } from 'react-toast-notifications'
 import { ListGroup, Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap'
 
 import { getImageDebts } from '../../../../services/eventService'
+import { deleteImageDebt } from '../../../../services/imageService'
 import { getGroup } from '../../../../services/groupsService'
+import { rejectDebt } from '../../../../services/debtService'
 
 import EditModal from './modal/EditDebts'
 import { Toggle } from '../../../../common/toggle/Toggle'
 import Loading from '../../../../common/loading/Loading'
+import { success, error } from '../../../../common/toasts/toasts'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../../../../common/styles/styles.css'
@@ -23,7 +26,7 @@ class Debts extends Component {
       modalOpened: false,
       debts: [],
       selectedDebt: undefined,
-      users: [],
+      users: []
     }
   }
 
@@ -31,7 +34,7 @@ class Debts extends Component {
     this.setState({ loading: true })
     getGroup(this.props.token, this.props.groupId).then(group => {
       this.setState({ users: group.users })
-      this.getDebts(true)
+      this.getDebts()
     })
   }
 
@@ -41,28 +44,56 @@ class Debts extends Component {
     }
   }
 
-  getDebts = openModal => {
+  removeMe = users => {
+    const result = [...users]
+    const index = result.findIndex(u => u.id === this.props.user.id)
+
+    return result.splice(index, 1)
+  }
+
+  getDebts = (openModal, debt) => {
     this.setState({ loading: true })
     getImageDebts(this.props.token, this.props.eventId)
       .then(res => {
         this.setState({
           loading: false,
           debts: res.image_debts,
+          selectedDebt: debt || res.image_debts[0],
         })
-        return res.image_debts[0]
       })
-      .then(debt => {
-        console.log('open modal', openModal)
-        if (openModal) this.setState({ selectedDebt: debt, modalOpened: true })
+      .then(() => {
+        if (openModal) this.setState({ modalOpened: true })
       })
   }
 
   openModal = debt => this.setState({ selectedDebt: debt, modalOpened: true })
+
   closeModal = () => {
     this.setState({ modalOpened: false })
     this.getDebts()
   }
 
+  debtDelete = debt => {
+    this.setState({ loading: true })
+    if (debt.pending_debt) {
+      rejectDebt(this.props.token, debt.pending_debt.id).then(() =>
+        this.deleteImageDebt(debt)
+      )
+    } else {
+      this.deleteImageDebt(debt)
+    }
+  }
+
+  deleteImageDebt = debt => {
+    deleteImageDebt(this.props.token, debt.id).then(res => {
+      if (res.ok) {
+        success('Debt deleted successfully', this.props.toastManager)
+      } else {
+        error('Failed to delete debt', this.props.toastManager)
+      }
+      this.getDebts()
+    })
+  }
   sameImageDebts = () => {
     const debts = []
     const id = this.state.selectedDebt.image_id
@@ -75,7 +106,6 @@ class Debts extends Component {
   }
 
   getTooltipText = debt => {
-    console.log(debt)
     if (!debt.pending_debt) return 'Unassigned'
 
     const user = this.state.users.find(u => debt.pending_debt.from_id === u.id)
@@ -144,7 +174,10 @@ class Debts extends Component {
                           >
                             Show
                           </Dropdown.Item>
-                          <Dropdown.Item disabled={debt.satisfied}>
+                          <Dropdown.Item
+                            onClick={() => this.debtDelete(debt)}
+                            disabled={debt.satisfied}
+                          >
                             Delete
                           </Dropdown.Item>
                         </Dropdown.Menu>

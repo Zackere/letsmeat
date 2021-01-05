@@ -48,6 +48,8 @@ class Groups extends Component {
     this.setState({ loading: true })
     addGroup(this.props.token, name)
       .then(group => {
+        group.owner_id = this.props.user.id
+
         const groups = [group, ...this.state.groups]
         const all = [group, ...this.state.all]
 
@@ -66,8 +68,8 @@ class Groups extends Component {
   buttonAction = () => this.setState({ addModalOpened: true })
 
   searchAction = event => {
-    const groups = this.state.all.filter(g =>
-      g.name.startsWith(event.target.value)
+    const groups = this.state.all.filter(
+      g => g.name.toLowerCase().search(event.target.value.toLowerCase()) !== -1
     )
 
     this.setState({ groups })
@@ -127,7 +129,7 @@ class Groups extends Component {
       <Container fluid={true}>
         <Loading show={this.state.loading} />
         <div className="mt-5">
-          <h4 style={{color: '#343a40'}}>Groups</h4>
+          <h4 style={{ color: '#343a40' }}>Groups</h4>
         </div>
         <AddGroup
           show={this.state.addModalOpened}
@@ -139,7 +141,7 @@ class Groups extends Component {
           buttonAction={this.buttonAction}
           searchName="Find group"
           searchAction={this.searchAction}
-          buttonColor='white'
+          buttonColor="white"
         />
         <ListGroup className="list-scroll">
           {this.state.groups.map(group => (

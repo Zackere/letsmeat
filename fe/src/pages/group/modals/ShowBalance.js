@@ -12,17 +12,45 @@ class ShowBalance extends Component {
     this.state = {
       message: '',
       amount: 0,
+      amountIsInvalid: false,
+      messageIsInvalid: false,
     }
   }
 
   closeModal = () => {
-    this.setState({ message: '', amount: 0 })
+    this.setState({
+      message: '',
+      amount: 0,
+      amountIsInvalid: false,
+      messageIsInvalid: false,
+    })
     this.props.closeModal()
   }
 
   sendMoney = () => {
+    const messageIsInvalid = this.messageIsInvalid()
+    const amountIsInvalid = this.amountIsInvalid()
+    
+    if (messageIsInvalid || amountIsInvalid) return
+
     this.closeModal()
     this.props.sendMoney(this.state.amount * 100, this.state.message)
+  }
+
+  amountIsInvalid = () => {
+    const amount = parseInt(this.state.amount)
+    const amountIsInvalid = isNaN(amount) || amount <= 0
+
+    this.setState({ amountIsInvalid })
+    return amountIsInvalid
+  }
+
+  messageIsInvalid = () => {
+    const message = this.state.message
+    const messageIsInvalid = message.length <= 0 || message.length > 35
+
+    this.setState({ messageIsInvalid })
+    return messageIsInvalid
   }
 
   render() {
@@ -55,8 +83,17 @@ class ShowBalance extends Component {
                   min={0}
                   placeholder="Enter amount you want to send"
                   value={this.state.amount}
-                  onChange={e => this.setState({ amount: e.target.value })}
+                  onChange={e =>
+                    this.setState({
+                      amount: e.target.value,
+                      amountIsInvalid: false,
+                    })
+                  }
+                  isInvalid={this.state.amountIsInvalid}
                 />
+                <Form.Control.Feedback type="invalid">
+                  Amount must be possitive
+                </Form.Control.Feedback>
               </Form.Group>
               <Form.Group>
                 <Form.Label>Message</Form.Label>
@@ -64,8 +101,19 @@ class ShowBalance extends Component {
                   type="text"
                   placeholder="Enter message"
                   value={this.state.message}
-                  onChange={e => this.setState({ message: e.target.value })}
+                  onChange={e =>
+                    this.setState({
+                      message: e.target.value,
+                      messageIsInvalid: false,
+                    })
+                  }
+                  isInvalid={this.state.messageIsInvalid}
                 />
+                <Form.Control.Feedback type="invalid">
+                  {this.state.message.length === 0
+                    ? 'Message cannot be empty'
+                    : 'Lenght cannot exceed 35 characters'}
+                </Form.Control.Feedback>
               </Form.Group>
             </Form>
           </div>

@@ -30,17 +30,19 @@ class Bar extends Component {
         className="px-5"
         style={{ height: '6vh' }}
       >
-        <Navbar.Brand href="/">Let's vomeat</Navbar.Brand>
+        <Navbar.Brand href="/">Let's meat</Navbar.Brand>
         <Navbar.Toggle />
-        <Navbar.Collapse className="justify-content-end">
-          <Form inline>
-            <Button variant="link" onClick={() => this.onLogOut()}>
-              <IconContext.Provider value={{ size: '30px', color: 'white' }}>
-                <HiLogout />
-              </IconContext.Provider>
-            </Button>
-          </Form>
-        </Navbar.Collapse>
+        {this.props.isAuth && (
+          <Navbar.Collapse className="justify-content-end">
+            <Form inline>
+              <Button variant="link" onClick={() => this.onLogOut()}>
+                <IconContext.Provider value={{ size: '30px', color: 'white' }}>
+                  <HiLogout />
+                </IconContext.Provider>
+              </Button>
+            </Form>
+          </Navbar.Collapse>
+        )}
       </Navbar>
     )
   }
