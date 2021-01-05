@@ -84,9 +84,9 @@ function DrawerContent({ navigation }) {
           label="Log Out"
           onPress={async () => {
             try {
-              // await GoogleSignin.revokeAccess();
               await GoogleSignin.signOut();
               dispatch({ type: 'LOGOUT' });
+              dispatch({ type: 'SET_LOADED' });
             } catch (error) {
               console.error(error);
             }

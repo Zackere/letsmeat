@@ -1,78 +1,29 @@
-import React, { useContext, useEffect, useState } from 'react';
 import {
-  GoogleSigninButton,
-  GoogleSignin,
+  GoogleSignin, GoogleSigninButton,
+
   statusCodes
 } from '@react-native-community/google-signin';
-import { View, StyleSheet, Text } from 'react-native';
-import { axios } from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { store } from '../Store';
-// import { getAPIToken } from '../Requests';
+import React, { useContext, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { appendAPIToken, appendUserID } from '../Requests';
+import { store } from '../Store';
 
 function SignInScreen() {
-  const { state, dispatch } = useContext(store);
+  const { dispatch } = useContext(store);
   const [signingIn, setSigningIn] = useState(false);
 
-  const setUser = (userInfo) => {
-    console.log('setting user');
-    return appendAPIToken(userInfo)
-      .then(appendUserID)
-      .then((userInfo) => {
-        console.log(userInfo);
-        dispatch({ type: 'SET_USER', payload: userInfo });
-      });
-    // getAPIToken(userInfo.idToken).then((token) => {
-    //   dispatch({ type: 'SET_USER', payload: { ...userInfo, token: token.data } });
-    // console.log(token);
-    // AsyncStorage.setItem('token', token.data)
-    //   .then(() => {
-    //     dispatch({ type: 'SET_USER', payload: { ...userInfo } });
-    //   }).catch((err) => console.log(err));
-    // });
-  };
-
-  const isSignedIn = async () => {
-    const isSignedIn = await GoogleSignin.isSignedIn();
-    if (isSignedIn) {
-      getCurrentUserInfo();
-    } else {
-      console.log('Please Login');
-    }
-  };
-
-  const getCurrentUserInfo = async () => {
-    try {
-      const userInfo = await GoogleSignin.signInSilently();
-      setUser(userInfo);
-    } catch (error) {
-      if (error.code === statusCodes.SIGN_IN_REQUIRED) {
-        alert('User has not signed in yet');
-        console.log('User has not signed in yet');
-      } else {
-        alert("Something went wrong. Unable to get user's info");
-        console.log("Something went wrong. Unable to get user's info");
-      }
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      await GoogleSignin.revokeAccess();
-      await GoogleSignin.signOut();
-      setUser({}); // Remember to remove the user from your app's state as well
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const setUser = (userInfo) => appendAPIToken(userInfo)
+    .then(appendUserID)
+    .then((userInfo) => {
+      console.log(userInfo);
+      dispatch({ type: 'SET_USER', payload: userInfo });
+    });
 
   const signIn = async () => {
     setSigningIn(true);
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      console.log(userInfo);
       setUser(userInfo);
     } catch (error) {
       console.log('Message', error.message);
@@ -113,42 +64,6 @@ const styles = StyleSheet.create({
     fontSize: 50,
     margin: 50
   },
-  // scrollView: {
-  //   backgroundColor: Colors.lighter,
-  // },
-  // engine: {
-  //   position: 'absolute',
-  //   right: 0,
-  // },
-  // body: {
-  //   backgroundColor: Colors.white,
-  // },
-  // sectionContainer: {
-  //   marginTop: 32,
-  //   paddingHorizontal: 24,
-  // },
-  // sectionTitle: {
-  //   fontSize: 24,
-  //   fontWeight: '600',
-  //   color: Colors.black,
-  // },
-  // sectionDescription: {
-  //   marginTop: 8,
-  //   fontSize: 18,
-  //   fontWeight: '400',
-  //   color: Colors.dark,
-  // },
-  // highlight: {
-  //   fontWeight: '700',
-  // },
-  // footer: {
-  //   color: Colors.dark,
-  //   fontSize: 12,
-  //   fontWeight: '600',
-  //   padding: 4,
-  //   paddingRight: 12,
-  //   textAlign: 'right',
-  // },
 });
 
 export default SignInScreen;

@@ -28,27 +28,30 @@ const WEB_CLIENT_ID = '790166575655-222h23mpv6h7n7jhjkac6gj220e5kevt.apps.google
 const Navigation = () => {
   const { state, dispatch } = useContext(store);
   useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: WEB_CLIENT_ID
-    });
-    GoogleSignin.isSignedIn().then((signedIn) => {
-      if (signedIn) {
-        GoogleSignin.getCurrentUser()
-          .then(appendAPIToken)
-          .then(appendUserID)
-          .then((userInfo) => {
-            dispatch({ type: 'SET_USER', payload: userInfo });
-            dispatch({ type: 'SET_LOADED' });
-          })
-          .catch(() => {
-            dispatch({ type: 'LOGOUT' });
-            GoogleSignin.signOut();
-          })
-          .finally(() => dispatch({ type: 'SET_LOADED' }));
+    const logIn = (async () => {
+      GoogleSignin.configure({
+        webClientId: WEB_CLIENT_ID
+      });
+      const signedIn = await GoogleSignin.isSignedIn();
+      let user;
+      if (!signedIn) {
+        try {
+          user = await GoogleSignin.signInSilently();
+        } catch (error) {
+          console.log("Couldn't log in automatically");
+          dispatch({ type: 'LOGOUT' });
+          dispatch({ type: 'SET_LOADED' });
+          return;
+        }
       } else {
-        dispatch({ type: 'SET_LOADED' });
+        user = await GoogleSignin.getCurrentUser();
       }
+      user = await appendAPIToken(user);
+      user = await appendUserID(user);
+      dispatch({ type: 'SET_USER', payload: user });
+      dispatch({ type: 'SET_LOADED' });
     });
+    logIn();
   }, [dispatch]);
 
   let mainComponent = null;

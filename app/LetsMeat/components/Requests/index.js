@@ -1,46 +1,33 @@
-import { GoogleSignin } from '@react-native-community/google-signin';
 import axios from 'axios';
+import { ToastAndroid } from 'react-native';
 
 const baseURL = 'https://letsmeatapi.azurewebsites.net/';
 
-const setUser = (userInfo) => {
-  console.log('setting user');
-  return getAPIToken(userInfo.idToken)
-    .then((token) => {
-    // console.log(token);
-    // AsyncStorage.setItem('token', token.data)
-    //   .then(() => {
-    //     dispatch({ type: 'SET_USER', payload: { ...userInfo } });
-    //   }).catch((err) => console.log(err));
-    });
+const printAndPassError = (e) => {
+  ToastAndroid.show(e.message, ToastAndroid.SHORT);
+  throw e;
 };
-
-const logIn = () => GoogleSignin.hasPlayServices()
-  .then(GoogleSignin.signIn)
-  .then(setUser);
 
 const get = ({ state }, endpoint, params = undefined) => {
   const axiosConfig = { baseURL, params: { token: state.user.token, ...params } };
-  return axios.get(endpoint, axiosConfig);
+  return axios.get(endpoint, axiosConfig).catch(printAndPassError);
 };
 
 const post = ({ state }, endpoint, data, params) => {
   const axiosConfig = { baseURL, params: { token: state.user.token, ...params } };
-  return axios.post(endpoint, data, axiosConfig);
+  return axios.post(endpoint, data, axiosConfig).catch(printAndPassError);
 };
 
 const patch = ({ state }, endpoint, data, params) => {
   const axiosConfig = { baseURL, params: { token: state.user.token, ...params } };
-  return axios.patch(endpoint, data, axiosConfig);
+  return axios.patch(endpoint, data, axiosConfig).catch(printAndPassError);
 };
 
 // _delete because delete is a JS keyword
 // eslint-disable-next-line no-underscore-dangle
 const _delete = ({ state }, endpoint, data) => {
   const axiosConfig = { baseURL, data, params: { token: state.user.token } };
-  console.log('DELETING');
-  console.log(axiosConfig);
-  return axios.delete(endpoint, axiosConfig);
+  return axios.delete(endpoint, axiosConfig).catch(printAndPassError);
 };
 
 const getAPIToken = (googleToken) => {
@@ -55,10 +42,7 @@ const appendAPIToken = (userInfo) => {
 
 const appendUserID = (userInfo) => {
   const axiosConfig = { baseURL, params: { token: userInfo.token } };
-  return axios.get('/Users/info', axiosConfig).then((response) => {
-    console.log(response.data);
-    return ({ ...userInfo, ...response.data });
-  });
+  return axios.get('/Users/info', axiosConfig).then((response) => ({ ...userInfo, ...response.data }));
 };
 
 const extractData = (response) => response.data;

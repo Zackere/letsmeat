@@ -22,14 +22,7 @@ const StateProvider = ({ children }) => {
   const [state, dispatch] = useReducer((state, action) => {
     switch (action.type) {
       case 'LOGOUT': {
-        const newState = {
-          ...state,
-          user: {
-            ...state.user,
-            signedIn: false
-          },
-        };
-        return newState;
+        return { ...initialState };
       }
       case 'SET_USER': {
         const newState = {
