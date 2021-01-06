@@ -6,6 +6,7 @@ import { ListGroup, Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap'
 
 import { getImageDebts } from '../../../../services/eventService'
 import { deleteImageDebt } from '../../../../services/imageService'
+import { addDebt, approveDebt } from '../../../../services/debtService'
 import { getGroup } from '../../../../services/groupsService'
 import { rejectDebt } from '../../../../services/debtService'
 
@@ -26,7 +27,8 @@ class Debts extends Component {
       modalOpened: false,
       debts: [],
       selectedDebt: undefined,
-      users: []
+      users: [],
+      imageId: undefined,
     }
   }
 
@@ -66,7 +68,9 @@ class Debts extends Component {
       })
   }
 
-  openModal = debt => this.setState({ selectedDebt: debt, modalOpened: true })
+  openModal = debt =>
+    debt.image_uploaded_by_id === this.props.user.id &&
+    this.setState({ selectedDebt: debt, modalOpened: true })
 
   closeModal = () => {
     this.setState({ modalOpened: false })
@@ -115,6 +119,28 @@ class Debts extends Component {
     return user.name + ' must confirm it is thier'
   }
 
+  assignToMe = d => {
+    this.setState({ loading: true })
+
+    if (d.pending_debt) {
+      approveDebt(this.props.token, d.pending_debt.id).then(() =>
+        this.getDebts(false)
+      )
+    } else {
+      const debt = {
+        group_id: this.props.groupId,
+        event_id: this.props.eventId,
+        from_id: this.props.user.id,
+        to_id: d.image_uploaded_by_id,
+        image_debt_id: d.id,
+        debt_type: 0,
+      }
+
+      console.log(debt)
+      addDebt(this.props.token, debt).then(() => this.getDebts(false))
+    }
+  }
+
   render() {
     const debts = this.state.debts
 
@@ -129,6 +155,7 @@ class Debts extends Component {
           closeModal={this.closeModal}
           groupId={this.props.groupId}
           eventId={this.props.eventId}
+          imageId={this.state.imageId}
           getDebts={this.getDebts}
           selected={this.state.selectedDebt}
         />
@@ -162,7 +189,10 @@ class Debts extends Component {
                       <Dropdown.Toggle as={Toggle} />
                       {debt.image_uploaded_by_id !== this.props.user.id ? (
                         <Dropdown.Menu size="sm" title="">
-                          <Dropdown.Item disabled={debt.satisfied}>
+                          <Dropdown.Item
+                            onClick={() => this.assignToMe(debt)}
+                            disabled={debt.satisfied}
+                          >
                             Assign to me
                           </Dropdown.Item>
                         </Dropdown.Menu>

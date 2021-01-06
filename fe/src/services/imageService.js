@@ -38,6 +38,18 @@ export const updateImageDebt = (token, debt) => {
   })
 }
 
+export const addImageDebt = (token, debt) => {
+  const url = base + '/Images/create_image_debt?token=' + token
+
+  return fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(debt),
+  }).then(res => res.json())
+}
+
 export const deleteImageDebt = (token, id) => {
   const url = base + '/Images/delete_image_debt?token=' + token
 

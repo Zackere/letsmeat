@@ -4,11 +4,13 @@ import { Modal, Button, Form } from 'react-bootstrap'
 import { withToastManager } from 'react-toast-notifications'
 import { IconContext } from 'react-icons'
 import { IoIosArrowForward, IoIosArrowBack } from 'react-icons/io'
+import { BsFillPlusCircleFill } from 'react-icons/bs'
 
 import Loading from '../../../../../common/loading/Loading'
 
 import {
   updateImageDebt,
+  addImageDebt,
   getImages,
 } from '../../../../../services/imageService'
 import { addDebt } from '../../../../../services/debtService'
@@ -171,6 +173,22 @@ class EditDebts extends Component {
     }
   }
 
+  addDebt = () => {
+    const debts = this.state.debts
+    const index = this.state.index
+
+    console.log(this.props.imageId)
+    const debt = {
+      amount: 0,
+      description: '',
+      image_id: debts[index].image_id,
+    }
+
+    addImageDebt(this.props.token, debt).then(debt =>
+      this.props.getDebts(false, debt)
+    )
+  }
+
   render() {
     const debts = this.state.debts
     const index = this.state.index
@@ -235,7 +253,28 @@ class EditDebts extends Component {
               />
             ) : (
               <div className="flex-column">
-                <h5>Debt</h5>
+                <div className="row d-flex justify-content-between">
+                  <h5
+                    style={{
+                      lineHeight: '50px',
+                      height: '50px',
+                      paddingLeft: '5px',
+                    }}
+                  >
+                    Debt
+                  </h5>
+                  <Button
+                    variant="link"
+                    className="no-focus"
+                    onClick={this.addDebt}
+                  >
+                    <IconContext.Provider
+                      value={{ size: '20px', color: '#343a40' }}
+                    >
+                      <BsFillPlusCircleFill />
+                    </IconContext.Provider>
+                  </Button>
+                </div>
                 <Form>
                   <Form.Group>
                     <Form.Label>Amount</Form.Label>

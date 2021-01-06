@@ -72,7 +72,7 @@ b {
 }
 
 .small-string {
-  color: #01568E;
+  color: #01568e;
   font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
@@ -81,6 +81,18 @@ b {
 .container-fluid {
   padding-left: 3rem !important;
   padding-right: 3rem !important;
+}
+
+.background-image {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background: black url(back_home.jpg) center center no-repeat;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
 }
 
 a:hover {
