@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import {
-  Button, Searchbar, Surface
+  Button, Searchbar
 } from 'react-native-paper';
 import { randomId } from '../../../helpers/random';
 import { createLocationGoogle, searchLocation, updateEvent } from '../../Requests';
@@ -96,6 +96,7 @@ const AddLocation = ({ navigation, route }) => {
               createLocationGoogle({ state }, result.place_id, sessionToken)
                 .then(() => updateEvent({ state }, { id: eventId, google_maps_locations_ids: [result.place_id] }))
                 .then((event) => {
+                  console.log(event);
                   dispatch({ type: 'SET_EVENT', payload: event });
                   navigation.goBack();
                 });

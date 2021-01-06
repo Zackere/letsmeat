@@ -7,9 +7,10 @@ import { createLocationCustom, updateEvent } from '../../Requests';
 import BackgroundContainer from '../../Background';
 
 const CreateLocation = ({ navigation, route }) => {
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
+  const [adding, setAdding] = useState(false);
 
   const { eventId } = route.params;
   const groupId = state.group.id;
@@ -22,11 +23,14 @@ const CreateLocation = ({ navigation, route }) => {
       <Button
         mode="contained"
         style={styles.input}
-        disabled={!name}
+        disabled={!name || adding}
         onPress={() => {
+          setAdding(true);
           createLocationCustom({ state }, groupId, name, address)
             .then((location) => updateEvent({ state }, { id: eventId, custom_locations_ids: [location.id] }))
-            .then(() => navigation.pop(2));
+            .then((event) => dispatch({ type: 'SET_EVENT', payload: event }))
+            .then(() => navigation.pop(2))
+            .finally(() => setAdding(false));
         }}
       >
         Add Location

@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
 import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
@@ -13,37 +12,38 @@ const Locations = ({
   customLocations, googleLocations,
   onAdd, onVote, onRate,
   showButtons = true,
-  order, containerStyle
+  order
 }) => {
   const { state } = useContext(store);
   const [loading, setLoading] = useState(true);
-  const [locationsInfo, setLocationsInfo] = useState(null);
-
-  let locationsOrdered = [];
-  if (locationsInfo) {
-    if (order) {
-      order.forEach(({ google_maps_location_id, custom_location_id }) => {
-        let element;
-        if (google_maps_location_id) {
-          element = locationsInfo.google_maps_location_information.find((l) => (l.details && (l.details.place_id === google_maps_location_id)));
-        } else {
-          element = locationsInfo.custom_location_infomation.find((l) => l.id === custom_location_id);
-        }
-        locationsOrdered.push(element);
-      });
-    } else {
-      locationsOrdered = [...locationsInfo.custom_location_infomation,
-        ...locationsInfo.google_maps_location_informatio];
-    }
-  }
+  const [locationsOrdered, setLocationsOrdered] = useState([]);
 
   useEffect(() => {
     setLoading(true);
     getLocationsInfo({ state }, customLocations, googleLocations)
-      .then((info) => {
-        setLocationsInfo(info); setLoading(false);
+      .then((locationsInfo) => {
+        let newLocationsOrdered = [];
+        if (locationsInfo) {
+          if (order) {
+            order.forEach(({ google_maps_location_id, custom_location_id }) => {
+              let element;
+              if (google_maps_location_id) {
+                element = locationsInfo.google_maps_location_information.find((l) => (l.details && (l.details.place_id === google_maps_location_id)));
+              } else {
+                element = locationsInfo.custom_location_infomation.find((l) => l.id === custom_location_id);
+              }
+              newLocationsOrdered.push(element);
+            });
+          } else {
+            newLocationsOrdered = [...locationsInfo.custom_location_infomation,
+              ...locationsInfo.google_maps_location_information];
+          }
+        }
+        setLocationsOrdered([...newLocationsOrdered]);
+        setLoading(false);
       });
-  }, [customLocations, googleLocations, state]);
+  }, [customLocations,
+    googleLocations, state.user.tokenId, order, state.event.candidate_google_maps_locations, state.event.candidate_custom_locations]);
 
   return (
     loading ? <ActivityIndicator />
@@ -56,7 +56,6 @@ const Locations = ({
                   location={l}
                   key={l.details.place_id}
                   onPress={() => {
-                    console.log({ gmapsId: l.details.place_id });
                     onRate({ gmapsId: l.details.place_id });
                   }}
                 />
