@@ -99,7 +99,7 @@ const Debt = ({
           dialogVisible={userPickerOpen}
           onDismiss={() => setUserPickerOpen(false)}
           setUser={(newUser) => {
-            addDebt({ state }, state.group.id, state.event.id, newUser.id, state.user.id, null, null, debt.id, 0)
+            addDebt({ state, dispatch }, state.group.id, state.event.id, newUser.id, state.user.id, null, null, debt.id, 0)
               .then(() => reloadDebts(state, dispatch));
           }}
         />
@@ -162,7 +162,7 @@ const DebtImage = ({
           && (
           <Button onPress={
                   () => {
-                    deleteImage({ state }, image.image_id).then(() => {
+                    deleteImage({ state, dispatch }, image.image_id).then(() => {
                       dispatch({ type: 'REMOVE_IMAGE', imageId: image.image_id });
                     });
                   }
@@ -187,10 +187,10 @@ const Debts = ({ navigation, containerStyle, debtStyle }) => {
   useEffect(() => {
     (async () => {
       const [imagesInfo, debtsInfo] = await Promise.all([
-        getImagesInfo({ state }, state.event.images), getEventDebts({ state }, state.event.id)]);
+        getImagesInfo({ state, dispatch }, state.event.images), getEventDebts({ state, dispatch }, state.event.id)]);
       setImages(imagesInfo);
       setDebts(debtsInfo);
-      const usersInfo = await getUsersInfo({ state }, [
+      const usersInfo = await getUsersInfo({ state, dispatch }, [
         ...imagesInfo.map((info) => info.uploaded_by),
         ...debtsInfo.filter((debt) => debt.pending_debt).map((debt) => debt.pending_debt.from_id),
         ...debtsInfo.filter((debt) => debt.pending_debt).map((debt) => debt.pending_debt.to_id),
@@ -225,7 +225,7 @@ const Debts = ({ navigation, containerStyle, debtStyle }) => {
       ImagePicker.openPicker({
         cropping: true
       })
-        .then((i) => uploadImage({ state }, state.event.id, i))
+        .then((i) => uploadImage({ state, dispatch }, state.event.id, i))
         .then((r) => dispatch({ type: 'ADD_IMAGE_TO_EVENT', imageId: r.image_id }))
         .catch((e) => {
           if (e.code === 'E_PICKER_CANCELLED') return;

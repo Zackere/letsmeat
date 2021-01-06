@@ -21,7 +21,7 @@ const SCREENS_WITHOUT_TABS = new Set(['Event',
   'NewEvent']);
 
 const Feed = ({ navigation, route }) => {
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
 
   useLayoutEffect(() => {
     const screenName = getFocusedRouteNameFromRoute(route);

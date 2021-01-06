@@ -1,5 +1,8 @@
 import axios from 'axios';
 import { ToastAndroid } from 'react-native';
+import {
+  GoogleSignin
+} from '@react-native-community/google-signin';
 
 const baseURL = 'https://letsmeatapi.azurewebsites.net/';
 
@@ -8,26 +11,53 @@ const printAndPassError = (e) => {
   throw e;
 };
 
-const get = ({ state }, endpoint, params = undefined) => {
-  const axiosConfig = { baseURL, params: { token: state.user.token, ...params } };
-  return axios.get(endpoint, axiosConfig).catch(printAndPassError);
+const tryLoggingIn = async (dispatch) => {
+  try {
+    await GoogleSignin.signInSilently();
+  } catch (error) {
+    console.log("Couldn't log in automatically");
+    dispatch({ type: 'LOGOUT' });
+    dispatch({ type: 'SET_LOADED' });
+    return;
+  }
+  let user = await GoogleSignin.getCurrentUser();
+  user = await appendAPIToken(user);
+  user = await appendUserID(user);
+  dispatch({ type: 'SET_USER', payload: user });
 };
 
-const post = ({ state }, endpoint, data, params) => {
+const executeRequest = (request, dispatch) => request()
+  // .catch((e) => {
+  //   console.log({ ...e });
+  //   return tryLoggingIn(dispatch);
+  // })
+  // .then(() => request())
+  .catch(printAndPassError);
+
+const get = ({ state, dispatch }, endpoint, params = undefined) => {
   const axiosConfig = { baseURL, params: { token: state.user.token, ...params } };
-  return axios.post(endpoint, data, axiosConfig).catch(printAndPassError);
+  const request = () => axios.get(endpoint, axiosConfig);
+  return executeRequest(request, dispatch);
 };
 
-const patch = ({ state }, endpoint, data, params) => {
+const post = ({ state, dispatch }, endpoint, data, params) => {
   const axiosConfig = { baseURL, params: { token: state.user.token, ...params } };
-  return axios.patch(endpoint, data, axiosConfig).catch(printAndPassError);
+  const request = () => axios.post(endpoint, data, axiosConfig);
+  return executeRequest(request, dispatch);
+};
+
+const patch = ({ state, dispatch }, endpoint, data, params) => {
+  const axiosConfig = { baseURL, params: { token: state.user.token, ...params } };
+  const request = () => axios.patch(endpoint, data, axiosConfig);
+  return executeRequest(request, dispatch);
 };
 
 // _delete because delete is a JS keyword
 // eslint-disable-next-line no-underscore-dangle
-const _delete = ({ state }, endpoint, data) => {
+const _delete = ({ state, dispatch }, endpoint, data) => {
   const axiosConfig = { baseURL, data, params: { token: state.user.token } };
-  return axios.delete(endpoint, axiosConfig).catch(printAndPassError);
+  const request = () => axios.delete(endpoint, axiosConfig);
+  return executeRequest(request, dispatch);
 };
 
 const getAPIToken = (googleToken) => {
@@ -47,41 +77,41 @@ const appendUserID = (userInfo) => {
 
 const extractData = (response) => response.data;
 
-const getGroups = ({ state }) => get({ state }, '/Users/info').then(extractData).then((data) => data.groups);
+const getGroups = ({ state, dispatch }) => get({ state, dispatch }, '/Users/info').then(extractData).then((data) => data.groups);
 
-const getGroupInfo = ({ state }, id) => get({ state }, '/Groups/info', { id }).then(extractData);
+const getGroupInfo = ({ state, dispatch }, id) => get({ state, dispatch }, '/Groups/info', { id }).then(extractData);
 
-const createGroup = ({ state }, name) => post({ state }, '/Groups/create/', { name }).then(extractData);
+const createGroup = ({ state, dispatch }, name) => post({ state, dispatch }, '/Groups/create/', { name }).then(extractData);
 
-const deleteGroup = ({ state }, id) => _delete({ state }, '/Groups/delete/', { id });
+const deleteGroup = ({ state, dispatch }, id) => _delete({ state, dispatch }, '/Groups/delete/', { id });
 
-const leaveGroup = ({ state }, id) => post({ state }, '/Groups/leave/', { id });
+const leaveGroup = ({ state, dispatch }, id) => post({ state, dispatch }, '/Groups/leave/', { id });
 
-const createEvent = ({ state }, groupId, name, deadline) => post({ state }, '/Events/create', { group_id: groupId, name, deadline }).then(extractData);
+const createEvent = ({ state, dispatch }, groupId, name, deadline) => post({ state, dispatch }, '/Events/create', { group_id: groupId, name, deadline }).then(extractData);
 
-const getEventInfo = ({ state }, eventId) => get({ state }, '/Events/info', { id: eventId }).then(extractData);
+const getEventInfo = ({ state, dispatch }, eventId) => get({ state, dispatch }, '/Events/info', { id: eventId }).then(extractData);
 
-const updateEvent = ({ state }, event) => patch({ state }, '/Events/update', event).then(extractData);
+const updateEvent = ({ state, dispatch }, event) => patch({ state, dispatch }, '/Events/update', event).then(extractData);
 
-const deleteEvent = ({ state }, id) => _delete({ state }, '/Events/delete', { id });
+const deleteEvent = ({ state, dispatch }, id) => _delete({ state, dispatch }, '/Events/delete', { id });
 
-const searchUsers = ({ state }, name) => get({ state }, '/Users/search', { name }).then(extractData);
+const searchUsers = ({ state, dispatch }, name) => get({ state, dispatch }, '/Users/search', { name }).then(extractData);
 
-const getUsersInfo = ({ state }, ids) => post({ state }, '/Users/info', { ids: (Array.isArray(ids) ? ids : [ids]) }).then(extractData);
+const getUsersInfo = ({ state, dispatch }, ids) => post({ state, dispatch }, '/Users/info', { ids: (Array.isArray(ids) ? ids : [ids]) }).then(extractData);
 
-const updatePrefs = ({ state }, prefs) => post({ state }, '/Users/update_prefs', { ...prefs });
+const updatePrefs = ({ state, dispatch }, prefs) => post({ state, dispatch }, '/Users/update_prefs', { ...prefs });
 
-const sendInvitation = ({ state }, userId, groupId) => post({ state }, '/Invitations/send', { to_id: userId, group_id: groupId });
+const sendInvitation = ({ state, dispatch }, userId, groupId) => post({ state, dispatch }, '/Invitations/send', { to_id: userId, group_id: groupId });
 
-const getInvitations = ({ state }) => get({ state }, '/Invitations/get').then(extractData);
+const getInvitations = ({ state, dispatch }) => get({ state, dispatch }, '/Invitations/get').then(extractData);
 
-const rejectInvitation = ({ state }, groupId) => _delete({ state }, '/Invitations/reject', { group_id: groupId }).catch(console.log);
+const rejectInvitation = ({ state, dispatch }, groupId) => _delete({ state, dispatch }, '/Invitations/reject', { group_id: groupId }).catch(console.log);
 
-const joinGroup = ({ state }, groupId) => post({ state }, '/Groups/join', { id: groupId });
+const joinGroup = ({ state, dispatch }, groupId) => post({ state, dispatch }, '/Groups/join', { id: groupId });
 
 const acceptInvitation = joinGroup;
 
-const uploadImage = ({ state }, eventId, image) => {
+const uploadImage = ({ state, dispatch }, eventId, image) => {
   const getNameFromPath = (path) => {
     const parts = path.split('/');
     return parts[parts.length - 1];
@@ -98,18 +128,18 @@ const uploadImage = ({ state }, eventId, image) => {
   }).then((response) => response.json());
 };
 
-const getImagesInfo = ({ state }, ids) => post({ state }, '/Images/info', { image_ids: (Array.isArray(ids) ? ids : [ids]) }).then(extractData);
+const getImagesInfo = ({ state, dispatch }, ids) => post({ state, dispatch }, '/Images/info', { image_ids: (Array.isArray(ids) ? ids : [ids]) }).then(extractData);
 
-const deleteImage = ({ state }, id) => _delete({ state }, '/Images/delete', { id });
+const deleteImage = ({ state, dispatch }, id) => _delete({ state, dispatch }, '/Images/delete', { id });
 
-const getVote = ({ state }, eventId) => get({ state }, '/Votes/get', { event_id: eventId }).then(extractData);
+const getVote = ({ state, dispatch }, eventId) => get({ state, dispatch }, '/Votes/get', { event_id: eventId }).then(extractData);
 
-const getVoteTimes = ({ state }, eventId) => getVote({ state }, eventId).then((data) => data.times);
+const getVoteTimes = ({ state, dispatch }, eventId) => getVote({ state, dispatch }, eventId).then((data) => data.times);
 
-const getVoteLocations = ({ state }, eventId) => getVote({ state }, eventId)
+const getVoteLocations = ({ state, dispatch }, eventId) => getVote({ state, dispatch }, eventId)
   .then((data) => data.locations);
 
-const castVote = ({ state }, eventId, times, locations) => post({ state }, '/Votes/cast',
+const castVote = ({ state, dispatch }, eventId, times, locations) => post({ state, dispatch }, '/Votes/cast',
   {
     event_id: eventId,
     vote_information: {
@@ -118,18 +148,18 @@ const castVote = ({ state }, eventId, times, locations) => post({ state }, '/Vot
     }
   });
 
-const getResults = ({ state }, eventId) => get({ state }, '/Votes/result', { event_id: eventId }).then(extractData);
+const getResults = ({ state, dispatch }, eventId) => get({ state, dispatch }, '/Votes/result', { event_id: eventId }).then(extractData);
 
-const searchLocation = ({ state }, groupId, query, sessionToken) => get({ state },
+const searchLocation = ({ state, dispatch }, groupId, query, sessionToken) => get({ state, dispatch },
   '/Locations/search',
   { group_id: groupId, query_string: query, sessiontoken: sessionToken })
   .then(extractData);
 
-const createLocationGoogle = ({ state }, placeId, sessionToken) => post({ state }, '/Locations/create_from_gmaps', { place_id: placeId, sessiontoken: sessionToken }).then(extractData);
+const createLocationGoogle = ({ state, dispatch }, placeId, sessionToken) => post({ state, dispatch }, '/Locations/create_from_gmaps', { place_id: placeId, sessiontoken: sessionToken }).then(extractData);
 
-const createLocationCustom = ({ state }, groupId, name, address) => post({ state }, '/Locations/create_custom', { group_id: groupId, name, address }).then(extractData);
+const createLocationCustom = ({ state, dispatch }, groupId, name, address) => post({ state, dispatch }, '/Locations/create_custom', { group_id: groupId, name, address }).then(extractData);
 
-const getLocationsInfo = ({ state }, customIds, googleIds) => post({ state },
+const getLocationsInfo = ({ state, dispatch }, customIds, googleIds) => post({ state, dispatch },
   '/Locations/info',
   {
     custom_location_ids: customIds,
@@ -137,13 +167,13 @@ const getLocationsInfo = ({ state }, customIds, googleIds) => post({ state },
   })
   .then(extractData);
 
-const rateLocation = ({ state }, taste, price, amountOfFood, waitingTime, gmapsId, customId) => post({ state },
+const rateLocation = ({ state, dispatch }, taste, price, amountOfFood, waitingTime, gmapsId, customId) => post({ state, dispatch },
   '/Locations/rate',
   {
     taste, price, amount_of_food: amountOfFood, waitingTime, google_maps_id: gmapsId, custom_location_id: customId
   }).then(extractData);
 
-const addDebt = ({ state }, groupId, eventId, fromId, toId, amount, description, imageId, debtType = 1) => post({ state }, '/Debts/add',
+const addDebt = ({ state, dispatch }, groupId, eventId, fromId, toId, amount, description, imageId, debtType = 1) => post({ state, dispatch }, '/Debts/add',
   {
     group_id: groupId,
     event_id: eventId,
@@ -156,26 +186,29 @@ const addDebt = ({ state }, groupId, eventId, fromId, toId, amount, description,
   })
   .then(extractData);
 
-const getPendingDebts = ({ state }) => get({ state }, '/Debts/pending').then((d) => d.data.pending_debts);
+const getPendingDebts = ({ state, dispatch }) => get({ state, dispatch }, '/Debts/pending').then((d) => d.data.pending_debts);
 
-const rejectDebt = ({ state }, debtId) => post({ state }, '/Debts/reject', { debt_id: debtId });
+const rejectDebt = ({ state, dispatch }, debtId) => post({ state, dispatch }, '/Debts/reject', { debt_id: debtId });
 
-const acceptDebt = ({ state }, debtId) => post({ state }, '/Debts/approve', { debt_id: debtId });
+const acceptDebt = ({ state, dispatch }, debtId) => post({ state, dispatch }, '/Debts/approve', { debt_id: debtId });
 
-const getGroupDebts = ({ state }, groupId, normalize = true) => get({ state }, '/Debts/groupinfo', { id: groupId, normalize }).then(extractData);
+const getGroupDebts = ({ state, dispatch }, groupId, normalize = true) => get({ state, dispatch }, '/Debts/groupinfo', { id: groupId, normalize }).then(extractData);
 
-const deleteImageDebt = ({ state }, id) => _delete({ state }, '/Images/delete_image_debt', { id });
+const deleteImageDebt = ({ state, dispatch }, id) => _delete({ state, dispatch }, '/Images/delete_image_debt', { id });
 
-const updateImageDebt = ({ state }, debt) => patch({ state }, '/Images/update_image_debt', debt).then(extractData);
+const updateImageDebt = ({ state, dispatch }, debt) => patch({ state, dispatch }, '/Images/update_image_debt', debt).then(extractData);
 
-const createImageDebt = ({ state }, amount, description, imageId) => post({ state },
+const createImageDebt = ({ state, dispatch }, amount, description, imageId) => post({ state, dispatch },
   '/Images/create_image_debt', { amount, description, image_id: imageId });
 
-const getEventDebts = ({ state }, eventId) => get({ state }, '/Events/image_debts', { event_id: eventId })
+const getEventDebts = ({ state, dispatch }, eventId) => get({ state, dispatch }, '/Events/image_debts', { event_id: eventId })
   .then(extractData)
   .then((debts) => debts.image_debts);
 
+const testRequest = ({ state, dispatch }, code) => get({ state, dispatch }, '/Test', { code });
+
 export {
+  tryLoggingIn,
   getAPIToken, appendAPIToken, appendUserID,
   createGroup, getGroupInfo, deleteGroup, getGroups, leaveGroup, joinGroup,
   createEvent, getEventInfo, updateEvent, deleteEvent,
@@ -185,5 +218,6 @@ export {
   getVote, getVoteTimes, getVoteLocations, castVote, getResults,
   searchLocation, createLocationGoogle, createLocationCustom, getLocationsInfo, rateLocation,
   addDebt, getPendingDebts, rejectDebt, acceptDebt, getGroupDebts,
-  deleteImageDebt, updateImageDebt, createImageDebt, getEventDebts
+  deleteImageDebt, updateImageDebt, createImageDebt, getEventDebts,
+  testRequest
 };

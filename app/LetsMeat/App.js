@@ -16,7 +16,8 @@ import BottomTabs from './components/Group/BottomTabs';
 import Groups from './components/Groups';
 import Notifications from './components/Notifications';
 import Preferences from './components/Preferences';
-import { appendAPIToken, appendUserID } from './components/Requests';
+// import { appendAPIToken, appendUserID } from './components/Requests';
+import { tryLoggingIn } from './components/Requests';
 import SignInScreen from './components/SignIn';
 import SplashScreen from './components/SplashScreen';
 import { StateProvider, store } from './components/Store';
@@ -32,23 +33,7 @@ const Navigation = () => {
       GoogleSignin.configure({
         webClientId: WEB_CLIENT_ID
       });
-      const signedIn = await GoogleSignin.isSignedIn();
-      let user;
-      if (!signedIn) {
-        try {
-          user = await GoogleSignin.signInSilently();
-        } catch (error) {
-          console.log("Couldn't log in automatically");
-          dispatch({ type: 'LOGOUT' });
-          dispatch({ type: 'SET_LOADED' });
-          return;
-        }
-      } else {
-        user = await GoogleSignin.getCurrentUser();
-      }
-      user = await appendAPIToken(user);
-      user = await appendUserID(user);
-      dispatch({ type: 'SET_USER', payload: user });
+      await tryLoggingIn(dispatch);
       dispatch({ type: 'SET_LOADED' });
     });
     logIn();

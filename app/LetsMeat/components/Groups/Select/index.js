@@ -9,7 +9,7 @@ import {
   Card, FAB, Paragraph, Surface, Badge, ActivityIndicator
 } from 'react-native-paper';
 import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
-import { getGroupInfo, getGroups } from '../../Requests';
+import { getGroupInfo, getGroups, testRequest } from '../../Requests';
 import { store } from '../../Store';
 
 const GroupButton = (group, navigation) => (
@@ -142,8 +142,9 @@ export const Groups = ({ navigation }) => {
             icon="plus"
             label="Create new group"
             onPress={() => {
-              setLoadingGroups(true);
-              navigation.navigate('CreateGroup');
+              testRequest({ state, dispatch }, 401).then(console.log);
+              // setLoadingGroups(true);
+              // navigation.navigate('CreateGroup');
             }}
           />
         </>
