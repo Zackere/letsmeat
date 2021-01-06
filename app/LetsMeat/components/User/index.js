@@ -13,12 +13,12 @@ export const UserPicker = ({
   const [query, setQuery] = useState('');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
 
   const filteredUsers = users.filter((u) => u.name.toLowerCase().includes(query.toLowerCase()));
 
   useEffect(() => {
-    getUsersInfo({ state }, userIds).then((users) => {
+    getUsersInfo({ state, dispatch }, userIds).then((users) => {
       setUsers(users);
       setLoading(false);
     });

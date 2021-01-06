@@ -10,7 +10,7 @@ import { store } from '../../Store';
 import UserCard from '../../User';
 
 export const SendTransfer = ({ navigation, route }) => {
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
   const {
     user
   } = route.params;
@@ -22,7 +22,7 @@ export const SendTransfer = ({ navigation, route }) => {
 
   const pressConfirm = () => {
     if (!valid) return;
-    addDebt({ state },
+    addDebt({ state, dispatch },
       state.group.id, null, state.user.id, user.id, parseAmount(amount), description, null, 1);
     navigation.goBack();
   };

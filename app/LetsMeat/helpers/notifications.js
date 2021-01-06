@@ -6,10 +6,10 @@ export const getNotificationTimestamp = (notification) => (notification.kind ===
 
 export const refreshNotifications = ({ state, dispatch }) => {
   const APIactions = [
-    getInvitations({ state }).then((invitations) => {
+    getInvitations({ state, dispatch }).then((invitations) => {
       dispatch({ type: 'SET_INVITATIONS', payload: invitations.map((i) => ({ ...i, kind: 'invitation' })) });
     }),
-    getPendingDebts({ state }).then((debts) => {
+    getPendingDebts({ state, dispatch }).then((debts) => {
       dispatch({ type: 'SET_DEBTS', payload: debts.map((i) => ({ ...i, kind: 'debt' })) });
     })];
   return Promise.all(APIactions);

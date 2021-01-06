@@ -14,13 +14,13 @@ const Locations = ({
   showButtons = true,
   order
 }) => {
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
   const [loading, setLoading] = useState(true);
   const [locationsOrdered, setLocationsOrdered] = useState([]);
 
   useEffect(() => {
     setLoading(true);
-    getLocationsInfo({ state }, customLocations, googleLocations)
+    getLocationsInfo({ state, dispatch }, customLocations, googleLocations)
       .then((locationsInfo) => {
         let newLocationsOrdered = [];
         if (locationsInfo) {

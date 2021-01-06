@@ -34,7 +34,7 @@ const PreferencesContent = ({ navigation }) => {
     navigation.setOptions({
       rightIcon: 'content-save',
       rightAction: () => {
-        updatePrefs({ state }, prefs).then(
+        updatePrefs({ state, dispatch }, prefs).then(
           () => dispatch({ type: 'UPDATE_PREFS', prefs })
         );
       }

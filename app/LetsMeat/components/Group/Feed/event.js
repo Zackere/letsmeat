@@ -27,11 +27,11 @@ const EventView = ({ navigation }) => {
 
   const loadData = () => {
     if (deleting) return;
-    getEventInfo({ state }, state.event.id).then((event) => {
+    getEventInfo({ state, dispatch }, state.event.id).then((event) => {
       dispatch({ type: 'SET_EVENT', payload: event });
       setEventDetails(true);
     });
-    getResults({ state }, state.event.id).then((results) => {
+    getResults({ state, dispatch }, state.event.id).then((results) => {
       setResults(results);
     });
   };
@@ -75,7 +75,7 @@ const EventView = ({ navigation }) => {
                     }}
                     onAddTime={(time) => {
                       setLoading(true);
-                      return updateEvent({ state }, { id: state.event.id, candidate_times: [time] })
+                      return updateEvent({ state, dispatch }, { id: state.event.id, candidate_times: [time] })
                         .then((event) => dispatch({ type: 'SET_EVENT', payload: event }))
                         .finally(() => setLoading(false));
                     }}
@@ -104,7 +104,7 @@ const EventView = ({ navigation }) => {
                     icon="delete-forever"
                     buttonText="DELETE"
                     confirmAction={() => {
-                      deleteEvent({ state }, state.event.id).then(() => {
+                      deleteEvent({ state, dispatch }, state.event.id).then(() => {
                         setDeleting(true);
                         dispatch({ type: 'REMOVE_EVENT', eventId: state.event.id });
                         navigation.goBack();

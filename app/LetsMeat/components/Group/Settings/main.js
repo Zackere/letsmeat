@@ -35,14 +35,14 @@ const SettingsScroll = ({ navigation }) => {
       <ScrollView>
         <GroupMembers members={state.group.users} debts={state.group.debts} navigation={navigation} />
         <LeaveGroup confirmAction={() => {
-          leaveGroup({ state }, state.group.id)
+          leaveGroup({ state, dispatch }, state.group.id)
             .then(() => dispatch({ type: 'REMOVE_GROUP', groupId: state.group.id }))
             .then(() => dispatch({ type: 'SET_GROUP', payload: {} }))
             .then(() => navigation.navigate('SelectGroup'));
         }}
         />
         <DeleteGroup confirmAction={() => {
-          deleteGroup({ state }, state.group.id)
+          deleteGroup({ state, dispatch }, state.group.id)
             .then(() => dispatch({ type: 'REMOVE_GROUP', groupId: state.group.id }))
             .then(() => navigation.navigate('SelectGroup'));
         }}

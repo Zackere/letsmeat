@@ -56,7 +56,7 @@ export const NewEventContent = ({ navigation }) => {
         mode="contained"
         disabled={!inputValid}
         onPress={() => {
-          createEvent({ state }, state.group.id, name, deadline)
+          createEvent({ state, dispatch }, state.group.id, name, deadline)
             .then((r) => dispatch({ type: 'ADD_EVENT', event: r }))
             .then(() => navigation.goBack());
         }}

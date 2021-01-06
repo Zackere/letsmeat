@@ -36,7 +36,7 @@ const AddLocation = ({ navigation, route }) => {
   }, [debouncedSearch]);
 
   const getSearchResults = useCallback(() => {
-    searchLocation({ state }, groupId, persistentSearchQuery.current, sessionToken)
+    searchLocation({ state, dispatch }, groupId, persistentSearchQuery.current, sessionToken)
       .then((results) => {
         if (!mounted.current) return;
         setSearchResults(results);
@@ -75,7 +75,7 @@ const AddLocation = ({ navigation, route }) => {
             location={result}
             onPressCustom={
             () => {
-              updateEvent({ state }, { id: eventId, custom_locations_ids: [result.id] })
+              updateEvent({ state, dispatch }, { id: eventId, custom_locations_ids: [result.id] })
                 .then((event) => {
                   dispatch({ type: 'SET_EVENT', payload: event });
                   navigation.goBack();
@@ -84,7 +84,7 @@ const AddLocation = ({ navigation, route }) => {
           }
             onPressGMaps={
             () => {
-              updateEvent({ state }, { id: eventId, google_maps_locations_ids: [result.details.place_id] })
+              updateEvent({ state, dispatch }, { id: eventId, google_maps_locations_ids: [result.details.place_id] })
                 .then((event) => {
                   dispatch({ type: 'SET_EVENT', payload: event });
                   navigation.goBack();
@@ -93,8 +93,8 @@ const AddLocation = ({ navigation, route }) => {
           }
             onPressPrediction={
             () => {
-              createLocationGoogle({ state }, result.place_id, sessionToken)
-                .then(() => updateEvent({ state }, { id: eventId, google_maps_locations_ids: [result.place_id] }))
+              createLocationGoogle({ state, dispatch }, result.place_id, sessionToken)
+                .then(() => updateEvent({ state, dispatch }, { id: eventId, google_maps_locations_ids: [result.place_id] }))
                 .then((event) => {
                   console.log(event);
                   dispatch({ type: 'SET_EVENT', payload: event });

@@ -11,7 +11,7 @@ import { castVote, getVoteTimes } from '../../Requests';
 import BackgroundContainer from '../../Background';
 
 const VoteTime = ({ navigation, route }) => {
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
 
   const { eventId } = route.params;
   const [loading, setLoading] = useState(true);
@@ -24,7 +24,7 @@ const VoteTime = ({ navigation, route }) => {
         rightIcon: 'vote',
         rightAction: () => {
           setVoting(true);
-          castVote({ state }, eventId, times).then(() => {
+          castVote({ state, dispatch }, eventId, times).then(() => {
             setVoting(false);
           });
         }
@@ -40,7 +40,7 @@ const VoteTime = ({ navigation, route }) => {
   useLayoutEffect(setHeaderAction, [times, loading, state, navigation, voting, eventId]);
 
   useEffect(() => {
-    getVoteTimes({ state }, eventId).then((data) => {
+    getVoteTimes({ state, dispatch }, eventId).then((data) => {
       setTimes(data);
       setLoading(false);
     });

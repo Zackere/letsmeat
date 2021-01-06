@@ -39,7 +39,7 @@ const RenderGroup = ({
   const [group, setGroup] = useState(null);
 
   useEffect(() => {
-    getGroupInfo({ state }, groupId)
+    getGroupInfo({ state, dispatch }, groupId)
       .then((info) => {
         setGroup(info);
       });
@@ -49,7 +49,7 @@ const RenderGroup = ({
     <Card
       style={styles.emptyCard}
       onPress={() => {
-        getGroupInfo({ state }, groupId)
+        getGroupInfo({ state, dispatch }, groupId)
           .then((group) => {
             dispatch({ type: 'SET_GROUP', payload: group });
             navigation.navigate('Home', { screen: 'Feed' });

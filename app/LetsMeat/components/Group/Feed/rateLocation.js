@@ -30,7 +30,7 @@ const PrefSetter = ({
 );
 
 const RateLocation = ({ navigation, route }) => {
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
   const { gmapsId, customId } = route.params;
   const [locationInfo, setLocationInfo] = useState(undefined);
   const [prefs, setPrefs] = useState({
@@ -38,7 +38,7 @@ const RateLocation = ({ navigation, route }) => {
   });
 
   useEffect(() => {
-    getLocationsInfo({ state }, customId ? [customId] : undefined, gmapsId ? [gmapsId] : undefined).then((info) => {
+    getLocationsInfo({ state, dispatch }, customId ? [customId] : undefined, gmapsId ? [gmapsId] : undefined).then((info) => {
       if (gmapsId) {
         setLocationInfo({ ...info.google_maps_location_information[0], kind: 'google_maps_locations' });
       } else {
@@ -64,7 +64,7 @@ const RateLocation = ({ navigation, route }) => {
         style={styles.button}
         onPress={
         () => {
-          rateLocation({ state }, prefs.taste, prefs.price, prefs.amount_of_food, prefs.waiting_time, gmapsId || undefined, customId || undefined)
+          rateLocation({ state, dispatch }, prefs.taste, prefs.price, prefs.amount_of_food, prefs.waiting_time, gmapsId || undefined, customId || undefined)
             .then(() => navigation.goBack());
         }
       }

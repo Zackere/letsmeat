@@ -38,7 +38,7 @@ const SelectedUsers = ({ users, onClose }) => (
 const Invite = ({ navigation, route }) => {
   const _mounted = useRef(false);
 
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -48,7 +48,7 @@ const Invite = ({ navigation, route }) => {
   let debounceResult = null;
 
   const getSearchResults = useCallback(() => {
-    searchUsers({ state }, persistentSearchQuery.current).then((results) => {
+    searchUsers({ state, dispatch }, persistentSearchQuery.current).then((results) => {
       if (!_mounted.current) return;
       setSearchResults(results);
     });
@@ -118,7 +118,7 @@ const Invite = ({ navigation, route }) => {
         disabled={!selectedUsers || selectedUsers.length === 0}
         onPress={() => {
           selectedUsers.forEach((user) => {
-            sendInvitation({ state }, user.id, state.group.id);
+            sendInvitation({ state, dispatch }, user.id, state.group.id);
           });
           navigation.goBack();
         }}

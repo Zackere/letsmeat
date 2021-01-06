@@ -11,7 +11,7 @@ import LocationCard from '../../Location';
 import BackgroundContainer from '../../Background';
 
 const VoteLocation = ({ navigation, route }) => {
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
 
   const { eventId } = route.params;
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,7 @@ const VoteLocation = ({ navigation, route }) => {
         rightIcon: 'vote',
         rightAction: () => {
           setVoting(true);
-          castVote({ state }, eventId, undefined, translateLocationsToVote(locations)).then(() => {
+          castVote({ state, dispatch }, eventId, undefined, translateLocationsToVote(locations)).then(() => {
             setVoting(false);
           });
         }
@@ -73,11 +73,11 @@ const VoteLocation = ({ navigation, route }) => {
   };
 
   const getAndExtractData = () => {
-    getVoteLocations({ state }, eventId).then((data) => {
+    getVoteLocations({ state, dispatch }, eventId).then((data) => {
       voteData.current = data;
       const googleLocations = data.filter((l) => l.google_maps_location_id).map((l) => l.google_maps_location_id);
       const customLocations = data.filter((l) => l.custom_location_id).map((l) => l.custom_location_id);
-      return getLocationsInfo({ state }, customLocations, googleLocations);
+      return getLocationsInfo({ state, dispatch }, customLocations, googleLocations);
     }).then(translateAndSetData);
   };
 

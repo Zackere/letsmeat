@@ -70,7 +70,7 @@ const Debt = ({
                 <Button
                   color="red"
                   onPress={() => {
-                    deleteImageDebt({ state }, debt.id).then(() => { setVisible(false); });
+                    deleteImageDebt({ state, dispatch }, debt.id).then(() => { setVisible(false); });
                   }}
                 >
                   Delete
@@ -80,7 +80,7 @@ const Debt = ({
               !debt.satisfied && (!debt.pending_debt || debt.pending_debt.from_id) !== state.user.id && (
               <Button
                 onPress={() => {
-                  addDebt({ state },
+                  addDebt({ state, dispatch },
                     state.group.id, state.event.id,
                     state.user.id, image.uploaded_by,
                     null, null, debt.id, 0).then(

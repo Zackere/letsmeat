@@ -24,12 +24,12 @@ const AddDebt = ({ navigation, route }) => {
 
   const pressAddDebt = () => {
     if (debt) {
-      updateImageDebt({ state }, { ...debt, amount: parseAmount(amount), description }).then(() => {
+      updateImageDebt({ state, dispatch }, { ...debt, amount: parseAmount(amount), description }).then(() => {
         reloadDebts();
         navigation.goBack();
       });
     } else {
-      createImageDebt({ state }, parseAmount(amount), description, imageId).then(() => {
+      createImageDebt({ state, dispatch }, parseAmount(amount), description, imageId).then(() => {
         reloadDebts();
         navigation.goBack();
       });

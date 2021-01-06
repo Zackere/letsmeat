@@ -67,11 +67,11 @@ export const Invitation = ({ invitation, full = false }) => {
 
   useEffect(() => {
     mounted.current = true;
-    getUsersInfo({ state }, invitation.from_id).then((users) => {
+    getUsersInfo({ state, dispatch }, invitation.from_id).then((users) => {
       if (!mounted.current) return;
       setUser(users[0]);
     });
-    getGroupInfo({ state }, invitation.group_id).then((group) => {
+    getGroupInfo({ state, dispatch }, invitation.group_id).then((group) => {
       if (!mounted.current) return;
       setGroup(group);
     });
@@ -97,9 +97,9 @@ export const Invitation = ({ invitation, full = false }) => {
         )}
       <NotificationAction
         full={full}
-        rejectAction={() => rejectInvitation({ state }, group.id)
+        rejectAction={() => rejectInvitation({ state, dispatch }, group.id)
           .then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }))}
-        acceptAction={() => acceptInvitation({ state }, group.id)
+        acceptAction={() => acceptInvitation({ state, dispatch }, group.id)
           .then(() => dispatch({ type: 'REMOVE_INVITATION', groupId: group.id }))}
       />
     </Card>
@@ -117,16 +117,16 @@ export const Debt = ({ debt, full = false }) => {
 
   useEffect(() => {
     mounted.current = true;
-    getUsersInfo({ state }, debt.to_id).then((users) => {
+    getUsersInfo({ state, dispatch }, debt.to_id).then((users) => {
       if (!mounted.current) return;
       setUser(users[0]);
     });
-    getGroupInfo({ state }, debt.group_id).then((group) => {
+    getGroupInfo({ state, dispatch }, debt.group_id).then((group) => {
       if (!mounted.current) return;
       setGroup(group);
     });
     if (full && debt.image_id) {
-      getImagesInfo({ state }, debt.image_id).then(([response]) => {
+      getImagesInfo({ state, dispatch }, debt.image_id).then(([response]) => {
         if (!mounted.current) return;
         Image.getSize(response.image_url, (width, height) => {
           setImageSize({ width, height });
@@ -178,9 +178,9 @@ export const Debt = ({ debt, full = false }) => {
       />
       <NotificationAction
         full={full}
-        rejectAction={() => rejectDebt({ state }, debt.id)
+        rejectAction={() => rejectDebt({ state, dispatch }, debt.id)
           .then(() => dispatch({ type: 'REMOVE_DEBT', debtId: debt.id }))}
-        acceptAction={() => acceptDebt({ state }, debt.id)
+        acceptAction={() => acceptDebt({ state, dispatch }, debt.id)
           .then(() => dispatch({ type: 'REMOVE_DEBT', debtId: debt.id }))}
       />
     </Card>

@@ -29,8 +29,8 @@ const FeedContent = ({ navigation }) => {
   const onRefresh = () => {
     setRefreshing(true);
     Promise.all(
-      [getGroupInfo({ state }, state.group.id),
-        getGroupDebts({ state }, state.group.id)]
+      [getGroupInfo({ state, dispatch }, state.group.id),
+        getGroupDebts({ state, dispatch }, state.group.id)]
     )
       .then(([groupInfo, debtInfo]) => {
         setRefreshing(false);

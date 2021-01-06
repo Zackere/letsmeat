@@ -29,11 +29,11 @@ export const GroupMembers = ({
   membersToDisplay = 3,
   showAll = false
 }) => {
-  const { state } = useContext(store);
+  const { state, dispatch } = useContext(store);
   const [membersInfo, setMembersInfo] = useState(members);
 
   useEffect(() => {
-    getUsersInfo({ state }, members.map((m) => m.id)).then(setMembersInfo);
+    getUsersInfo({ state, dispatch }, members.map((m) => m.id)).then(setMembersInfo);
   }, [members, state]);
 
   const membersSlice = showAll ? membersInfo : membersInfo.slice(0, membersToDisplay);

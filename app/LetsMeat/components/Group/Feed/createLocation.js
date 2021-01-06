@@ -26,8 +26,8 @@ const CreateLocation = ({ navigation, route }) => {
         disabled={!name || adding}
         onPress={() => {
           setAdding(true);
-          createLocationCustom({ state }, groupId, name, address)
-            .then((location) => updateEvent({ state }, { id: eventId, custom_locations_ids: [location.id] }))
+          createLocationCustom({ state, dispatch }, groupId, name, address)
+            .then((location) => updateEvent({ state, dispatch }, { id: eventId, custom_locations_ids: [location.id] }))
             .then((event) => dispatch({ type: 'SET_EVENT', payload: event }))
             .then(() => navigation.pop(2))
             .finally(() => setAdding(false));
