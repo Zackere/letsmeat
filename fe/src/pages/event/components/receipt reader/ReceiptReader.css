@@ -1,0 +1,37 @@
+.fileContainer {
+    border-radius: 0px;
+    box-shadow: none !important;
+    margin: 0px auto;
+    padding: 0px;
+}
+
+.deleteImage {
+    background: transparent !important;
+    color: white !important;
+    font-size: 15px !important;
+    font-weight: normal !important;
+    top: -10px !important;
+    right: -10px !important;
+}
+
+.uploadPicture {
+    width: 100px;
+    height: 100px;
+}
+
+.uploadPictureContainer {
+    margin: 2% !important;
+    width: 130px !important;
+    height: 130px !important;
+    background: #343a40 !important;
+}
+
+.chooseFileButton {
+    background: #343a40 !important;
+    width: 100%;
+    border-radius: 0px !important;
+}
+
+.fileUploader{
+    width: 100%;
+}

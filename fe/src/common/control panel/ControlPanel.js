@@ -35,7 +35,7 @@ export default class ControlPanel extends Component {
             style={{ marginRight: '25px' }}
             onClick={buttonAction}
           >
-            <IconContext.Provider value={{ size: '27px', color: '#343a40' }}>
+            <IconContext.Provider value={{ size: '27px', color: this.props.buttonColor || '#343a40' }}>
               <BsFillPlusCircleFill />
             </IconContext.Provider>
           </Button>

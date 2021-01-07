@@ -31,7 +31,19 @@ export const joinGroup = (token, id) => {
   const url = base + '/Groups/join?token=' + token
   const body = { id }
 
-  console.log(id)
+  return fetch(url, {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+}
+
+export const leaveGroup = (token, id) => {
+  const url = base + '/Groups/leave?token=' + token
+  const body = { id }
+
   return fetch(url, {
     method: 'post',
     headers: {

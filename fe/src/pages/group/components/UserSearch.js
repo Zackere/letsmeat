@@ -5,7 +5,6 @@ import { TiDelete } from 'react-icons/ti'
 import { BiSearch } from 'react-icons/bi'
 import { connect } from 'react-redux'
 
-
 import Loading from '../../../common/loading/Loading'
 import { searchUsers } from '../../../services/userService'
 import '../../../common/styles/styles.css'
@@ -36,13 +35,12 @@ class UserSearch extends Component {
   getUsers = event => {
     const name = event.target.value.trim()
 
-    if (name) {
+    if (name && name.length > 2) {
       this.setState({ loading: true })
       searchUsers(this.props.token, name).then(users => {
         const filteredUsers = this.filterArray(users, this.state.selected)
 
-        this.setState({ users: filteredUsers })
-        this.setState({ loading: false })
+        this.setState({ users: filteredUsers, loading: false })
       })
     } else this.setState({ users: [] })
   }
@@ -50,10 +48,9 @@ class UserSearch extends Component {
   selectUser = user => {
     const selected = [user, ...this.state.selected]
     const users = this.filterArray(this.state.users, selected)
-    
+
     this.props.setSelected(selected)
-    this.setState({ selected })
-    this.setState({ users })
+    this.setState({ selected, users })
   }
 
   deleteSelection = id => {
@@ -72,18 +69,18 @@ class UserSearch extends Component {
         <Loading show={this.state.loading} />
         <Form>
           <Form.Group>
-          <Form.Label>User name</Form.Label>
-          <InputGroup>
-                <InputGroup.Prepend>
-                  <InputGroup.Text>
-                    <BiSearch />
-                  </InputGroup.Text>
-                </InputGroup.Prepend>
-            <Form.Control
-              type="text"
-              placeholder="Invite new member"
-              onChange={this.getUsers}
-            />
+            <Form.Label>User name</Form.Label>
+            <InputGroup>
+              <InputGroup.Prepend>
+                <InputGroup.Text>
+                  <BiSearch />
+                </InputGroup.Text>
+              </InputGroup.Prepend>
+              <Form.Control
+                type="text"
+                placeholder="Invite new member"
+                onChange={this.getUsers}
+              />
             </InputGroup>
           </Form.Group>
         </Form>
@@ -94,7 +91,7 @@ class UserSearch extends Component {
                 src={user.picture_url}
                 width="36px"
                 className="rounded-circle"
-                alt=''
+                alt=""
               />
               <Button
                 style={{
@@ -126,7 +123,7 @@ class UserSearch extends Component {
                     src={user.picture_url}
                     width="36px"
                     className="mr-3 rounded-circle"
-                    alt=''
+                    alt=""
                   />
                   {user.name}
                 </div>

@@ -1,16 +1,22 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
+import { withToastManager } from 'react-toast-notifications'
 import { ListGroup, Container, Dropdown } from 'react-bootstrap'
-
-import 'bootstrap/dist/css/bootstrap.min.css'
 
 import { Toggle } from '../../../../common/toggle/Toggle'
 import ControlPanel from '../../../../common/control panel/ControlPanel'
 import Loading from '../../../../common/loading/Loading'
-import { getGroups, addGroup, deleteGroup } from '../../../../services/groupsService'
+import {
+  getGroups,
+  addGroup,
+  deleteGroup,
+  leaveGroup,
+} from '../../../../services/groupsService'
+import { success, error } from '../../../../common/toasts/toasts'
 import AddGroup from './modals/AddGroup'
 
+import 'bootstrap/dist/css/bootstrap.min.css'
 import '../../../../common/styles/styles.css'
 
 class Groups extends Component {
@@ -22,54 +28,98 @@ class Groups extends Component {
   }
 
   componentDidMount() {
+    this.getGroups()
+  }
+
+  componentDidUpdate(previousProps) {
+    previousProps.reload !== this.props.reload && this.getGroups()
+  }
+
+  getGroups = () => {
+    this.setState({ loading: true })
     getGroups(this.props.token).then(groups => {
-      this.setState({ groups: groups, all: groups })
+      this.setState({ groups, all: groups, loading: false })
     })
   }
 
-  goToGroupPage(id) {
-    this.props.history.push('/group:' + id)
-  }
+  goToGroupPage = id => this.props.history.push('/group:' + id)
 
   addGroup = name => {
     this.setState({ loading: true })
-    addGroup(this.props.token, name).then(group => {
-      const modifiedGroups = [group, ...this.state.groups]
-      const modifiedAll = [group, ...this.state.all]
+    addGroup(this.props.token, name)
+      .then(group => {
+        group.owner_id = this.props.user.id
 
-      this.setState({ all: modifiedAll })
-      this.setState({ groups: modifiedGroups })
-      this.setState({ loading: false })
-    })
+        const groups = [group, ...this.state.groups]
+        const all = [group, ...this.state.all]
+
+        this.setState({ all, groups, loading: false })
+        success(
+          'Group ' + group.name + ' added successfully',
+          this.props.toastManager
+        )
+      })
+      .catch(e => {
+        error('Failed to add group ' + name, this.props.toastManager)
+        this.setState({ loading: false })
+      })
   }
 
   buttonAction = () => this.setState({ addModalOpened: true })
 
   searchAction = event => {
-    const modifiedGroups = this.state.all.filter(g =>
-      g.name.startsWith(event.target.value)
+    const groups = this.state.all.filter(
+      g => g.name.toLowerCase().search(event.target.value.toLowerCase()) !== -1
     )
 
-    this.setState({ groups: modifiedGroups })
+    this.setState({ groups })
   }
 
   closeModal = () => this.setState({ addModalOpened: false })
 
-  deleteGroup = id => {
+  modifyGroups = id => {
+    const groups = [...this.state.groups]
+    const all = [...this.state.all]
+
+    let index = groups.findIndex(group => group.id === id)
+    groups.splice(index, 1)
+
+    index = all.findIndex(group => group.id === id)
+    all.splice(index, 1)
+
+    this.setState({ all, groups })
+  }
+
+  deleteGroup = group => {
     this.setState({ loading: true })
-    deleteGroup(this.props.token, id).then(() => {
-      let modifiedGroups = [...this.state.groups]
+    deleteGroup(this.props.token, group.id).then(res => {
+      if (res.ok) {
+        this.modifyGroups(group.id)
+        success(
+          'Group ' + group.name + ' deleted successfully',
+          this.props.toastManager
+        )
+      } else {
+        error('Failed to delete group ' + group.name, this.props.toastManager)
+      }
 
-      let index = modifiedGroups.findIndex(group => group.id === id)
-      modifiedGroups.splice(index, 1)
+      this.setState({ loading: false })
+    })
+  }
 
-      let modifiedAll = [...this.state.all]
+  leaveGroup = group => {
+    this.setState({ loading: true })
+    leaveGroup(this.props.token, group.id).then(res => {
+      if (res.ok) {
+        this.modifyGroups(group.id)
+        success(
+          'Group ' + group.name + ' left successfully',
+          this.props.toastManager
+        )
+      } else {
+        error('Failed to leave group ' + group.name, this.props.toastManager)
+      }
 
-      index = modifiedAll.findIndex(group => group.id === id)
-      modifiedAll.splice(index, 1)
-
-      this.setState({ all: modifiedAll })
-      this.setState({ groups: modifiedGroups })
       this.setState({ loading: false })
     })
   }
@@ -79,7 +129,7 @@ class Groups extends Component {
       <Container fluid={true}>
         <Loading show={this.state.loading} />
         <div className="mt-5">
-            <h4>Groups</h4>
+          <h4 style={{ color: '#343a40' }}>Groups</h4>
         </div>
         <AddGroup
           show={this.state.addModalOpened}
@@ -91,6 +141,7 @@ class Groups extends Component {
           buttonAction={this.buttonAction}
           searchName="Find group"
           searchAction={this.searchAction}
+          buttonColor="white"
         />
         <ListGroup className="list-scroll">
           {this.state.groups.map(group => (
@@ -106,9 +157,20 @@ class Groups extends Component {
                   <Dropdown>
                     <Dropdown.Toggle as={Toggle} />
                     <Dropdown.Menu size="sm" title="">
-                      <Dropdown.Item onClick={() => this.deleteGroup(group.id)}>
-                        Delete
+                      <Dropdown.Item
+                        onClick={() => this.goToGroupPage(group.id)}
+                      >
+                        Show
                       </Dropdown.Item>
+                      {this.props.user.id === group.owner_id ? (
+                        <Dropdown.Item onClick={() => this.deleteGroup(group)}>
+                          Delete
+                        </Dropdown.Item>
+                      ) : (
+                        <Dropdown.Item onClick={() => this.leaveGroup(group)}>
+                          Leave
+                        </Dropdown.Item>
+                      )}
                     </Dropdown.Menu>
                   </Dropdown>
                 </div>
@@ -126,4 +188,6 @@ const mapStateToProps = state => ({
   token: state.token,
 })
 
-export default withRouter(connect(mapStateToProps, null)(Groups))
+export default withToastManager(
+  withRouter(connect(mapStateToProps, null)(Groups))
+)
