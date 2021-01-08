@@ -40,10 +40,7 @@ class UsersList extends Component {
 
     const from = me.id > user.id ? me.id : user.id
     const to = me.id < user.id ? me.id : user.id
-
-    console.log(from)
-    console.log(to)
-
+    
     if (!this.state.debts[from] || !this.state.debts[from][to]) return 0
 
     return this.state.debts[from][to]

@@ -1,4 +1,4 @@
-import { url as base } from './url'
+import { url as base } from './constants'
 
 export const debtsInfo = (token, group_id) => {
   const url = base + '/Debts/groupinfo?token=' + token + '&id=' + group_id

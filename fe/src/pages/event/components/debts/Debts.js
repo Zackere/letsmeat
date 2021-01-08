@@ -136,7 +136,6 @@ class Debts extends Component {
         debt_type: 0,
       }
 
-      console.log(debt)
       addDebt(this.props.token, debt).then(() => this.getDebts(false))
     }
   }

@@ -1,4 +1,4 @@
-import { url as base } from './url'
+import { url as base } from './constants'
 
 export const getLocations = (token, body) => {
   const url = base + '/Locations/info?token=' + token

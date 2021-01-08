@@ -1,4 +1,4 @@
-import { url as base } from './url'
+import { url as base } from './constants'
 
 export const sendInvitation = (token, groupId, userId) => {
   const url = base + '/Invitations/send?token=' + token

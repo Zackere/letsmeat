@@ -1,4 +1,4 @@
-import { url as base } from './url'
+import { url as base } from './constants'
 
 export const processReceipt = (token, event_id, file) => {
   const url = base + '/Images/upload?token=' + token + '&event_id=' + event_id

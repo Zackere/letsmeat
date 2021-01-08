@@ -177,7 +177,6 @@ class EditDebts extends Component {
     const debts = this.state.debts
     const index = this.state.index
 
-    console.log(this.props.imageId)
     const debt = {
       amount: 0,
       description: '',
@@ -315,13 +314,14 @@ class EditDebts extends Component {
                       onChange={e => this.setAssignedTo(e.target.value)}
                       disabled={debts[index].satisfied}
                     >
-                      <option disabled value={0}>
+                      <option disabled value={0} key={0}>
                         Not assigned
                       </option>
                       {this.props.users.map(u => (
                         <option
                           disabled={u.id === this.props.user_id}
                           value={u.id}
+                          key={u.id}
                         >
                           {u.name}
                         </option>
