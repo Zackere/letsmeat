@@ -1,4 +1,4 @@
-import { url as base } from './url'
+import { url as base } from './constants'
 
 export const getGroups = token => {
   const url = base + '/Users/info?token=' + token

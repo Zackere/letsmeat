@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { clientId } from '../../services/constants'
 import { setUser, setUserToken } from '../../redux/actions'
 import { withRouter } from 'react-router-dom'
 import { GoogleLogin } from 'react-google-login'
@@ -38,7 +39,7 @@ class Login extends Component {
         <Loading show={this.state.loading} />
         <div className="centralizedContainer">
           <GoogleLogin
-            clientId="1093858916900-rrqh9ehvffdtqblj6shfc7l8bbne08ih.apps.googleusercontent.com"
+            clientId={clientId}
             onSuccess={this.responseGoogle}
             cookiePolicy={'single_host_origin'}
             render={renderProps => (

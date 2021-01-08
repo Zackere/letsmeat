@@ -1,4 +1,4 @@
-import { url as base } from './url'
+import { url as base } from './constants'
 
 export const addEvent = (name, deadline, group_id, token) => {
   const url = base + '/Events/create?token=' + token
