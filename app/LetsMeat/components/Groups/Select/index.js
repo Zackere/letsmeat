@@ -1,6 +1,9 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useContext, useEffect, useState } from 'react';
+import React, {
+  useContext, useEffect, useState, useCallback
+} from 'react';
+
 import {
   FlatList, StyleSheet, Text, View
 } from 'react-native';
@@ -8,6 +11,7 @@ import { TouchableHighlight } from 'react-native-gesture-handler';
 import {
   Card, FAB, Paragraph, Surface, Badge, ActivityIndicator
 } from 'react-native-paper';
+import { refreshNotifications } from '../../../helpers/notifications';
 import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
 import { getGroupInfo, getGroups, testRequest } from '../../Requests';
 import { store } from '../../Store';
@@ -85,9 +89,10 @@ const RenderGroup = ({
 export const Groups = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
   const groupsLoaded = state.groups;
-  useFocusEffect(() => {
+  useFocusEffect(useCallback(() => {
     if (groupsLoaded) setLoadingGroups(false);
-  });
+    refreshNotifications({ state, dispatch });
+  }, [state.user.id]));
   const [loadingGroups, setLoadingGroups] = useState(true);
 
   const loadGroups = () => {
@@ -142,9 +147,8 @@ export const Groups = ({ navigation }) => {
             icon="plus"
             label="Create new group"
             onPress={() => {
-              testRequest({ state, dispatch }, 401).then(console.log);
-              // setLoadingGroups(true);
-              // navigation.navigate('CreateGroup');
+              setLoadingGroups(true);
+              navigation.navigate('CreateGroup');
             }}
           />
         </>

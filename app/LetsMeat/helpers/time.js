@@ -41,5 +41,13 @@ export const getTimeLeft = (timePoint, includeSeconds = false) => {
   const hours = Math.floor(ms / (1000 * 60 * 60)) - 24 * days;
   const minutes = Math.floor(ms / (1000 * 60)) - 24 * 60 * days - 60 * hours;
   const seconds = Math.floor(ms / 1000) - 24 * 60 * 60 * days - 60 * 60 * hours - 60 * minutes;
-  return `${days} days, ${hours} hours ${minutes} minutes ${includeSeconds ? `${seconds} seconds` : ''}${msDiff <= 0 ? 'ago' : 'left'}`;
+  const daysForm = days === 1 ? 'day' : 'days';
+  const hoursForm = hours === 1 ? 'hour' : 'hours';
+  const minutesForm = minutes === 1 ? 'minute' : 'minutes';
+  const secondsForm = seconds === 1 ? 'second' : 'seconds';
+  return `${days} ${daysForm}, `
+  + `${hours} ${hoursForm}, `
+  + `${minutes} ${minutesForm}`
+  + `${includeSeconds ? `, ${seconds} ${secondsForm}` : ' '}`
+  + `${msDiff <= 0 ? 'ago' : 'left'}`;
 };

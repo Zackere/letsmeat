@@ -16,15 +16,15 @@ import BottomTabs from './components/Group/BottomTabs';
 import Groups from './components/Groups';
 import Notifications from './components/Notifications';
 import Preferences from './components/Preferences';
-// import { appendAPIToken, appendUserID } from './components/Requests';
 import { tryLoggingIn } from './components/Requests';
 import SignInScreen from './components/SignIn';
 import SplashScreen from './components/SplashScreen';
 import { StateProvider, store } from './components/Store';
+import { refreshNotifications } from './helpers/notifications';
+import { WEB_CLIENT_ID } from './constants';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
-const WEB_CLIENT_ID = '790166575655-222h23mpv6h7n7jhjkac6gj220e5kevt.apps.googleusercontent.com';
 
 const Navigation = () => {
   const { state, dispatch } = useContext(store);
@@ -33,7 +33,8 @@ const Navigation = () => {
       GoogleSignin.configure({
         webClientId: WEB_CLIENT_ID
       });
-      await tryLoggingIn(dispatch);
+      await tryLoggingIn(state, dispatch);
+      // refreshNotifications({ state, dispatch });
       dispatch({ type: 'SET_LOADED' });
     });
     logIn();

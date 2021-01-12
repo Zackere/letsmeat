@@ -3,6 +3,7 @@ import { ToastAndroid } from 'react-native';
 import {
   GoogleSignin
 } from '@react-native-community/google-signin';
+// import { refreshNotifications } from '../../helpers/notifications';
 
 const baseURL = 'https://letsmeatapi.azurewebsites.net/';
 
@@ -11,7 +12,7 @@ const printAndPassError = (e) => {
   throw e;
 };
 
-const tryLoggingIn = async (dispatch) => {
+const tryLoggingIn = async (state, dispatch) => {
   try {
     await GoogleSignin.signInSilently();
   } catch (error) {
@@ -20,10 +21,14 @@ const tryLoggingIn = async (dispatch) => {
     dispatch({ type: 'SET_LOADED' });
     return;
   }
-  let user = await GoogleSignin.getCurrentUser();
-  user = await appendAPIToken(user);
-  user = await appendUserID(user);
-  dispatch({ type: 'SET_USER', payload: user });
+  try {
+    let user = await GoogleSignin.getCurrentUser();
+    user = await appendAPIToken(user);
+    user = await appendUserID(user);
+    dispatch({ type: 'SET_USER', payload: user });
+  } catch (error) {
+    dispatch({ type: 'SET_LOADED' });
+  }
 };
 
 const executeRequest = (request, dispatch) => request()

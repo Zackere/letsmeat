@@ -6,7 +6,7 @@ import {
   Surface
 } from 'react-native-paper';
 import { getNotificationTimestamp } from '../../helpers/notifications';
-import BackgroundContainer from '../Background';
+import BackgroundContainer, { ScrollPlaceholder } from '../Background';
 import { store } from '../Store';
 import { Notification } from './common';
 
@@ -37,6 +37,7 @@ const Notifications = ({ navigation }) => {
               <Caption>You have no pending notifications</Caption>
             </View>
           )}
+        <ScrollPlaceholder height={100} />
       </ScrollView>
     </BackgroundContainer>
   );
