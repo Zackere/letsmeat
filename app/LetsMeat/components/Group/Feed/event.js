@@ -54,9 +54,9 @@ const EventView = ({ navigation }) => {
                 <Card style={{ ...styles.innerSection, marginTop: 0 }} elevation={0}>
                   <Card.Title title="Locations" />
                   <Locations
-                    googleLocations={state.event.candidate_google_maps_locations}
-                    customLocations={state.event.candidate_custom_locations}
-                    order={results ? results.locations : undefined}
+                    // googleLocations={state.event.candidate_google_maps_locations}
+                    // customLocations={state.event.candidate_custom_locations}
+                    order={(results && finished) ? results.locations : undefined}
                     onRate={({ gmapsId, customId }) => navigation.navigate('RateLocation', { gmapsId, customId })}
                     onAdd={() => navigation.navigate('AddLocation', { eventId: state.event.id, groupId: state.group.id })}
                     onVote={() => navigation.navigate('VoteLocation', { eventId: state.event.id, groupId: state.group.id })}

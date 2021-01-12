@@ -1,15 +1,18 @@
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import React, { useContext, useEffect, useState } from 'react';
+import React, {
+  useContext, useEffect, useState, useCallback
+} from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
   ActivityIndicator, Button
 } from 'react-native-paper';
+import { useFocusEffect } from '@react-navigation/native';
 import { CustomLocationCard, GMapsCard } from '../../Location';
 import { getLocationsInfo } from '../../Requests';
 import { store } from '../../Store';
 
 const Locations = ({
-  customLocations, googleLocations,
+  // customLocations, googleLocations,
   onAdd, onVote, onRate,
   showButtons = true,
   order
@@ -18,12 +21,17 @@ const Locations = ({
   const [loading, setLoading] = useState(true);
   const [locationsOrdered, setLocationsOrdered] = useState([]);
 
+  const customLocations = state.event.candidate_custom_locations;
+  const googleLocations = state.event.candidate_google_maps_locations;
+
   useEffect(() => {
+    console.log('trigerred yo');
     setLoading(true);
-    getLocationsInfo({ state, dispatch }, customLocations, googleLocations)
+    getLocationsInfo({ state, dispatch }, state.event.candidate_custom_locations, state.event.candidate_google_maps_locations)
       .then((locationsInfo) => {
         let newLocationsOrdered = [];
         if (locationsInfo) {
+          console.log(locationsInfo);
           if (order) {
             order.forEach(({ google_maps_location_id, custom_location_id }) => {
               let element;
@@ -37,6 +45,8 @@ const Locations = ({
           } else {
             newLocationsOrdered = [...locationsInfo.custom_location_infomation,
               ...locationsInfo.google_maps_location_information];
+            console.log('console.log(newLocationsOrdered)');
+            console.log(newLocationsOrdered);
           }
         }
         setLocationsOrdered([...newLocationsOrdered]);
