@@ -34,13 +34,10 @@ const FeedContent = ({ navigation }) => {
     )
       .then(([groupInfo, debtInfo]) => {
         setRefreshing(false);
-        console.log(debtInfo);
         dispatch({ type: 'SET_GROUP', payload: { ...groupInfo, ...debtInfo } });
       });
     return () => {};
   };
-
-  // useFocusEffect(React.useCallback(() => { onRefresh(); }, [state.group.id]));
 
   return (
     <BackgroundContainer>

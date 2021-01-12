@@ -5,7 +5,7 @@ import React, {
 } from 'react';
 
 import {
-  FlatList, StyleSheet, Text, View
+  FlatList, StyleSheet, Text, View, RefreshControl
 } from 'react-native';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import {
@@ -94,6 +94,7 @@ export const Groups = ({ navigation }) => {
     refreshNotifications({ state, dispatch });
   }, [state.user.id]));
   const [loadingGroups, setLoadingGroups] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const loadGroups = () => {
     if (!groupsLoaded) {
@@ -103,6 +104,13 @@ export const Groups = ({ navigation }) => {
       });
     } else setLoadingGroups(false);
   };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getGroups({ state, dispatch }).then((groups) => {
+      dispatch({ type: 'SET_GROUPS', payload: groups });
+    }).finally(() => setRefreshing(false));
+  }, [state]);
 
   useEffect(loadGroups, [state, groupsLoaded, dispatch]);
 
@@ -117,6 +125,8 @@ export const Groups = ({ navigation }) => {
         <>
           <BackgroundContainer backgroundVariant="office">
             <FlatList
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+              refreshing={refreshing}
               data={state.groups}
               renderItem={({ item, separators }) => (
                 <RenderGroup

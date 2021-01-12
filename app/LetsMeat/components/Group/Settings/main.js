@@ -1,8 +1,10 @@
 import React, { useContext } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
 import ModalButton from '../../Buttons';
-import { deleteGroup, leaveGroup } from '../../Requests';
+import {
+  deleteGroup, leaveGroup, getGroupInfo, getGroupDebts
+} from '../../Requests';
 import { store } from '../../Store';
 import { GroupMembers } from './members';
 
@@ -29,10 +31,25 @@ const LeaveGroup = ({ confirmAction }) => (
 
 const SettingsScroll = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    Promise.all(
+      [getGroupInfo({ state, dispatch }, state.group.id),
+        getGroupDebts({ state, dispatch }, state.group.id)]
+    )
+      .then(([groupInfo, debtInfo]) => {
+        setRefreshing(false);
+        dispatch({ type: 'SET_GROUP', payload: { ...groupInfo, ...debtInfo } });
+      });
+  };
 
   return (
     <BackgroundContainer>
-      <ScrollView>
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         <GroupMembers members={state.group.users} debts={state.group.debts} navigation={navigation} />
         <LeaveGroup confirmAction={() => {
           leaveGroup({ state, dispatch }, state.group.id)

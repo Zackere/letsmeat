@@ -1,11 +1,11 @@
-import React, { useContext } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useContext, useState, useCallback } from 'react';
+import { StyleSheet, View, RefreshControl } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import {
   Caption,
   Surface
 } from 'react-native-paper';
-import { getNotificationTimestamp } from '../../helpers/notifications';
+import { getNotificationTimestamp, refreshNotifications } from '../../helpers/notifications';
 import BackgroundContainer, { ScrollPlaceholder } from '../Background';
 import { store } from '../Store';
 import { Notification } from './common';
@@ -13,12 +13,21 @@ import { Notification } from './common';
 const Notifications = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
 
+  const [refreshing, setRefreshing] = useState(false);
+
   const notifications = [...state.invitations, ...state.debts]
     .sort((a, b) => getNotificationTimestamp(b) - getNotificationTimestamp(a));
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    refreshNotifications({ state, dispatch }).finally(() => setRefreshing(false));
+  }, [state]);
+
   return (
     <BackgroundContainer backgroundVariant="money">
-      <ScrollView>
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         {notifications.length > 0
           ? (
             <>

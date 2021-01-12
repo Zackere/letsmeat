@@ -1,6 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { StyleSheet } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import React, {
+  useContext, useEffect, useState, useCallback
+} from 'react';
+import { StyleSheet, RefreshControl, ScrollView } from 'react-native';
 import {
   ActivityIndicator, Card, Title
 } from 'react-native-paper';
@@ -22,25 +23,36 @@ const EventView = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [results, setResults] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const finished = state.event.deadline < new Date();
 
   const loadData = () => {
-    if (deleting) return;
-    getEventInfo({ state, dispatch }, state.event.id).then((event) => {
-      dispatch({ type: 'SET_EVENT', payload: event });
-      setEventDetails(true);
-    });
-    getResults({ state, dispatch }, state.event.id).then((results) => {
-      setResults(results);
-    });
+    if (deleting) return Promise.resolve();
+    return Promise.all(
+      [getEventInfo({ state, dispatch }, state.event.id).then((event) => {
+        dispatch({ type: 'SET_EVENT', payload: event });
+        setEventDetails(true);
+      }),
+      getResults({ state, dispatch }, state.event.id).then((results) => {
+        setResults(results);
+      })]
+    );
   };
 
-  useEffect(loadData, [state.user.tokenId, deleting, dispatch]);
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadData().then(() => setRefreshing(false));
+  }, [state.event.id, loadData]);
+
+  useEffect(() => { loadData(); return () => {}; }, [state.user.tokenId, deleting, dispatch]);
 
   return (
     <BackgroundContainer>
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         <Card style={styles.outerSection}>
           <Card.Content>
             <Title style={styles.eventTitle}>{state.event.name}</Title>
