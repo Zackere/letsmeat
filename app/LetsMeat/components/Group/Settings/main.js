@@ -61,6 +61,7 @@ const SettingsScroll = ({ navigation }) => {
         <DeleteGroup confirmAction={() => {
           deleteGroup({ state, dispatch }, state.group.id)
             .then(() => dispatch({ type: 'REMOVE_GROUP', groupId: state.group.id }))
+            .then(() => dispatch({ type: 'SET_GROUP', payload: {} }))
             .then(() => navigation.navigate('SelectGroup'));
         }}
         />
