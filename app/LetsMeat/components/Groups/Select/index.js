@@ -1,43 +1,22 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import React, {
-  useContext, useEffect, useState, useCallback
+  useContext, useEffect, useState, useCallback, useRef
 } from 'react';
-
 import {
-  FlatList, StyleSheet, Text, View, RefreshControl
+  FlatList, StyleSheet, View, RefreshControl
 } from 'react-native';
-import { TouchableHighlight } from 'react-native-gesture-handler';
+import Spinner from 'react-native-loading-spinner-overlay';
 import {
-  Card, FAB, Paragraph, Surface, Badge, ActivityIndicator
+  Card, FAB, Paragraph, Badge, ActivityIndicator
 } from 'react-native-paper';
 import { refreshNotifications } from '../../../helpers/notifications';
 import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
-import { getGroupInfo, getGroups, testRequest } from '../../Requests';
+import { getGroupInfo, getGroups } from '../../Requests';
 import { store } from '../../Store';
 
-const GroupButton = (group, navigation) => (
-  <TouchableHighlight
-    onPress={() => navigation.navigate('Group')}
-  >
-    <Text>
-      Group xD
-    </Text>
-  </TouchableHighlight>
-);
-
-const CreateGroupButton = ({ onPress }) => (
-  <TouchableHighlight
-    onPress={onPress}
-  >
-    <Text>
-      Touch to create a new Group
-    </Text>
-  </TouchableHighlight>
-);
-
 const RenderGroup = ({
-  groupId, navigation,
+  groupId, onPress
 }) => {
   const { state, dispatch } = useContext(store);
   const [group, setGroup] = useState(null);
@@ -52,13 +31,7 @@ const RenderGroup = ({
   return (
     <Card
       style={styles.emptyCard}
-      onPress={() => {
-        getGroupInfo({ state, dispatch }, groupId)
-          .then((group) => {
-            dispatch({ type: 'SET_GROUP', payload: group });
-            navigation.navigate('Home', { screen: 'Feed' });
-          });
-      }}
+      onPress={onPress}
     >
       <Card.Title title={group && group.name} />
       <Card.Content>
@@ -95,6 +68,8 @@ export const Groups = ({ navigation }) => {
   }, [state.user.id]));
   const [loadingGroups, setLoadingGroups] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [spinner, setSpinner] = useState(false);
+  const groupSelected = useRef(false);
 
   const loadGroups = () => {
     if (!groupsLoaded) {
@@ -104,6 +79,12 @@ export const Groups = ({ navigation }) => {
       });
     } else setLoadingGroups(false);
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      groupSelected.current = false;
+    }, [groupSelected])
+  );
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -124,6 +105,7 @@ export const Groups = ({ navigation }) => {
       : (
         <>
           <BackgroundContainer backgroundVariant="office">
+            <Spinner visible={spinner} textContent="Loading data" />
             <FlatList
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
               refreshing={refreshing}
@@ -133,6 +115,16 @@ export const Groups = ({ navigation }) => {
                   groupId={item.id}
                   separators={separators}
                   navigation={navigation}
+                  onPress={() => {
+                    if (groupSelected.current) return;
+                    groupSelected.current = true;
+                    setSpinner(true);
+                    getGroupInfo({ state, dispatch }, item.id)
+                      .then((group) => {
+                        dispatch({ type: 'SET_GROUP', payload: group });
+                        navigation.navigate('Home', { screen: 'Feed' });
+                      }).finally(() => setSpinner(false));
+                  }}
                 />
               )}
               ListEmptyComponent={() => (

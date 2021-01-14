@@ -1,4 +1,6 @@
-import React, { useContext } from 'react';
+import React, {
+  useContext, useState, useRef, useCallback
+} from 'react';
 import {
   RefreshControl, ScrollView, StyleSheet, Text, View
 } from 'react-native';
@@ -6,6 +8,7 @@ import {
   Card, FAB, Surface, Title
 } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
+import Spinner from 'react-native-loading-spinner-overlay';
 import { getGroupInfo, getGroupDebts } from '../../Requests';
 import { store } from '../../Store';
 import { TimeCard } from './times';
@@ -24,7 +27,8 @@ const Event = ({ event, onPress }) => (
 
 const FeedContent = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
-  const [refreshing, setRefreshing] = React.useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const eventSelected = useRef(false);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -39,6 +43,12 @@ const FeedContent = ({ navigation }) => {
     return () => {};
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      eventSelected.current = false;
+    }, [eventSelected])
+  );
+
   return (
     <BackgroundContainer>
       <ScrollView
@@ -52,6 +62,8 @@ const FeedContent = ({ navigation }) => {
               key={e.id}
               event={e}
               onPress={() => {
+                if (eventSelected.current) return;
+                eventSelected.current = true;
                 dispatch({ type: 'SET_EVENT', payload: e });
                 navigation.navigate('Event');
               }}
