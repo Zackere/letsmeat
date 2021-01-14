@@ -175,7 +175,7 @@ const getLocationsInfo = ({ state, dispatch }, customIds, googleIds) => post({ s
 const rateLocation = ({ state, dispatch }, taste, price, amountOfFood, waitingTime, gmapsId, customId) => post({ state, dispatch },
   '/Locations/rate',
   {
-    taste, price, amount_of_food: amountOfFood, waitingTime, google_maps_id: gmapsId, custom_location_id: customId
+    taste, price, amount_of_food: amountOfFood, waiting_time: waitingTime, google_maps_id: gmapsId, custom_location_id: customId
   }).then(extractData);
 
 const addDebt = ({ state, dispatch }, groupId, eventId, fromId, toId, amount, description, imageId, debtType = 1) => post({ state, dispatch }, '/Debts/add',

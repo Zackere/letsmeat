@@ -43,7 +43,7 @@ export const UserPicker = ({
                     key={u.id}
                     onPress={() => {
                       setUser(u);
-                      onDismiss();
+                      if (onDismiss) onDismiss();
                     }}
                   />
                 ))}

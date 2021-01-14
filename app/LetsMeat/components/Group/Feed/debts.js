@@ -160,7 +160,8 @@ const DebtImage = ({
         {
           image.uploaded_by === state.user.id
           && (
-          <Button onPress={
+          <Button
+            onPress={
                   () => {
                     deleteImage({ state, dispatch }, image.image_id).then(() => {
                       dispatch({ type: 'REMOVE_IMAGE', imageId: image.image_id });
@@ -183,6 +184,7 @@ const Debts = ({ navigation, containerStyle, debtStyle }) => {
   const [debts, setDebts] = useState([]);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -218,24 +220,28 @@ const Debts = ({ navigation, containerStyle, debtStyle }) => {
             />
           ))}
           <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
-            <Button
-              style={styles.addButton}
-              onPress={
-    () => {
-      ImagePicker.openPicker({
-        cropping: true
-      })
-        .then((i) => uploadImage({ state, dispatch }, state.event.id, i))
-        .then((r) => dispatch({ type: 'ADD_IMAGE_TO_EVENT', imageId: r.image_id }))
-        .catch((e) => {
-          if (e.code === 'E_PICKER_CANCELLED') return;
-          throw e;
-        });
-    }
-  }
-            >
-              <Icon name="image-plus" size={25} />
-            </Button>
+            {adding ? <ActivityIndicator style={styles.addButton} /> : (
+              <Button
+                style={styles.addButton}
+                onPress={
+                  () => {
+                    setAdding(true);
+                    ImagePicker.openPicker({
+                      cropping: true
+                    })
+                      .then((i) => uploadImage({ state, dispatch }, state.event.id, i))
+                      .then((r) => dispatch({ type: 'ADD_IMAGE_TO_EVENT', imageId: r.image_id }))
+                      .catch((e) => {
+                        if (e.code === 'E_PICKER_CANCELLED') return;
+                        throw e;
+                      })
+                      .finally(() => setAdding(false));
+                  }
+                }
+              >
+                <Icon name="image-plus" size={25} />
+              </Button>
+            )}
           </View>
         </>
       )}
@@ -268,6 +274,9 @@ const styles = StyleSheet.create({
   },
   debtContainer: {
     color: 'rgba(200, 200, 200, 0.7)'
+  },
+  addingLoader: {
+
   }
 });
 

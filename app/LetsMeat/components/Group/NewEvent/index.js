@@ -1,7 +1,7 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import {
-  Button, Card, Surface, TextInput, Title
+  ActivityIndicator, Button, Card, TextInput, Title
 } from 'react-native-paper';
 import BackgroundContainer from '../../Background';
 import { createEvent } from '../../Requests';
@@ -16,8 +16,9 @@ export const NewEventContent = ({ navigation }) => {
   const [pickerVisible, setPickerVisible] = useState(false);
   const [name, setName] = useState(null);
   const [deadline, setDeadline] = useState(null);
+  const [adding, setAdding] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const unsubscribe = navigation.addListener('blur', () => {
       setDeadline(DEFAULT_DEADLINE);
       setName(DEFAULT_NAME);
@@ -42,27 +43,38 @@ export const NewEventContent = ({ navigation }) => {
           </Card>
         )}
       <TextInput onChangeText={setName} style={{ margin: 5 }} mode="outlined" label="Event name" />
-      <Button
-        style={styles.button}
-        mode="contained"
-        onPress={() => {
-          setPickerVisible(true);
-        }}
-      >
-        Set event deadline
-      </Button>
-      <Button
-        style={styles.button}
-        mode="contained"
-        disabled={!inputValid}
-        onPress={() => {
-          createEvent({ state, dispatch }, state.group.id, name, deadline)
-            .then((r) => dispatch({ type: 'ADD_EVENT', event: r }))
-            .then(() => navigation.goBack());
-        }}
-      >
-        Create Event
-      </Button>
+      {
+        !adding
+          ? (
+            <>
+              <Button
+                style={styles.button}
+                mode="contained"
+                onPress={() => {
+                  setPickerVisible(true);
+                }}
+              >
+                Set event deadline
+              </Button>
+              <Button
+                style={styles.button}
+                mode="contained"
+                disabled={!inputValid}
+                onPress={() => {
+                  setAdding(true);
+                  createEvent({ state, dispatch }, state.group.id, name, deadline)
+                    .then((r) => dispatch({ type: 'ADD_EVENT', event: r }))
+                    .then(() => navigation.goBack())
+                    .finally(() => setAdding(false));
+                }}
+              >
+                Create Event
+              </Button>
+            </>
+          ) : (
+            <ActivityIndicator size="large" />
+          )
+}
       <DateAndHourPicker
         visible={pickerVisible}
         setVisible={setPickerVisible}

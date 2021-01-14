@@ -33,6 +33,7 @@ const RateLocation = ({ navigation, route }) => {
   const { state, dispatch } = useContext(store);
   const { gmapsId, customId } = route.params;
   const [locationInfo, setLocationInfo] = useState(undefined);
+  const [isRating, setIsRating] = useState(false);
   const [prefs, setPrefs] = useState({
     price: 50, waiting_time: 50, amount_of_food: 50, taste: 50
   });
@@ -59,18 +60,25 @@ const RateLocation = ({ navigation, route }) => {
         <PrefSetter prefName="amount_of_food" displayName="Portion Size" setPrefs={setPrefs} prefs={prefs} />
         <PrefSetter prefName="taste" displayName="Taste" setPrefs={setPrefs} prefs={prefs} />
       </Card>
-      <Button
-        mode="contained"
-        style={styles.button}
-        onPress={
+      {
+      isRating ? <ActivityIndicator />
+        : (
+          <Button
+            mode="contained"
+            style={styles.button}
+            onPress={
         () => {
+          setIsRating(true);
           rateLocation({ state, dispatch }, prefs.taste, prefs.price, prefs.amount_of_food, prefs.waiting_time, gmapsId || undefined, customId || undefined)
-            .then(() => navigation.goBack());
+            .then(() => navigation.goBack())
+            .catch((e) => setIsRating(false));
         }
       }
-      >
-        Rate
-      </Button>
+          >
+            Rate
+          </Button>
+        )
+}
     </BackgroundContainer>
   );
 };

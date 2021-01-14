@@ -36,7 +36,7 @@ export const DateAndHourPicker = ({
     const { timestamp } = { ...event.nativeEvent };
     if (event.type === 'dismissed') {
       setMode('date');
-      onDismiss();
+      if (onDismiss) onDismiss();
       return;
     }
     if (mode === 'date') {
@@ -65,7 +65,7 @@ export const DateAndHourPicker = ({
 };
 
 const Times = ({
-  times, deadline, onAddTime, loading, onVote
+  times, deadline, onAddTime, loading, onVote, showButtons = true
 }) => {
   const [isAdding, setAdding] = useState(false);
   const [newDate, setNewDate] = useState(null);
@@ -104,7 +104,9 @@ const Times = ({
           </View>
         )}
       <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
-        {isAdding ? (
+        {
+          showButtons
+        && (isAdding ? (
           <>
             <Button
               style={styles.addButton}
@@ -144,7 +146,8 @@ const Times = ({
               <Icon name="vote" size={25} />
             </Button>
           </>
-        )}
+        ))
+}
       </View>
       <DateAndHourPicker
         visible={datePickerVisible}

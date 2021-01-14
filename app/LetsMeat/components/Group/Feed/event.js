@@ -25,7 +25,7 @@ const EventView = ({ navigation }) => {
   const [results, setResults] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const finished = state.event.deadline < new Date();
+  const finished = new Date(state.event.deadline) < new Date();
 
   const loadData = () => {
     if (deleting) return Promise.resolve();
@@ -73,6 +73,7 @@ const EventView = ({ navigation }) => {
                     onAdd={() => navigation.navigate('AddLocation', { eventId: state.event.id, groupId: state.group.id })}
                     onVote={() => navigation.navigate('VoteLocation', { eventId: state.event.id, groupId: state.group.id })}
                     containerStyle={styles.innerSection}
+                    showButtons={!finished}
                   />
                 </Card>
                 <Card style={styles.innerSection} elevation={0}>
@@ -92,6 +93,7 @@ const EventView = ({ navigation }) => {
                         .finally(() => setLoading(false));
                     }}
                     deadline={new Date(state.event.deadline)}
+                    showButtons={!finished}
                   />
                 </Card>
                 <Deadline

@@ -15,7 +15,7 @@ const Locations = ({
   // customLocations, googleLocations,
   onAdd, onVote, onRate,
   showButtons = true,
-  order
+  order,
 }) => {
   const { state, dispatch } = useContext(store);
   const [loading, setLoading] = useState(true);
