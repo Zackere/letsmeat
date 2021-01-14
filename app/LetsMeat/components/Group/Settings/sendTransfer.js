@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import {
-  Button, TextInput
+  Button, TextInput, ActivityIndicator
 } from 'react-native-paper';
 import { MAX_DEBT_DESCRIPTION_LENGTH } from '../../../constants';
 import { formatAmount, isAmountValid, parseAmount } from '../../../helpers/money';
@@ -17,14 +17,17 @@ export const SendTransfer = ({ navigation, route }) => {
 
   const [amount, setAmount] = useState(route.params.amount ? formatAmount(route.params.amount) : '');
   const [description, setDescription] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
   const valid = isAmountValid(amount) && description.length <= MAX_DEBT_DESCRIPTION_LENGTH;
 
   const pressConfirm = () => {
     if (!valid) return;
+    setIsSending(true);
     addDebt({ state, dispatch },
-      state.group.id, null, state.user.id, user.id, parseAmount(amount), description, null, 1);
-    navigation.goBack();
+      state.group.id, null, state.user.id, user.id, parseAmount(amount), description, null, 1)
+      .then(() => navigation.goBack())
+      .catch(() => setIsSending(false));
   };
 
   return (
@@ -52,14 +55,16 @@ export const SendTransfer = ({ navigation, route }) => {
         onChangeText={(text) => setDescription(text.slice(0, MAX_DEBT_DESCRIPTION_LENGTH))}
         placeholder="Thank you for all the fish"
       />
-      <Button
-        disabled={!valid}
-        mode="contained"
-        style={{ margin: 10 }}
-        onPress={pressConfirm}
-      >
-        Send request for transfer confirmation
-      </Button>
+      { isSending ? <ActivityIndicator /> : (
+        <Button
+          disabled={!valid}
+          mode="contained"
+          style={{ margin: 10 }}
+          onPress={pressConfirm}
+        >
+          Request transfer confirmation
+        </Button>
+      )}
     </BackgroundContainer>
   );
 };

@@ -3,6 +3,7 @@ import {
   StyleSheet
 } from 'react-native';
 import {
+  ActivityIndicator,
   Button, TextInput
 } from 'react-native-paper';
 import { MAX_DEBT_DESCRIPTION_LENGTH } from '../../../constants';
@@ -17,22 +18,24 @@ const AddDebt = ({ navigation, route }) => {
 
   const [amount, setAmount] = useState(debt ? `${debt.amount / 100}` : '');
   const [description, setDescription] = useState(debt ? `${debt.description}` : '');
+  const [adding, setAdding] = useState(false);
 
   const valid = isAmountValid(amount) && description.length <= MAX_DEBT_DESCRIPTION_LENGTH;
 
   const reloadDebts = () => dispatch({ type: 'SET_EVENT', payload: { ...state.event, images: [...state.event.images] } });
 
   const pressAddDebt = () => {
+    setAdding(true);
     if (debt) {
       updateImageDebt({ state, dispatch }, { ...debt, amount: parseAmount(amount), description }).then(() => {
         reloadDebts();
         navigation.goBack();
-      });
+      }).catch(() => setAdding(false));
     } else {
       createImageDebt({ state, dispatch }, parseAmount(amount), description, imageId).then(() => {
         reloadDebts();
         navigation.goBack();
-      });
+      }).catch(() => setAdding(false));
     }
   };
 
@@ -56,14 +59,16 @@ const AddDebt = ({ navigation, route }) => {
         onChangeText={(text) => setDescription(text.slice(0, MAX_DEBT_DESCRIPTION_LENGTH))}
         placeholder="Thank you for all the fish"
       />
-      <Button
-        mode="contained"
-        style={styles.button}
-        onPress={pressAddDebt}
-        disabled={!valid}
-      >
-        Add Debt
-      </Button>
+      { adding ? <ActivityIndicator /> : (
+        <Button
+          mode="contained"
+          style={styles.button}
+          onPress={pressAddDebt}
+          disabled={!valid}
+        >
+          Add Debt
+        </Button>
+      )}
     </BackgroundContainer>
   );
 };
