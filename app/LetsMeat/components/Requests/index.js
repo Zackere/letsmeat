@@ -3,11 +3,15 @@ import { ToastAndroid } from 'react-native';
 import {
   GoogleSignin
 } from '@react-native-community/google-signin';
-// import { refreshNotifications } from '../../helpers/notifications';
 
 const baseURL = 'https://letsmeatapi.azurewebsites.net/';
 
 const printAndPassError = (e) => {
+  if (e.response) {
+    if (e.response.status === 401) {
+      ToastAndroid.show('You might try relogging', ToastAndroid.SHORT);
+    }
+  }
   ToastAndroid.show(e.message, ToastAndroid.SHORT);
   throw e;
 };
@@ -32,11 +36,6 @@ const tryLoggingIn = async (state, dispatch) => {
 };
 
 const executeRequest = (request, dispatch) => request()
-  // .catch((e) => {
-  //   console.log({ ...e });
-  //   return tryLoggingIn(dispatch);
-  // })
-  // .then(() => request())
   .catch(printAndPassError);
 
 const get = ({ state, dispatch }, endpoint, params = undefined) => {
