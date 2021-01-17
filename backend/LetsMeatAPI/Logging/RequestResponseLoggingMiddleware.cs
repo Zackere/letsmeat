@@ -27,9 +27,6 @@ namespace LetsMeatAPI {
       LogsController.AddLog(await LogRequest(context) + await LogResponse(context));
     }
     private async Task<string> LogRequest(HttpContext context) {
-      context.Request.EnableBuffering();
-      await using var requestStream = _recyclableMemoryStreamManager.GetStream();
-      await context.Request.Body.CopyToAsync(requestStream);
       var ret = $"Http Request Information:\n" +
                 $"Time: {DateTime.Now}\n" +
                 $"Headers: {HeaderDictToString(context.Request.Headers)}\n" +
@@ -37,9 +34,14 @@ namespace LetsMeatAPI {
                 $"Method: {context.Request.Method}\n" +
                 $"Host: {context.Request.Host}\n" +
                 $"Path: {context.Request.Path}\n" +
-                $"QueryString: {context.Request.QueryString}\n" +
-                $"Request Body: {ReadStreamInChunks(requestStream)}\n";
-      context.Request.Body.Position = 0;
+                $"QueryString: {context.Request.QueryString}\n";
+      if(context.Request.Path.Value.ToLower() != "/images/upload") {
+        context.Request.EnableBuffering();
+        await using var requestStream = _recyclableMemoryStreamManager.GetStream();
+        await context.Request.Body.CopyToAsync(requestStream);
+        ret += $"Request Body: {ReadStreamInChunks(requestStream)}\n";
+        context.Request.Body.Position = 0;
+      }
       return ret;
     }
     private async Task<string> LogResponse(HttpContext context) {

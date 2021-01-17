@@ -1,3 +1,4 @@
+using LetsMeatAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -35,7 +36,7 @@ namespace LetsMeatAPI.Controllers {
       var ret = await (from inv in _context.Invitations
                        where inv.ToId == userId
                        orderby inv.Sent descending
-                       select new InvitationsGetResponse() {
+                       select new InvitationsGetResponse {
                          from_id = inv.FromId,
                          group_id = inv.GroupId,
                          sent = DateTime.SpecifyKind(inv.Sent, DateTimeKind.Utc),
@@ -68,7 +69,7 @@ namespace LetsMeatAPI.Controllers {
       );
       if(inv != null)
         return Conflict();
-      await _context.Invitations.AddAsync(new Models.Invitation() {
+      await _context.Invitations.AddAsync(new Invitation {
         FromId = userId,
         GroupId = body.group_id,
         Sent = DateTime.UtcNow,

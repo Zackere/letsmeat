@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LetsMeatAPI.Models {
-  public class CustomLocation : LocationBase {
+  public class CustomLocation {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
     public Guid CreatedForId { get; set; }
@@ -15,6 +15,7 @@ namespace LetsMeatAPI.Models {
     [MaxLength(64)]
     [Required]
     public string Name { get; set; }
+    public virtual ICollection<CustomLocationReview> Reviews { get; set; }
     public virtual ICollection<Event> EventsWithMe { get; set; }
   }
 }

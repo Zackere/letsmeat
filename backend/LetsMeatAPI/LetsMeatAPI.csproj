@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.7.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.49.0" />
+    <PackageReference Include="Google.Cloud.Vision.V1" Version="2.2.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.0">
@@ -32,12 +33,16 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <LangVersion>preview</LangVersion>
     <StartupObject>LetsMeatAPI.Program</StartupObject>
-    <DockerfileRunArguments>-e LMBlobStorage -e PLACES_API_KEY</DockerfileRunArguments>
+    <DockerfileRunArguments>-e LMBlobStorage -e PLACES_API_KEY -e HOST_PATH -p 49152:80 -p 49153:443</DockerfileRunArguments>
   </PropertyGroup>
 
 </Project>

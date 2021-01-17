@@ -96,7 +96,7 @@ namespace LetsMeatAPI.Controllers {
         return Conflict(body);
       var jwt = new GoogleJsonWebSignature.Payload {
         Subject = body.id,
-        Picture = body.picture_url,
+        Picture = $"{Environment.GetEnvironmentVariable("HOST_PATH")}/user-profile.png",
         Email = body.email,
         Name = body.name
       };

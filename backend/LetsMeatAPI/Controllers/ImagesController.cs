@@ -1,5 +1,6 @@
 using Azure.Storage.Blobs.Models;
 using LetsMeatAPI.Models;
+using LetsMeatAPI.RecieptExtractor;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,21 +22,39 @@ namespace LetsMeatAPI.Controllers {
       LMDbContext context,
       IBlobClientFactory blobClientFactory,
       IPaidResourceGuard paidResourceGuard,
+      IUriRecieptExtractor recieptExtractor,
+      Random rnd,
       ILogger<ImagesController> logger
     ) {
       _userManager = userManager;
       _context = context;
       _blobClientFactory = blobClientFactory;
       _paidResourceGuard = paidResourceGuard;
+      _recieptExtractor = recieptExtractor;
+      _rnd = rnd;
       _logger = logger;
     }
     public class ImageInformationResponse {
       public class DebtFromImageInformation {
+        public class PendingDebtInformation {
+          public Guid? id { get; set; }
+          public Guid group_id { get; set; }
+          public Guid? event_id { get; set; }
+          public string from_id { get; set; }
+          public string to_id { get; set; }
+          public uint amount { get; set; }
+          public string description { get; set; }
+          public Guid? image_id { get; set; }
+          public DateTime timestamp { get; set; }
+          public DateTime? approved_on { get; set; }
+          public Guid? image_debt_id { get; set; }
+        }
         public Guid id { get; set; }
         public uint amount { get; set; }
         [MaxLength(128)]
         public string description { get; set; }
         public bool satisfied { get; set; }
+        public PendingDebtInformation? pending_debt { get; set; }
       }
       public Guid image_id { get; set; }
       public Guid? event_id { get; set; }
@@ -55,19 +74,44 @@ namespace LetsMeatAPI.Controllers {
       [FromBody] ImageInformationBody body
     ) {
       var userId = _userManager.IsLoggedIn(token);
-      if(userId == null)
+      if(userId is null)
         return Unauthorized();
-      if(body.image_ids.Any(i => !_context.Images.Any(ii => ii.Id == i)))
-        return NotFound();
       return await (from image in _context.Images.Include(i => i.DebtsFromImage)
                     where body.image_ids.Contains(image.Id)
                     select new ImageInformationResponse {
-                      debts_from_image = from debt in image.DebtsFromImage
+                      debts_from_image = from d in image.DebtsFromImage
                                          select new ImageInformationResponse.DebtFromImageInformation {
-                                           amount = debt.Amount,
-                                           description = debt.Description,
-                                           id = debt.Id,
-                                           satisfied = debt.Satisfied,
+                                           amount = d.Amount,
+                                           description = d.Description,
+                                           id = d.Id,
+                                           satisfied = d.Satisfied,
+                                           pending_debt = d.Bound == null
+                                           ? (from h in _context.DebtHistory
+                                              where h.ImageDebtId == d.Id
+                                              select new ImageInformationResponse.DebtFromImageInformation.PendingDebtInformation {
+                                                amount = h.Amount,
+                                                approved_on = h.HistoryEntryCreatedOn,
+                                                description = h.Description,
+                                                event_id = h.EventId,
+                                                from_id = h.FromId,
+                                                group_id = h.GroupId,
+                                                image_debt_id = h.ImageDebtId,
+                                                image_id = h.ImageId,
+                                                timestamp = h.Timestamp,
+                                                to_id = h.ToId,
+                                              }).SingleOrDefault()
+                                            : new ImageInformationResponse.DebtFromImageInformation.PendingDebtInformation {
+                                              amount = d.Bound.PendingDebt.Amount,
+                                              description = d.Bound.PendingDebt.Description,
+                                              event_id = d.Bound.PendingDebt.EventId,
+                                              from_id = d.Bound.PendingDebt.FromId,
+                                              group_id = d.Bound.PendingDebt.GroupId,
+                                              id = d.Bound.PendingDebt.Id,
+                                              image_debt_id = d.Id,
+                                              image_id = d.Bound.PendingDebt.ImageId,
+                                              timestamp = d.Bound.PendingDebt.Timestamp,
+                                              to_id = d.Bound.PendingDebt.ToId,
+                                            }
                                          },
                       event_id = image.EventId,
                       group_id = image.GroupId,
@@ -77,6 +121,39 @@ namespace LetsMeatAPI.Controllers {
                       uploaded_time = DateTime.SpecifyKind(image.UploadTime, DateTimeKind.Utc),
                     }).ToListAsync();
     }
+#if DEBUG
+    [HttpPost]
+    [Route("mock_upload")]
+    public async Task<ActionResult<Guid>> MockUpload(
+      string token,
+      Guid event_id,
+      string name
+    ) {
+      var userId = _userManager.IsLoggedIn(token);
+      if(userId == null)
+        return Unauthorized();
+      var ev = await _context.Events.FindAsync(event_id);
+      var img = new Image {
+        DebtsFromImage = new List<DebtFromImage>(3),
+        EventId = ev.Id,
+        GroupId = ev.GroupId,
+        UploadedById = userId,
+        UploadTime = DateTime.UtcNow,
+        Url = $"https://example.com/lol/{name}",
+      };
+      for(var i = 0; i < 3; ++i) {
+        img.DebtsFromImage.Add(new() {
+          Amount = (uint)_rnd.Next(100, 1000),
+          Description = $"Some very meaningful description that needs to be verified :) {i}",
+          Image = img,
+          Satisfied = false,
+        });
+      }
+      await _context.Images.AddAsync(img);
+      await _context.SaveChangesAsync();
+      return img.Id;
+    }
+#endif
     [HttpPost]
     [Route("upload")]
     public async Task<ActionResult<ImageInformationResponse>> Upload(
@@ -85,44 +162,47 @@ namespace LetsMeatAPI.Controllers {
       IFormFile file
     ) {
       var userId = _userManager.IsLoggedIn(token);
-      if(userId == null)
+      if(userId is null)
         return Unauthorized();
       var user = await _context.Users.FindAsync(userId);
       var canAccess = _paidResourceGuard.CanAccessPaidResource(user);
       if(file.Length > MaxFilesize)
-        return new StatusCodeResult(418);
+        return new StatusCodeResult(StatusCodes.Status418ImATeapot);
       var ev = await _context.Events.FindAsync(event_id);
-      if(ev == null)
+      if(ev is null)
         return NotFound();
+      if(!ev.Group.Users.Any(u => u.Id == userId))
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       var extension = Path.GetExtension(file.FileName);
       if(!(extension == ".png" || extension == ".jpeg" || extension == ".jpg"))
-        return new StatusCodeResult(418);
-      var filename = $"{DateTime.UtcNow:yyyyddmmssffff}{new Random().Next(0, 1000)}{extension}";
+        return new StatusCodeResult(StatusCodes.Status418ImATeapot);
+      var filename = $"{DateTime.UtcNow:yyyyddmmssffff}{_rnd.Next(0, 1000)}{extension}";
       var client = _blobClientFactory.GetImageClient(filename);
       using var stream = file.OpenReadStream();
       if(!await canAccess)
         return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       await client.UploadAsync(stream);
-      var debts = new List<DebtFromImage>(3);
       var image = new Image {
-        DebtsFromImage = debts,
+        DebtsFromImage = new List<DebtFromImage>(),
         EventId = event_id,
         GroupId = ev.GroupId,
         UploadedById = userId,
         UploadTime = DateTime.UtcNow,
         Url = client.Uri.ToString(),
       };
-      // TODO(wreplin): Retrieve this data from Vision API
-      var rnd = new Random();
-      for(var i = 0; i < 3; ++i) {
-        debts.Add(new() {
-          Amount = (uint)rnd.Next(100, 1000),
-          Description = $"Some very meaningful description that needs to be verified :) {i}",
-          Image = image,
-          Satisfied = false,
-        });
+      try {
+        foreach(var purchase in await _recieptExtractor.ExtractPurchases(client.Uri)) {
+          image.DebtsFromImage.Add(new() {
+            Amount = purchase.Amount,
+            Description = purchase.Description,
+            Image = image,
+            Satisfied = false,
+          });
+        }
+      } catch(Exception ex) {
+        _logger.LogError(ex.ToString());
       }
-      await _context.DebtsFromImages.AddRangeAsync(debts);
+      await _context.DebtsFromImages.AddRangeAsync(image.DebtsFromImage);
       await _context.Images.AddAsync(image);
       try {
         await _context.SaveChangesAsync();
@@ -131,7 +211,7 @@ namespace LetsMeatAPI.Controllers {
         return Conflict();
       }
       return new ImageInformationResponse {
-        debts_from_image = from debt in debts
+        debts_from_image = from debt in image.DebtsFromImage
                            select new ImageInformationResponse.DebtFromImageInformation {
                              amount = debt.Amount,
                              description = debt.Description,
@@ -156,11 +236,13 @@ namespace LetsMeatAPI.Controllers {
       [FromBody] ImageDeleteBody body
     ) {
       var userId = _userManager.IsLoggedIn(token);
-      if(userId == null)
+      if(userId is null)
         return Unauthorized();
       var image = await _context.Images.FindAsync(body.id);
-      if(image == null)
+      if(image is null)
         return NotFound();
+      if(image.UploadedById != userId && image.Group.OwnerId != userId)
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       _context.Remove(image);
       await _context.SaveChangesAsync();
       var client = _blobClientFactory.GetClientFromUri(new Uri(image.Url));
@@ -181,10 +263,10 @@ namespace LetsMeatAPI.Controllers {
       [FromBody] DeleteImageDebtBody body
     ) {
       var userId = _userManager.IsLoggedIn(token);
-      if(userId == null)
+      if(userId is null)
         return Unauthorized();
       var debt = await _context.DebtsFromImages.FindAsync(body.id);
-      if(debt == null)
+      if(debt is null)
         return NotFound();
       _context.DebtsFromImages.Remove(debt);
       await _context.SaveChangesAsync();
@@ -203,10 +285,10 @@ namespace LetsMeatAPI.Controllers {
       [FromBody] UpdateImageDebtBody body
     ) {
       var userId = _userManager.IsLoggedIn(token);
-      if(userId == null)
+      if(userId is null)
         return Unauthorized();
       var debt = await _context.DebtsFromImages.FindAsync(body.id);
-      if(debt == null)
+      if(debt is null)
         return NotFound();
       if(debt.Satisfied)
         return new StatusCodeResult((int)HttpStatusCode.Forbidden);
@@ -227,14 +309,23 @@ namespace LetsMeatAPI.Controllers {
       public string description { get; set; }
       public Guid image_id { get; set; }
     }
+    public class CreateImageDebtResponse {
+      public uint amount { get; set; }
+      [MaxLength(128)]
+      public string description { get; set; }
+      public Guid id { get; set; }
+      public Guid image_id { get; set; }
+      public bool satisfied { get; set; }
+      public Guid? pending_debt_id { get; set; }
+    }
     [HttpPost]
     [Route("create_image_debt")]
-    public async Task<ActionResult> CreateImageDebt(
+    public async Task<ActionResult<CreateImageDebtResponse>> CreateImageDebt(
       string token,
       [FromBody] CreateImageDebtBody body
     ) {
       var userId = _userManager.IsLoggedIn(token);
-      if(userId == null)
+      if(userId is null)
         return Unauthorized();
       if(!await _context.Images.AnyAsync(i => i.Id == body.image_id))
         return NotFound();
@@ -251,13 +342,22 @@ namespace LetsMeatAPI.Controllers {
         _logger.LogError(ex.ToString());
         return Conflict();
       }
-      return Ok();
+      return new CreateImageDebtResponse {
+        amount = debt.Amount,
+        description = debt.Description,
+        id = debt.Id,
+        image_id = debt.ImageId,
+        pending_debt_id = null,
+        satisfied = debt.Satisfied,
+      };
     }
     public const int MaxFilesize = (int)10e+6; // 10Mb
     private readonly IUserManager _userManager;
     private readonly LMDbContext _context;
     private readonly IBlobClientFactory _blobClientFactory;
     private readonly IPaidResourceGuard _paidResourceGuard;
+    private readonly IUriRecieptExtractor _recieptExtractor;
+    private readonly Random _rnd;
     private readonly ILogger<ImagesController> _logger;
   }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -146,7 +147,7 @@ namespace LetsMeatAPI.Controllers {
         body.amount_of_food == null &&
         body.waiting_time == null
       ) {
-        return new StatusCodeResult(418);
+        return new StatusCodeResult(StatusCodes.Status418ImATeapot);
       }
       var user = await _context.Users.FindAsync(userId);
       if(body.taste != null)
@@ -157,6 +158,18 @@ namespace LetsMeatAPI.Controllers {
         user.AmountOfFoodPref = (int)body.amount_of_food;
       if(body.waiting_time != null)
         user.WaitingTimePref = (int)body.waiting_time;
+      if(user.AmountOfFoodPref == user.PricePref &&
+        user.PricePref == user.TastePref &&
+        user.TastePref == user.WaitingTimePref) {
+        user.AmountOfFoodPref = user.PricePref = user.TastePref = user.WaitingTimePref = 100;
+      } else {
+        var p = new[] { user.AmountOfFoodPref, user.PricePref, user.TastePref, user.WaitingTimePref }
+                .Select(p => p == 0 ? 0 : 100.0 / p).Min();
+        user.AmountOfFoodPref = (int)(p * user.AmountOfFoodPref);
+        user.PricePref = (int)(p * user.PricePref);
+        user.TastePref = (int)(p * user.TastePref);
+        user.WaitingTimePref = (int)(p * user.WaitingTimePref);
+      }
       _context.Entry(user).State = EntityState.Modified;
       try {
         await _context.SaveChangesAsync();

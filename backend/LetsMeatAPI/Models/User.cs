@@ -23,5 +23,7 @@ namespace LetsMeatAPI.Models {
     public virtual ICollection<Group> OwnedGroups { get; set; }
     public virtual ICollection<Event> CreatedEvents { get; set; }
     public virtual ICollection<Image> UploadedImages { get; set; }
+    public virtual ICollection<CustomLocationReview> CustomLocationReviews { get; set; }
+    public virtual ICollection<GoogleMapsLocationReview> GoogleMapsLocationReviews { get; set; }
   }
 }

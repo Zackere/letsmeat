@@ -56,6 +56,6 @@ namespace LetsMeatAPI {
     private readonly ILogger<PaidResouceGuard> _logger;
     private static readonly ReaderWriterLock _mtx = new();
     private static uint _counter = 0;
-    public const uint MaxAccesses = 50;
+    public const uint MaxAccesses = 200;
   }
 }

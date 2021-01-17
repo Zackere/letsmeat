@@ -36,6 +36,70 @@ namespace LetsMeatAPITests {
       CustomLocation[],
       GoogleMapsLocation[],
       Invitation[],
+      Image[]
+      )> SeedDbWithOneGroupWithoutDebts(string connection) {
+      var users = CreateUsers(777, 4);
+      var group = CreateGroups(890, 1)[0];
+      group.Owner = users[0];
+      foreach(var user in users.Take(3))
+        group.Users.Add(user);
+      var events = CreateEvents(682, 2);
+      foreach(var ev in events)
+        ev.Group = group;
+      events[0].Creator = users[2];
+      events[1].Creator = users[0];
+      var customLocations = CreateCustomLocations(4056, 4, 3);
+      foreach(var l in customLocations) {
+        var i = 0;
+        foreach(var r in l.Reviews)
+          r.User = users[i++ % users.Length];
+      }
+      events[0].CandidateCustomLocations.Add(customLocations[0]);
+      events[1].CandidateCustomLocations.Add(customLocations[1]);
+      events[1].CandidateCustomLocations.Add(customLocations[2]);
+      events[1].CandidateCustomLocations.Add(customLocations[3]);
+      foreach(var location in customLocations)
+        location.CreatedFor = group;
+      var googleMapsLocations = CreateGoogleMapsLocations(8109, 2, 4);
+      foreach(var l in googleMapsLocations) {
+        var i = 0;
+        foreach(var r in l.Reviews)
+          r.User = users[i++ % users.Length];
+      }
+      events[0].CandidateGoogleMapsLocations.Add(googleMapsLocations[1]);
+      events[1].CandidateGoogleMapsLocations.Add(googleMapsLocations[0]);
+      var invitations = CreateInvitations(58, 1);
+      invitations[0].From = users[0];
+      invitations[0].Group = group;
+      invitations[0].To = users[3];
+      var images = CreateImages(5042, 3);
+      foreach(var image in images)
+        image.Group = group;
+      images[0].Event = events[0];
+      images[0].UploadedBy = users[1];
+      images[1].Event = events[1];
+      images[1].UploadedBy = users[0];
+      images[2].Event = events[1];
+      images[2].UploadedBy = users[0];
+      var contextSetup = CreateContextForConnection(connection);
+      await Task.WhenAll(
+        contextSetup.Users.AddRangeAsync(users),
+        contextSetup.CustomLocations.AddRangeAsync(customLocations),
+        contextSetup.GoogleMapsLocations.AddRangeAsync(googleMapsLocations),
+        contextSetup.Invitations.AddRangeAsync(invitations),
+        contextSetup.Images.AddRangeAsync(images),
+        contextSetup.Groups.AddRangeAsync(group)
+      );
+      await contextSetup.SaveChangesAsync();
+      return (users, group, events, customLocations, googleMapsLocations, invitations, images);
+    }
+    public async Task<(
+      User[],
+      Group,
+      Event[],
+      CustomLocation[],
+      GoogleMapsLocation[],
+      Invitation[],
       Image[],
       Debt[],
       PendingDebt[]
@@ -50,14 +114,24 @@ namespace LetsMeatAPITests {
         ev.Group = group;
       events[0].Creator = users[2];
       events[1].Creator = users[0];
-      var customLocations = CreateCustomLocations(4056, 4);
+      var customLocations = CreateCustomLocations(4056, 4, 2);
+      foreach(var l in customLocations) {
+        var i = 0;
+        foreach(var r in l.Reviews)
+          r.User = users[i++ % users.Length];
+      }
       events[0].CandidateCustomLocations.Add(customLocations[0]);
       events[1].CandidateCustomLocations.Add(customLocations[1]);
       events[1].CandidateCustomLocations.Add(customLocations[2]);
       events[1].CandidateCustomLocations.Add(customLocations[3]);
       foreach(var location in customLocations)
         location.CreatedFor = group;
-      var googleMapsLocations = CreateGoogleMapsLocations(8109, 2);
+      var googleMapsLocations = CreateGoogleMapsLocations(8109, 2, 2);
+      foreach(var l in googleMapsLocations) {
+        var i = 0;
+        foreach(var r in l.Reviews)
+          r.User = users[i++ % users.Length];
+      }
       events[0].CandidateGoogleMapsLocations.Add(googleMapsLocations[1]);
       events[1].CandidateGoogleMapsLocations.Add(googleMapsLocations[0]);
       var invitations = CreateInvitations(58, 1);
@@ -99,6 +173,7 @@ namespace LetsMeatAPITests {
         contextSetup.Invitations.AddRangeAsync(invitations),
         contextSetup.Images.AddRangeAsync(images),
         contextSetup.Debts.AddRangeAsync(debts),
+        contextSetup.PendingDebts.AddRangeAsync(pendingDebts),
         contextSetup.Groups.AddRangeAsync(group)
       );
       await contextSetup.SaveChangesAsync();
@@ -165,48 +240,52 @@ namespace LetsMeatAPITests {
       }
       return ret;
     }
-    public static GoogleMapsLocation[] CreateGoogleMapsLocations(int seed, int n) {
+    public static GoogleMapsLocation[] CreateGoogleMapsLocations(int seed, int n, int nReviews) {
       var ret = new GoogleMapsLocation[n];
       var rnd = new Random(seed);
       while(n-- > 0) {
         ret[n] = new GoogleMapsLocation {
-          AmountOfFood = (ulong)rnd.Next(0, 100),
-          AmountOfFoodVotes = (ulong)rnd.Next(0, 100),
+          BusinessStatus = "OPERATIONAL",
           EventsWithMe = new List<Event>(),
           FormattedAddress = RandomString(rnd, 12),
           ExpirationDate = DateTime.UtcNow.AddDays(100),
           Icon = RandomString(rnd, 64),
           Id = RandomString(rnd, 64),
           Name = RandomString(rnd, 15),
-          Price = (ulong)rnd.Next(0, 100),
-          PriceVotes = (ulong)rnd.Next(0, 100),
-          Taste = (ulong)rnd.Next(0, 100),
-          TasteVotes = (ulong)rnd.Next(0, 100),
+          PriceLevel = rnd.Next(0, 4),
+          Rating = rnd.NextDouble() * 4 + 1,
           Url = RandomString(rnd, 64),
+          UserRatingsTotal = (ulong)rnd.Next(1, 100),
           Vicinity = RandomString(rnd, 56),
-          WaitingTime = (ulong)rnd.Next(0, 100),
-          WaitingTimeVotes = (ulong)rnd.Next(0, 100),
         };
+        ret[n].Reviews = Enumerable.Repeat(0, nReviews).Select(
+                _ => new GoogleMapsLocationReview {
+                  AmountOfFood = 0,
+                  Price = 0,
+                  Taste = 0,
+                  WaitingTime = 0,
+                  GoogleMapsLocation = ret[n],
+                }).ToList();
       }
       return ret;
     }
-    public static CustomLocation[] CreateCustomLocations(int seed, int n) {
+    public static CustomLocation[] CreateCustomLocations(int seed, int n, int nReviews) {
       var ret = new CustomLocation[n];
       var rnd = new Random(seed);
       while(n-- > 0) {
         ret[n] = new CustomLocation {
           Address = RandomString(rnd, 12),
-          AmountOfFood = (ulong)rnd.Next(0, 100),
-          AmountOfFoodVotes = (ulong)rnd.Next(0, 100),
           EventsWithMe = new List<Event>(),
           Name = RandomString(rnd, 30),
-          Price = (ulong)rnd.Next(0, 100),
-          PriceVotes = (ulong)rnd.Next(0, 100),
-          Taste = (ulong)rnd.Next(0, 100),
-          TasteVotes = (ulong)rnd.Next(0, 100),
-          WaitingTime = (ulong)rnd.Next(0, 100),
-          WaitingTimeVotes = (ulong)rnd.Next(0, 100),
         };
+        ret[n].Reviews = Enumerable.Repeat(0, nReviews).Select(
+        _ => new CustomLocationReview {
+          AmountOfFood = 0,
+          Price = 0,
+          Taste = 0,
+          WaitingTime = 0,
+          CustomLocation = ret[n],
+        }).ToList();
       }
       return ret;
     }
@@ -230,12 +309,15 @@ namespace LetsMeatAPITests {
       var (tokens, jwts) = UsersWithTokensData(seed, n);
       var rnd = new Random(seed);
       return (from t in tokens.Zip(jwts)
+              orderby t.Second.Subject descending
               select new User {
                 AmountOfFoodPref = rnd.Next(0, 100),
                 CreatedEvents = new List<Event>(),
+                CustomLocationReviews = new List<CustomLocationReview>(),
                 DebtsForMe = new List<Debt>(),
                 DebtsForOthers = new List<Debt>(),
                 Email = t.Second.Email,
+                GoogleMapsLocationReviews = new List<GoogleMapsLocationReview>(),
                 Groups = new List<Group>(),
                 Id = t.Second.Subject,
                 Invitations = new List<Invitation>(),
@@ -281,7 +363,7 @@ namespace LetsMeatAPITests {
       var options = new DbContextOptionsBuilder<LMDbContext>()
                   .UseSqlite(connstring)
                   .UseLazyLoadingProxies()
-                  .LogTo(s => _output.WriteLine(s), LogLevel.Debug)
+                  .LogTo(s => _output.WriteLine(s), LogLevel.Information)
                   .EnableSensitiveDataLogging()
                   .Options;
       return new LMDbContext(options);

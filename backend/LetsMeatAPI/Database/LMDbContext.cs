@@ -16,6 +16,9 @@ namespace LetsMeatAPI {
     public DbSet<PendingDebt> PendingDebts { get; set; }
     public DbSet<DebtFromImage> DebtsFromImages { get; set; }
     public DbSet<PendingDebtFromImageBound> PendingDebtFromImageBounds { get; set; }
+    public DbSet<DebtHistory> DebtHistory { get; set; }
+    public DbSet<CustomLocationReview> CustomLocationReviews { get; set; }
+    public DbSet<GoogleMapsLocationReview> GoogleMapsLocationReviews { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
       modelBuilder.Entity<User>()
         .HasMany(user => user.DebtsForMe)
@@ -91,6 +94,10 @@ namespace LetsMeatAPI {
         .OnDelete(DeleteBehavior.SetNull);
       modelBuilder.Entity<PendingDebtFromImageBound>()
         .HasKey(d => new { d.DebtFromImageId, d.PendingDebtId });
+      modelBuilder.Entity<CustomLocationReview>()
+        .HasKey(r => new { r.CustomLocationId, r.UserId });
+      modelBuilder.Entity<GoogleMapsLocationReview>()
+        .HasKey(r => new { r.GoogleMapsLocationId, r.UserId });
     }
   }
 }

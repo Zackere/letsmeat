@@ -30,7 +30,7 @@ namespace LetsMeatAPITests {
       foreach(var user in context.Users) {
         var (token, jwt) = (from p in tokens.Zip(jwts)
                             where p.Second.Subject == user.Id
-                            select p).FirstOrDefault();
+                            select p).SingleOrDefault();
         Assert.NotNull(token);
         Assert.NotNull(jwt);
         VerifyUserInformation(user, jwt);

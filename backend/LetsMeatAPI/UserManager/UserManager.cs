@@ -25,10 +25,10 @@ namespace LetsMeatAPI {
           PictureUrl = jwt.Picture,
           Email = jwt.Email,
           Name = jwt.Name,
-          AmountOfFoodPref = 50,
-          PricePref = 50,
-          TastePref = 50,
-          WaitingTimePref = 50,
+          AmountOfFoodPref = 100,
+          PricePref = 100,
+          TastePref = 100,
+          WaitingTimePref = 100,
           Token = token,
         });
       } else {

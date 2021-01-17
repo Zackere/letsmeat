@@ -1,9 +1,4 @@
-#  Template .NET Core build
-
-#  This template allows you to validate your .NET Core package.
-#  The workflow allows running tests and code linting on the default branch.
-
-image: mcr.microsoft.com/dotnet/core/sdk:3.1
+image: mcr.microsoft.com/dotnet/sdk:5.0
 
 pipelines:
   branches:
@@ -16,9 +11,9 @@ pipelines:
           script:
             - apt-get update && apt-get install -y zip
             - cd backend/LetsMeatAPI
-            - dotnet restore
-            - dotnet build --no-restore --configuration Release
-            - dotnet publish --no-restore --no-build --configuration Release
+            - dotnet restore LetsMeatAPI.csproj
+            - dotnet build LetsMeatAPI.csproj --no-restore --configuration Release
+            - dotnet publish LetsMeatAPI.csproj --no-restore --no-build --configuration Release
             - cd bin/Release/netcoreapp3.1/publish/
             - zip -r ../letsmeatapi.zip *
             - cd ..

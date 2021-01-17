@@ -1,4 +1,5 @@
 using LetsMeatAPI.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -77,6 +78,7 @@ namespace LetsMeatAPI.Controllers {
         ordinalToCandidateLocation[ordinal] = candidate;
         ++ordinal;
       }
+      await LoadEventLocationsWithReviews(ev);
       var votes = from vote in ev.Votes
                   select CompleteVoteIfNotEmpty(
                     JsonSerializer.Deserialize<VoteInformation>(vote.Order),
@@ -122,6 +124,7 @@ namespace LetsMeatAPI.Controllers {
       var ev = await _context.Events.FindAsync(event_id);
       if(ev == null)
         return NotFound();
+      await LoadEventLocationsWithReviews(ev);
       var vote = await _context.Votes.FindAsync(event_id, userId);
       if(vote == null) {
         return new VoteInformation {
@@ -134,11 +137,9 @@ namespace LetsMeatAPI.Controllers {
                         .OrderByDescending(l => _critic.PersonalScore(l, user))
                         .Select(l => new VoteInformation.LocationInformation {
                           custom_location_id = l.Id,
-                        }))
-                        .ToArray(),
+                        })),
           times = JsonSerializer.Deserialize<IEnumerable<DateTime>>(ev.CandidateTimes)
-                  .Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc))
-                  .ToArray(),
+                  .Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc)),
         };
       }
       var ret = CompleteVote(
@@ -176,7 +177,7 @@ namespace LetsMeatAPI.Controllers {
       if(ev == null)
         return NotFound();
       if(DateTime.SpecifyKind(ev.Deadline, DateTimeKind.Utc) < DateTime.UtcNow)
-        return new StatusCodeResult(418);
+        return new StatusCodeResult(StatusCodes.Status418ImATeapot);
       var vote = await _context.Votes.FindAsync(body.event_id, userId);
       var deserializedVote = vote == null
         ? new VoteInformation {
@@ -282,6 +283,16 @@ namespace LetsMeatAPI.Controllers {
         .Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc))
       };
       return ret;
+    }
+    private async Task LoadEventLocationsWithReviews(Event ev) {
+      await _context.GoogleMapsLocations
+        .Where(l => l.EventsWithMe.Contains(ev))
+        .Include(l => l.Reviews)
+        .LoadAsync();
+      await _context.CustomLocations
+        .Where(l => l.EventsWithMe.Contains(ev))
+        .Include(l => l.Reviews)
+        .LoadAsync();
     }
     private readonly IUserManager _userManager;
     private readonly LMDbContext _context;

@@ -1,6 +1,7 @@
 using Google.Apis.Auth;
 using LetsMeatAPI.Controllers;
 using LetsMeatAPI.ExternalAPI;
+using LetsMeatAPI.RecieptExtractor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +24,8 @@ namespace LetsMeatAPI {
       services.AddDbContext<LMDbContext>(options =>
         options.UseSqlServer(_configuration.GetConnectionString("LMDatabase"))
                .UseLazyLoadingProxies()
-               .LogTo(s => LogsController.AddLog(s))
+               .LogTo(s => LogsController.AddLog(s), LogLevel.Information)
+               .EnableSensitiveDataLogging()
       );
       services.AddScoped<Random>();
       services.AddScoped<ILocationCritic, LocationCritic>();
@@ -35,10 +37,25 @@ namespace LetsMeatAPI {
           s.GetService<ILogger<GooglePlaces>>()!
         )
       );
+      services.AddScoped<IGoogleVision, GoogleVision>(
+        s => new GoogleVision(
+          _configuration.GetConnectionString("VISION_API_CREDENTIALS"),
+          s.GetService<ILogger<GoogleVision>>()!
+        )
+      );
+      services.AddScoped<IUriRecieptExtractor, GoogleVisionRecieptExtractor>(
+        s => new GoogleVisionRecieptExtractor(
+          s.GetService<ITextRecieptExtractor>()!,
+          s.GetService<IGoogleVision>()!
+        )
+      );
+      services.AddScoped<ITextRecieptExtractor, PLMcDonaldsRecieptExtractor>(
+        s => new PLMcDonaldsRecieptExtractor(new EmptyRecieptExtractor())
+      );
       services.AddScoped<IDebtReducer, DebtReducer>();
       services.AddScoped<IUserManager, UserManager>();
       services.AddScoped<IPaidResourceGuard, PaidResouceGuard>(
-        s => new PaidResouceGuard(2_000, s.GetService<ILogger<PaidResouceGuard>>()!)
+        s => new PaidResouceGuard(0_250, s.GetService<ILogger<PaidResouceGuard>>()!)
       );
       services.AddScoped<LoginController.GoogleTokenIdValidator>(
         _ => GoogleJsonWebSignature.ValidateAsync
@@ -87,6 +104,7 @@ namespace LetsMeatAPI {
       app.UseCors(_letsMeatAPIPolicy);
       app.UseHttpsRedirection();
       app.UseRouting();
+      app.UseStaticFiles();
       app.UseEndpoints(endpoints => endpoints.MapControllers());
       app.UseSwagger();
       app.UseSwaggerUI(config => {

@@ -1,4 +1,5 @@
 using Azure.Storage.Blobs.Models;
+using LetsMeatAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -37,16 +38,13 @@ namespace LetsMeatAPI.Controllers {
       [FromBody] GroupCreateBody body
     ) {
       var userId = _userManager.IsLoggedIn(token);
-      if(userId == null)
+      if(userId is null)
         return Unauthorized();
       var user = await _context.Users.FindAsync(userId);
-      var grp = new Models.Group() {
-        CustomLocations = new List<Models.CustomLocation>(),
+      var grp = new Group {
         Name = body.name,
         Owner = user,
-        Users = new List<Models.User>() { user },
-        Events = new List<Models.Event>(),
-        Images = new List<Models.Image>(),
+        Users = new List<User> { user },
       };
       await _context.Groups.AddAsync(grp);
       try {
@@ -55,7 +53,7 @@ namespace LetsMeatAPI.Controllers {
         _logger.LogError(ex.ToString());
         return Conflict();
       }
-      return new GroupCreatedResponse() {
+      return new GroupCreatedResponse {
         id = grp.Id,
         name = grp.Name
       };
@@ -71,7 +69,6 @@ namespace LetsMeatAPI.Controllers {
         public Guid created_for_id { get; set; }
         public string address { get; set; }
         public string name { get; set; }
-        public string rating { get; set; }
       }
       public class EventInformation {
         public Guid id { get; set; }
@@ -94,10 +91,10 @@ namespace LetsMeatAPI.Controllers {
       Guid id
     ) {
       var userId = _userManager.IsLoggedIn(token);
-      if(userId == null)
+      if(userId is null)
         return Unauthorized();
       var grp = await _context.Groups.FindAsync(id);
-      if(grp == null)
+      if(grp is null)
         return NotFound();
       return new GroupInformationResponse {
         id = grp.Id,
@@ -118,12 +115,13 @@ namespace LetsMeatAPI.Controllers {
                              name = location.Name,
                              created_for_id = location.CreatedForId,
                            },
-        events = from evnt in grp.Events
+        events = from ev in grp.Events
+                 orderby ev.Deadline descending
                  select new GroupInformationResponse.EventInformation {
-                   id = evnt.Id,
-                   name = evnt.Name,
-                   deadline = DateTime.SpecifyKind(evnt.Deadline, DateTimeKind.Utc),
-                   creator_id = evnt.CreatorId,
+                   id = ev.Id,
+                   name = ev.Name,
+                   deadline = DateTime.SpecifyKind(ev.Deadline, DateTimeKind.Utc),
+                   creator_id = ev.CreatorId,
                  }
       };
     }
@@ -137,15 +135,15 @@ namespace LetsMeatAPI.Controllers {
       [FromBody] GroupJoinBody body
     ) {
       var userId = _userManager.IsLoggedIn(token);
-      if(userId == null)
+      if(userId is null)
         return Unauthorized();
       var grp = await _context.Groups.FindAsync(body.id);
-      if(grp == null)
+      if(grp is null)
         return NotFound();
       var user = await _context.Users.FindAsync(userId);
       grp.Users.Add(user);
       var inv = await _context.Invitations.FindAsync(userId, grp.Id);
-      if(inv != null)
+      if(inv is not null)
         _context.Invitations.Remove(inv);
       try {
         await _context.SaveChangesAsync();
@@ -165,10 +163,10 @@ namespace LetsMeatAPI.Controllers {
       [FromBody] GroupDeleteBody body
     ) {
       var userId = _userManager.IsLoggedIn(token);
-      if(userId == null)
+      if(userId is null)
         return Unauthorized();
       var grp = await _context.Groups.FindAsync(body.id);
-      if(grp == null)
+      if(grp is null)
         return NotFound();
       if(grp.OwnerId != userId)
         return new StatusCodeResult((int)HttpStatusCode.Forbidden);
@@ -198,10 +196,10 @@ namespace LetsMeatAPI.Controllers {
       [FromBody] GroupLeaveBody body
     ) {
       var userId = _userManager.IsLoggedIn(token);
-      if(userId == null)
+      if(userId is null)
         return Unauthorized();
       var grp = await _context.Groups.FindAsync(body.id);
-      if(grp == null)
+      if(grp is null)
         return NotFound();
       var user = await _context.Users.FindAsync(userId);
       var c = grp.Users.Count();
@@ -209,8 +207,8 @@ namespace LetsMeatAPI.Controllers {
       var d = grp.Users.Count();
       if(user.Id == grp.OwnerId) {
         // Try to transfer ownership of the group
-        var candidateOwner = grp.Users.FirstOrDefault();
-        if(candidateOwner == null)
+        var candidateOwner = grp.Users.SingleOrDefault();
+        if(candidateOwner is null)
           return await Delete(token, new() { id = grp.Id });
         grp.OwnerId = candidateOwner.Id;
         _context.Entry(grp).State = EntityState.Modified;
