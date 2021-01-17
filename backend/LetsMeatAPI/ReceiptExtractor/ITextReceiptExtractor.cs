@@ -4,23 +4,23 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace LetsMeatAPI.RecieptExtractor {
-  public interface ITextRecieptExtractor {
-    public IEnumerable<PurchaseInformation> ExtractPurchases(string recieptText);
+namespace LetsMeatAPI.ReceiptExtractor {
+  public interface ITextReceiptExtractor {
+    public IEnumerable<PurchaseInformation> ExtractPurchases(string receiptText);
   }
-  public class EmptyRecieptExtractor : ITextRecieptExtractor {
-    public IEnumerable<PurchaseInformation> ExtractPurchases(string recieptText) {
+  public class EmptyReceiptExtractor : ITextReceiptExtractor {
+    public IEnumerable<PurchaseInformation> ExtractPurchases(string receiptText) {
       return Enumerable.Empty<PurchaseInformation>();
     }
   }
-  public class PLMcDonaldsRecieptExtractor : ITextRecieptExtractor {
-    public PLMcDonaldsRecieptExtractor(ITextRecieptExtractor next) {
+  public class PLMcDonaldsReceiptExtractor : ITextReceiptExtractor {
+    public PLMcDonaldsReceiptExtractor(ITextReceiptExtractor next) {
       _next = next;
     }
-    public IEnumerable<PurchaseInformation> ExtractPurchases(string recieptText) {
-      var matches = _productListRx.Matches(recieptText);
+    public IEnumerable<PurchaseInformation> ExtractPurchases(string receiptText) {
+      var matches = _productListRx.Matches(receiptText);
       if(!matches.Any()) {
-        foreach(var p in _next.ExtractPurchases(recieptText))
+        foreach(var p in _next.ExtractPurchases(receiptText))
           yield return p;
         yield break;
       }
@@ -32,14 +32,14 @@ namespace LetsMeatAPI.RecieptExtractor {
                                        .Where(p => p is not null)
       ) {
         var groups = product.Groups;
+        double.TryParse(
+          groups[3].Value.Replace(',', '.'),
+          NumberStyles.Any,
+          CultureInfo.InvariantCulture,
+          out var doubleAmount
+        );
         var n = int.Parse(groups[2].Value);
         while(n-- > 0) {
-          double.TryParse(
-            groups[3].Value.Replace(',', '.'),
-            NumberStyles.Any,
-            CultureInfo.InvariantCulture,
-            out var doubleAmount
-          );
           yield return new PurchaseInformation {
             Amount = (uint)Math.Round(doubleAmount * 100),
             Description = groups[1].Value.Trim(),
@@ -47,7 +47,7 @@ namespace LetsMeatAPI.RecieptExtractor {
         }
       }
     }
-    private readonly ITextRecieptExtractor _next;
+    private readonly ITextReceiptExtractor _next;
     private const RegexOptions _regexpOptions = RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline;
     private static readonly Regex _productListRx = new Regex(@"fiskalny(.*)sprzedaz", _regexpOptions);
     private static readonly Regex _productRx = new Regex(

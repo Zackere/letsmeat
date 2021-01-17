@@ -1,4 +1,4 @@
-using LetsMeatAPI.RecieptExtractor;
+using LetsMeatAPI.ReceiptExtractor;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,22 +6,22 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace LetsMeatAPITests {
-  public class TextRecieptExtractorsTest : TestBase {
-    public TextRecieptExtractorsTest(ITestOutputHelper output) : base(output) { }
+  public class TextReceiptExtractorsTest : TestBase {
+    public TextReceiptExtractorsTest(ITestOutputHelper output) : base(output) { }
     [Theory]
-    [ClassData(typeof(RecieptData))]
-    public void PLMcDonaldsRecieptExtractorExtractsFromPolishReciepts(
-      string recieptText,
+    [ClassData(typeof(ReceiptData))]
+    public void PLMcDonaldsReceiptExtractorExtractsFromPolishReceipts(
+      string receiptText,
       PurchaseInformation[] expectedPurchaseInformation
     ) {
-      var ret = new PLMcDonaldsRecieptExtractor(
-        new EmptyRecieptExtractor()
-      ).ExtractPurchases(recieptText);
+      var ret = new PLMcDonaldsReceiptExtractor(
+        new EmptyReceiptExtractor()
+      ).ExtractPurchases(receiptText);
       foreach(var p in ret)
         _output.WriteLine($"{p.Amount} {p.Description}");
       Assert.Equal(expectedPurchaseInformation, ret.ToArray());
     }
-    public class RecieptData : IEnumerable<object[]> {
+    public class ReceiptData : IEnumerable<object[]> {
       public IEnumerator<object[]> GetEnumerator() {
         yield return new object[] { @"KH Group Kristóf Hankó
 Restauracja McDonald's

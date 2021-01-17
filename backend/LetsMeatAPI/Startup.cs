@@ -1,7 +1,7 @@
 using Google.Apis.Auth;
 using LetsMeatAPI.Controllers;
 using LetsMeatAPI.ExternalAPI;
-using LetsMeatAPI.RecieptExtractor;
+using LetsMeatAPI.ReceiptExtractor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -43,14 +43,14 @@ namespace LetsMeatAPI {
           s.GetService<ILogger<GoogleVision>>()!
         )
       );
-      services.AddScoped<IUriRecieptExtractor, GoogleVisionRecieptExtractor>(
-        s => new GoogleVisionRecieptExtractor(
-          s.GetService<ITextRecieptExtractor>()!,
+      services.AddScoped<IUriReceiptExtractor, GoogleVisionReceiptExtractor>(
+        s => new GoogleVisionReceiptExtractor(
+          s.GetService<ITextReceiptExtractor>()!,
           s.GetService<IGoogleVision>()!
         )
       );
-      services.AddScoped<ITextRecieptExtractor, PLMcDonaldsRecieptExtractor>(
-        s => new PLMcDonaldsRecieptExtractor(new EmptyRecieptExtractor())
+      services.AddScoped<ITextReceiptExtractor, PLMcDonaldsReceiptExtractor>(
+        s => new PLMcDonaldsReceiptExtractor(new EmptyReceiptExtractor())
       );
       services.AddScoped<IDebtReducer, DebtReducer>();
       services.AddScoped<IUserManager, UserManager>();

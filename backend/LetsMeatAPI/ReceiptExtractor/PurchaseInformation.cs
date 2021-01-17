@@ -1,4 +1,4 @@
-namespace LetsMeatAPI.RecieptExtractor {
+namespace LetsMeatAPI.ReceiptExtractor {
   public class PurchaseInformation {
     public uint Amount { get; set; }
     public string Description { get; set; }

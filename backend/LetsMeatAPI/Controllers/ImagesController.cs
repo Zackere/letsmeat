@@ -1,6 +1,6 @@
 using Azure.Storage.Blobs.Models;
 using LetsMeatAPI.Models;
-using LetsMeatAPI.RecieptExtractor;
+using LetsMeatAPI.ReceiptExtractor;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +22,7 @@ namespace LetsMeatAPI.Controllers {
       LMDbContext context,
       IBlobClientFactory blobClientFactory,
       IPaidResourceGuard paidResourceGuard,
-      IUriRecieptExtractor recieptExtractor,
+      IUriReceiptExtractor receiptExtractor,
       Random rnd,
       ILogger<ImagesController> logger
     ) {
@@ -30,7 +30,7 @@ namespace LetsMeatAPI.Controllers {
       _context = context;
       _blobClientFactory = blobClientFactory;
       _paidResourceGuard = paidResourceGuard;
-      _recieptExtractor = recieptExtractor;
+      _receiptExtractor = receiptExtractor;
       _rnd = rnd;
       _logger = logger;
     }
@@ -191,7 +191,7 @@ namespace LetsMeatAPI.Controllers {
         Url = client.Uri.ToString(),
       };
       try {
-        foreach(var purchase in await _recieptExtractor.ExtractPurchases(client.Uri)) {
+        foreach(var purchase in await _receiptExtractor.ExtractPurchases(client.Uri)) {
           image.DebtsFromImage.Add(new() {
             Amount = purchase.Amount,
             Description = purchase.Description,
@@ -356,7 +356,7 @@ namespace LetsMeatAPI.Controllers {
     private readonly LMDbContext _context;
     private readonly IBlobClientFactory _blobClientFactory;
     private readonly IPaidResourceGuard _paidResourceGuard;
-    private readonly IUriRecieptExtractor _recieptExtractor;
+    private readonly IUriReceiptExtractor _receiptExtractor;
     private readonly Random _rnd;
     private readonly ILogger<ImagesController> _logger;
   }
