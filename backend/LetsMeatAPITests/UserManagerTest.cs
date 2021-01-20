@@ -114,6 +114,7 @@ namespace LetsMeatAPITests {
 
       var userManager1 = new UserManager(context1, Mock.Of<ILogger<UserManager>>());
       var userManager2 = new UserManager(context2, Mock.Of<ILogger<UserManager>>());
+      userManager1.LogOut(token1);
       context2.Users = mockUsers.Object;
       var create2 = Assert.ThrowsAsync<DbUpdateException>(() => userManager2.OnTokenGranted(token2, jwt2));
       await Task.Delay(500);
@@ -141,6 +142,7 @@ namespace LetsMeatAPITests {
         AmountOfFoodPref = 31,
         TastePref = 56,
         WaitingTimePref = 89,
+        Token = token1,
       });
       await context2.SaveChangesAsync();
       var genuineUsers = context1.Users;
@@ -155,7 +157,7 @@ namespace LetsMeatAPITests {
         });
       context1.Users = mockUsers.Object;
       var userManager1 = new UserManager(context1, Mock.Of<ILogger<UserManager>>());
-
+      userManager1.LogOut(token1);
       var update1 = Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => userManager1.OnTokenGranted(token1, jwt1));
       await Task.Delay(500);
       context2.Users.Remove(context2.Users.Find(jwt1.Subject));

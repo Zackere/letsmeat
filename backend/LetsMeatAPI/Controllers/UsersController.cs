@@ -26,6 +26,7 @@ namespace LetsMeatAPI.Controllers {
         public Guid id { get; set; }
         public string name { get; set; }
         public string owner_id { get; set; }
+        public bool can_leave { get; set; }
       }
       public class Prefs {
         [Range(0, 100)]
@@ -79,6 +80,9 @@ namespace LetsMeatAPI.Controllers {
       if(userId == null)
         return Unauthorized();
       var user = await _context.Users.FindAsync(userId);
+      await _context.Groups.Include(g => g.Debts)
+                           .Where(g => user.Groups.Contains(g))
+                           .LoadAsync();
       return new UserInformationResponse {
         id = user.Id,
         picture_url = user.PictureUrl,
@@ -86,6 +90,9 @@ namespace LetsMeatAPI.Controllers {
         name = user.Name,
         groups = from grp in user.Groups
                  select new UserInformationResponse.GroupInformation {
+                   can_leave = !grp.Debts.Any(
+                     d => d.FromId == user.Id || d.ToId == user.Id
+                   ),
                    id = grp.Id,
                    name = grp.Name,
                    owner_id = grp.OwnerId,

@@ -201,10 +201,12 @@ namespace LetsMeatAPI.Controllers {
       var grp = await _context.Groups.FindAsync(body.id);
       if(grp is null)
         return NotFound();
+      if(!grp.Users.Any(u => u.Id == userId))
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
+      if(grp.Debts.Any(d => d.FromId == userId || d.ToId == userId))
+        return new StatusCodeResult((int)HttpStatusCode.Forbidden);
       var user = await _context.Users.FindAsync(userId);
-      var c = grp.Users.Count();
       grp.Users.Remove(user);
-      var d = grp.Users.Count();
       if(user.Id == grp.OwnerId) {
         // Try to transfer ownership of the group
         var candidateOwner = grp.Users.SingleOrDefault();

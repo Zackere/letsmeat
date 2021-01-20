@@ -25,7 +25,7 @@ namespace LetsMeatAPI.Controllers {
       GoogleTokenIdValidator googleTokenIdValidator,
       IUserManager userManager,
       GoogleAudiences? expectedGoogleAudiences,
-      Random rnd,
+      RNGCryptoServiceProvider rnd,
       ILogger<LoginController> logger
     ) {
       _googleTokenIdValidator = googleTokenIdValidator ?? throw new ArgumentNullException("googleTokenIdValidator");
@@ -56,7 +56,7 @@ namespace LetsMeatAPI.Controllers {
         var hashBytes = hasher.ComputeHash(Encoding.UTF8.GetBytes(googlePayload.Subject));
         googlePayload.Subject = string.Concat(Array.ConvertAll(hashBytes, b => b.ToString("X2")));
         var tokenBytes = new byte[TokenLength / 2];
-        _rnd.NextBytes(tokenBytes);
+        _rnd.GetBytes(tokenBytes);
         var tokenHexString = string.Concat(Array.ConvertAll(tokenBytes, b => b.ToString("X2")));
         try {
           await _userManager.OnTokenGranted(tokenHexString, googlePayload);
@@ -116,7 +116,7 @@ namespace LetsMeatAPI.Controllers {
     private readonly GoogleTokenIdValidator _googleTokenIdValidator;
     private readonly IUserManager _userManager;
     private readonly IEnumerable<string>? _expectedGoogleAudiences;
-    private readonly Random _rnd;
+    private readonly RNGCryptoServiceProvider _rnd;
     private readonly ILogger<LoginController> _logger;
   }
 }

@@ -13,6 +13,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 
 namespace LetsMeatAPI {
   public class Startup {
@@ -27,6 +28,7 @@ namespace LetsMeatAPI {
                .LogTo(s => LogsController.AddLog(s), LogLevel.Information)
                .EnableSensitiveDataLogging()
       );
+      services.AddSingleton<RNGCryptoServiceProvider>();
       services.AddScoped<Random>();
       services.AddScoped<ILocationCritic, LocationCritic>();
       services.AddScoped<IElectionHolder, ElectionHolder>();

@@ -18,6 +18,8 @@ namespace LetsMeatAPI {
       _logger = logger;
     }
     public async Task OnTokenGranted(string token, GoogleJsonWebSignature.Payload jwt) {
+      if(_loggedUsersTokenToId.ContainsKey(token))
+        return;
       var user = await _context.Users.FindAsync(jwt.Subject);
       if(user == null) {
         await _context.Users.AddAsync(new() {
