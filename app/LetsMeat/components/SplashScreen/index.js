@@ -1,10 +1,5 @@
-import React, { useContext, useEffect } from 'react';
-import {
-  GoogleSigninButton,
-  GoogleSignin,
-  statusCodes
-} from '@react-native-community/google-signin';
-import { View, StyleSheet, Text } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 
 function SplashScreen() {

@@ -1,9 +1,9 @@
+import React, { useContext } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   GoogleSignin
 } from '@react-native-community/google-signin';
 import { DrawerItem } from '@react-navigation/drawer';
-import React, { useContext } from 'react';
 import {
   StyleSheet, View
 } from 'react-native';
@@ -12,27 +12,24 @@ import {
   Caption, Drawer,
   Title
 } from 'react-native-paper';
-import { store } from '../Store';
 import Notifications from '../Notifications/drawer';
+import { store } from '../Store';
 
 export const DrawerButton = ({
   onPress, icon, label
-}) => {
-  const x = 0;
-  return (
-    <DrawerItem
-      icon={({ color, size }) => (
-        <MaterialCommunityIcons
-          name={icon}
-          color={color}
-          size={size}
-        />
-      )}
-      onPress={onPress}
-      label={label}
-    />
-  );
-};
+}) => (
+  <DrawerItem
+    icon={({ color, size }) => (
+      <MaterialCommunityIcons
+        name={icon}
+        color={color}
+        size={size}
+      />
+    )}
+    onPress={onPress}
+    label={label}
+  />
+);
 
 function DrawerContent({ navigation }) {
   const { state, dispatch } = useContext(store);
@@ -83,13 +80,9 @@ function DrawerContent({ navigation }) {
           )}
           label="Log Out"
           onPress={async () => {
-            try {
-              await GoogleSignin.signOut();
-              dispatch({ type: 'LOGOUT' });
-              dispatch({ type: 'SET_LOADED' });
-            } catch (error) {
-              console.error(error);
-            }
+            await GoogleSignin.signOut();
+            dispatch({ type: 'LOGOUT' });
+            dispatch({ type: 'SET_LOADED' });
           }}
         />
       </Drawer.Section>

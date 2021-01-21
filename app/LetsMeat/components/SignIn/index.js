@@ -1,10 +1,11 @@
+import React, { useContext, useState } from 'react';
 import {
   GoogleSignin, GoogleSigninButton,
-
   statusCodes
 } from '@react-native-community/google-signin';
-import React, { useContext, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import {
+  StyleSheet, Text, View, ToastAndroid
+} from 'react-native';
 import { appendAPIToken, appendUserID } from '../Requests';
 import { store } from '../Store';
 
@@ -14,9 +15,8 @@ function SignInScreen() {
 
   const setUser = (userInfo) => appendAPIToken(userInfo)
     .then(appendUserID)
-    .then((userInfo) => {
-      console.log(userInfo);
-      dispatch({ type: 'SET_USER', payload: userInfo });
+    .then((user) => {
+      dispatch({ type: 'SET_USER', payload: user });
     });
 
   const signIn = async () => {
@@ -26,15 +26,11 @@ function SignInScreen() {
       const userInfo = await GoogleSignin.signIn();
       setUser(userInfo);
     } catch (error) {
-      console.log('Message', error.message);
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log('User Cancelled the Login Flow');
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log('Signing In');
-      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        console.log('Play Services Not Available or Outdated');
-      } else {
-        console.log('Some Other Error Happened');
+      if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        ToastAndroid.show('Upgrade or install Play Services to sign in', ToastAndroid.SHORT);
+      } else if (error.code !== statusCodes.IN_PROGRESS
+        && error.code === statusCodes.SIGN_IN_CANCELLED) {
+        ToastAndroid.show('An unexpected error occurred', ToastAndroid.SHORT);
       }
     }
   };
@@ -43,7 +39,7 @@ function SignInScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Let&apos;s meat</Text>
       <GoogleSigninButton
-        style={{ width: 200, height: 50 }}
+        style={styles.button}
         size={GoogleSigninButton.Size.Wide}
         color={GoogleSigninButton.Color.Dark}
         onPress={signIn}
@@ -64,6 +60,10 @@ const styles = StyleSheet.create({
     fontSize: 50,
     margin: 50
   },
+  button: {
+    width: 200,
+    height: 50
+  }
 });
 
 export default SignInScreen;

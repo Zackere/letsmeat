@@ -1,8 +1,8 @@
-import axios from 'axios';
-import { ToastAndroid } from 'react-native';
 import {
   GoogleSignin
 } from '@react-native-community/google-signin';
+import axios from 'axios';
+import { ToastAndroid } from 'react-native';
 
 const baseURL = 'https://letsmeatapi.azurewebsites.net/';
 
@@ -20,7 +20,6 @@ const tryLoggingIn = async (state, dispatch) => {
   try {
     await GoogleSignin.signInSilently();
   } catch (error) {
-    console.log("Couldn't log in automatically");
     dispatch({ type: 'LOGOUT' });
     dispatch({ type: 'SET_LOADED' });
     return;
@@ -120,6 +119,7 @@ const uploadImage = ({ state, dispatch }, eventId, image) => {
     const parts = path.split('/');
     return parts[parts.length - 1];
   };
+  // eslint-disable-next-line no-undef
   const form = new FormData();
   form.append('file', { uri: image.path, type: image.mime, name: getNameFromPath(image.path) });
   return fetch(`${baseURL}Images/upload?${new URLSearchParams({ token: state.user.token, event_id: eventId })}`, {
@@ -136,9 +136,11 @@ const getImagesInfo = ({ state, dispatch }, ids) => post({ state, dispatch }, '/
 
 const deleteImage = ({ state, dispatch }, id) => _delete({ state, dispatch }, '/Images/delete', { id });
 
-const getVote = ({ state, dispatch }, eventId) => get({ state, dispatch }, '/Votes/get', { event_id: eventId }).then(extractData);
+const getVote = ({ state, dispatch }, eventId) => get({ state, dispatch }, '/Votes/get', { event_id: eventId })
+  .then(extractData);
 
-const getVoteTimes = ({ state, dispatch }, eventId) => getVote({ state, dispatch }, eventId).then((data) => data.times);
+const getVoteTimes = ({ state, dispatch }, eventId) => getVote({ state, dispatch }, eventId)
+  .then((data) => data.times);
 
 const getVoteLocations = ({ state, dispatch }, eventId) => getVote({ state, dispatch }, eventId)
   .then((data) => data.locations);

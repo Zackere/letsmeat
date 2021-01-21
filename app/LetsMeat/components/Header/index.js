@@ -1,11 +1,9 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Text, TouchableOpacity } from 'react-native';
 import {
   Appbar
 } from 'react-native-paper';
 
-const Header = ({
+export const Header = ({
   scene, previous, navigation
 }) => {
   const { options } = scene.descriptor;
@@ -32,4 +30,4 @@ const Header = ({
   );
 };
 
-export { Header };
+export default Header;

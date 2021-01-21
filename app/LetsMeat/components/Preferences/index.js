@@ -1,13 +1,13 @@
+import React, { useContext, useState } from 'react';
 import Slider from '@react-native-community/slider';
 import { createStackNavigator } from '@react-navigation/stack';
-import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { Card, Surface } from 'react-native-paper';
+import { Card } from 'react-native-paper';
+import { BackgroundContainer } from '../Background';
 import { Header } from '../Header';
+import { updatePrefs } from '../Requests';
 import { store } from '../Store';
 import UserCard from '../User';
-import { updatePrefs } from '../Requests';
-import BackgroundContainer from '../Background';
 
 const PrefSetter = ({
   prefName, displayName, setPrefs, prefs
@@ -20,7 +20,7 @@ const PrefSetter = ({
       maximumValue={100}
       value={prefs[prefName]}
       onSlidingComplete={(v) => {
-        setPrefs({ ...prefs, [prefName]: parseInt(v) });
+        setPrefs({ ...prefs, [prefName]: parseInt(v, 10) });
       }}
     />
   </Card>
@@ -42,7 +42,6 @@ const PreferencesContent = ({ navigation }) => {
   }, [navigation, prefs, state, dispatch]);
 
   return (
-
     <BackgroundContainer backgroundVariant="settings">
       <UserCard user={{ ...state.user, picture_url: state.user.photo, prefs }} />
       <Card style={styles.card}>
@@ -78,10 +77,6 @@ const Preferences = () => (
 );
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: '100%'
-  },
   title: {
     fontSize: 50,
     margin: 50

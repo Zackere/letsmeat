@@ -1,16 +1,15 @@
-import React, { useContext, useState, useCallback } from 'react';
-import { StyleSheet, View, RefreshControl } from 'react-native';
+import React, { useCallback, useContext, useState } from 'react';
+import { RefreshControl, StyleSheet, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import {
-  Caption,
-  Surface
+  Caption
 } from 'react-native-paper';
 import { getNotificationTimestamp, refreshNotifications } from '../../helpers/notifications';
-import BackgroundContainer, { ScrollPlaceholder } from '../Background';
+import { BackgroundContainer, ScrollPlaceholder } from '../Background';
 import { store } from '../Store';
 import { Notification } from './common';
 
-const Notifications = ({ navigation }) => {
+const Notifications = () => {
   const { state, dispatch } = useContext(store);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -42,7 +41,7 @@ const Notifications = ({ navigation }) => {
             </>
           )
           : (
-            <View style={{ alignItems: 'center', marginBottom: 10 }}>
+            <View style={styles.noPending}>
               <Caption>You have no pending notifications</Caption>
             </View>
           )}
@@ -53,9 +52,9 @@ const Notifications = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: '100%'
+  noPending: {
+    alignItems: 'center',
+    marginBottom: 10
   }
 });
 

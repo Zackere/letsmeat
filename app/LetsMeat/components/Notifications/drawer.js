@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import {
   Button, Caption,
   IconButton, Subheading
@@ -16,12 +16,12 @@ const Notifications = ({ navigation }) => {
 
   return (
     <View>
-      <View style={{ flexDirection: 'row', margin: 5 }}>
-        <Subheading style={{ margin: 10 }}>Notifications</Subheading>
+      <View style={styles.headerContainer}>
+        <Subheading style={styles.header}>Notifications</Subheading>
         <IconButton
           icon="refresh"
           size={20}
-          style={{ position: 'absolute', top: -9, right: 0 }}
+          style={styles.refreshButton}
           onPress={() => refreshNotifications({ state, dispatch })}
         />
       </View>
@@ -39,12 +39,31 @@ const Notifications = ({ navigation }) => {
           </>
         )
         : (
-          <View style={{ alignItems: 'center', marginBottom: 10 }}>
+          <View style={styles.emptyNotificationsText}>
             <Caption>You have no pending notifications</Caption>
           </View>
         )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  refreshButton: {
+    position: 'absolute',
+    top: -9,
+    right: 0
+  },
+  emptyNotificationsText: {
+    alignItems: 'center',
+    marginBottom: 10
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    margin: 5
+  },
+  header: {
+    margin: 10
+  }
+});
 
 export default Notifications;

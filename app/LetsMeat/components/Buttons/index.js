@@ -1,5 +1,5 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   Button, Card, Dialog, Paragraph, Portal
 } from 'react-native-paper';
@@ -18,7 +18,7 @@ export const ModalButton = ({
         style={{ ...styles.cardButton, ...style }}
         onPress={showDialog}
       >
-        <Card.Content style={{ flexDirection: 'row', height: '100%', alignItems: 'center' }}>
+        <Card.Content style={styles.cardContent}>
           <MaterialCommunityIcons
             name={icon}
             size={20}
@@ -51,32 +51,15 @@ export const ModalButton = ({
 };
 
 const styles = StyleSheet.create({
-  groupsContainer: {
-    width: '100%',
-    height: '100%'
-  },
-  fab: {
-    position: 'absolute',
-    margin: 30,
-    right: 0,
-    bottom: 0,
-  },
-  emptyCard: {
-    margin: 25
-  },
-  user: {
-    margin: 5
-  },
   cardButton: {
     margin: 25,
     height: 50,
     backgroundColor: 'rgba(255, 255, 255, 0.9)'
   },
-  delete: {
-    backgroundColor: 'rgba(255, 128, 128, 0.9)'
-  },
-  leave: {
-    backgroundColor: '#fc3503'
+  cardContent: {
+    flexDirection: 'row',
+    height: '100%',
+    alignItems: 'center'
   }
 });
 

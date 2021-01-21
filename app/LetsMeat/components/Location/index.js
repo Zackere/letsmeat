@@ -1,15 +1,13 @@
 import React from 'react';
 import { Image, StyleSheet } from 'react-native';
-import {
-  Avatar, Caption, Card, Paragraph
-} from 'react-native-paper';
+import { Caption, Card, Paragraph } from 'react-native-paper';
 
 const getScore = (rating, attribute) => ` ${Math.round(rating[attribute] / rating[`${attribute}_votes`]) || '-'}`;
 
 const Scores = ({ rating, iconUri }) => (
   <>
-    <Card.Actions style={{ justifyContent: 'space-between' }}>
-      {iconUri && <Image style={{ width: 20, height: 20 }} source={{ uri: iconUri }} />}
+    <Card.Actions style={styles.cardActions}>
+      {iconUri && <Image style={styles.image} source={{ uri: iconUri }} />}
       <Caption>
         Portion:
         {getScore(rating, 'amount_of_food')}
@@ -19,7 +17,7 @@ const Scores = ({ rating, iconUri }) => (
         {getScore(rating, 'waiting_time')}
       </Caption>
     </Card.Actions>
-    <Card.Actions style={{ justifyContent: 'space-between' }}>
+    <Card.Actions style={styles.cardActions}>
       <Caption>
         Personalized overall:
         {` ${Math.round(rating.personalized_score)}`}
@@ -105,22 +103,16 @@ const LocationCard = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    height: '100%',
-    width: '100%'
-  },
-  searchbar: {
-    margin: 5
-  },
   searchResult: {
     margin: 5,
     backgroundColor: 'rgba(255, 255, 255, 0.7)'
   },
-  selectedUserContainer: {
-    margin: 5
+  image: {
+    width: 20,
+    height: 20
   },
-  fab: {
-    margin: 10, right: 0, position: 'absolute', bottom: 0
+  cardActions: {
+    justifyContent: 'space-between'
   }
 });
 
