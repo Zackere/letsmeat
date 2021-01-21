@@ -1,18 +1,14 @@
-/**
- * @format
- * @flow strict-local
- */
+import React, { useContext, useEffect } from 'react';
 import {
   GoogleSignin
 } from '@react-native-community/google-signin';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { DefaultTheme as NavigationDefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import React, { useContext, useEffect } from 'react';
 import 'react-native-gesture-handler';
 import { DefaultTheme as PaperDefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import DrawerContent from './components/DrawerContent';
-import BottomTabs from './components/Group/BottomTabs';
+import { BottomTabs } from './components/Group/BottomTabs';
 import Groups from './components/Groups';
 import Notifications from './components/Notifications';
 import Preferences from './components/Preferences';
@@ -20,7 +16,6 @@ import { tryLoggingIn } from './components/Requests';
 import SignInScreen from './components/SignIn';
 import SplashScreen from './components/SplashScreen';
 import { StateProvider, store } from './components/Store';
-import { refreshNotifications } from './helpers/notifications';
 import { WEB_CLIENT_ID } from './constants';
 
 const Drawer = createDrawerNavigator();

@@ -57,31 +57,28 @@ export const UserPicker = ({
 
 const UserCard = ({
   user, style, actions, onPress
-}) => {
-  console.log(user);
-  return (
-    <Card key={user.id} style={{ ...styles.userCard, ...style }} onPress={onPress}>
-      <Card.Title title={user.name} subtitle={user.email} />
-      <Card.Content style={styles.content}>
-        <View style={styles.leftContent}>
-          <Avatar.Image source={{ uri: user.picture_url }} />
-        </View>
-        <View style={styles.rightContent}>
-          {user.prefs
-            ? (
-              <Prefs prefs={user.prefs} />
-            ) : <Caption style={styles.noPreferencesMessage}>User Preferences not available</Caption>}
-        </View>
-      </Card.Content>
-      {actions
+}) => (
+  <Card key={user.id} style={{ ...styles.userCard, ...style }} onPress={onPress}>
+    <Card.Title title={user.name} subtitle={user.email} />
+    <Card.Content style={styles.content}>
+      <View style={styles.leftContent}>
+        <Avatar.Image source={{ uri: user.picture_url }} />
+      </View>
+      <View style={styles.rightContent}>
+        {user.prefs
+          ? (
+            <Prefs prefs={user.prefs} />
+          ) : <Caption style={styles.noPreferencesMessage}>User Preferences not available</Caption>}
+      </View>
+    </Card.Content>
+    {actions
     && (
     <Card.Actions>
       {actions}
     </Card.Actions>
     )}
-    </Card>
-  );
-};
+  </Card>
+);
 
 const styles = StyleSheet.create({
   container: {

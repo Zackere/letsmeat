@@ -14,18 +14,15 @@ const createPrefStyle = (value, maxWidth = 100) => (
 const Prefs = ({ prefs }) => {
   const [barWidth, setBarWidth] = useState(1);
   return (
-    <View style={{
-      width: '100%', flexDirection: 'row', justifyContent: 'space-between'
-    }}
-    >
-      <View style={{ width: '50%' }}>
+    <View style={styles.container}>
+      <View style={styles.section}>
         <Caption>Price</Caption>
         <View style={createPrefStyle(prefs.price, barWidth - 10)} />
         <Caption>Waiting Time</Caption>
         <View style={createPrefStyle(prefs.waiting_time, barWidth - 10)} />
       </View>
       <View
-        style={{ width: '50%' }}
+        style={styles.section}
         onLayout={(event) => {
           const { width } = event.nativeEvent.layout;
           setBarWidth(width);
@@ -43,29 +40,11 @@ const Prefs = ({ prefs }) => {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: '100%'
+    flexDirection: 'row',
+    justifyContent: 'space-between'
   },
-  userCard: {
-    margin: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)'
-  },
-  content: {
-    marginTop: 10,
-    marginBottom: 20,
-    display: 'flex',
-    flexDirection: 'row'
-  },
-  leftContent: {
-    marginLeft: 5,
-    flexGrow: 1,
-  },
-  rightContent: {
-    marginTop: -15,
-    marginLeft: 20,
-    marginRight: 0,
-    maxWidth: '70%',
-    display: 'flex',
-    flexDirection: 'column'
+  section: {
+    width: '50%'
   },
   bar: {
     borderRadius: 5,
