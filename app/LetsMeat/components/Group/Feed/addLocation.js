@@ -96,7 +96,6 @@ const AddLocation = ({ navigation, route }) => {
               createLocationGoogle({ state, dispatch }, result.place_id, sessionToken)
                 .then(() => updateEvent({ state, dispatch }, { id: eventId, google_maps_locations_ids: [result.place_id] }))
                 .then((event) => {
-                  console.log(event);
                   dispatch({ type: 'SET_EVENT', payload: event });
                   navigation.goBack();
                 });

@@ -65,7 +65,6 @@ const Invite = ({ navigation, route }) => {
 
   const invite = (user) => () => {
     if (selectedUsers.find((u) => u.id === user.id)) return;
-    console.log(user);
     setSelectedUsers([...selectedUsers, user]);
   };
 

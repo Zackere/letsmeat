@@ -1,11 +1,11 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import {
-  ActivityIndicator, Button, Surface, TextInput
+  ActivityIndicator, Button, TextInput
 } from 'react-native-paper';
-import { store } from '../../Store';
-import { createGroup } from '../../Requests';
 import { BackgroundContainer } from '../../Background';
+import { createGroup } from '../../Requests';
+import { store } from '../../Store';
 
 export const Create = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -13,8 +13,8 @@ export const Create = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
   const [creating, setCreating] = useState(false);
 
-  const validateName = (name) => {
-    setNameValid(name && name.length <= 256);
+  const validateName = (newName) => {
+    setNameValid(newName && newName.length <= 256);
   };
 
   const setAndValidateName = (text) => {
@@ -61,10 +61,6 @@ export const Create = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: '100%'
-  },
   textInput: {
     margin: 15,
   },

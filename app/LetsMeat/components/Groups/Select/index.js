@@ -1,17 +1,17 @@
+import React, {
+  useCallback, useContext, useEffect, useRef, useState
+} from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import React, {
-  useContext, useEffect, useState, useCallback, useRef
-} from 'react';
 import {
-  FlatList, StyleSheet, View, RefreshControl
+  FlatList, RefreshControl, StyleSheet, View
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {
-  Card, FAB, Paragraph, Badge, ActivityIndicator
+  ActivityIndicator, Badge, Card, FAB, Paragraph
 } from 'react-native-paper';
 import { refreshNotifications } from '../../../helpers/notifications';
-import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
+import { BackgroundContainer, ScrollPlaceholder } from '../../Background';
 import { getGroupInfo, getGroups } from '../../Requests';
 import { store } from '../../Store';
 
@@ -35,21 +35,18 @@ const RenderGroup = ({
     >
       <Card.Title title={group && group.name} />
       <Card.Content>
-        <View style={{
-          width: '100%', alignItems: 'flex-start', margin: 0, flexDirection: 'row'
-        }}
-        >
+        <View style={styles.badgesContainer}>
           <MaterialCommunityIcons size={30} name="emoticon-outline" />
           <Badge
             size={20}
-            style={{ marginLeft: -10, marginTop: 10, fontSize: 15 }}
+            style={styles.badge}
           >
             {group && group.users && group.users.length}
           </Badge>
           <MaterialCommunityIcons size={30} name="map-marker-outline" />
           <Badge
             size={20}
-            style={{ marginLeft: -10, marginTop: 10, fontSize: 15 }}
+            style={styles.badge}
           >
             {group && group.custom_locations && group.custom_locations.length}
           </Badge>
@@ -133,7 +130,6 @@ export const Groups = ({ navigation }) => {
                 >
                   <Card.Title title="Nothing to show" />
                   <Card.Cover source={{ uri: 'https://images.unsplash.com/photo-1577460551100-907ba84418ce?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1274&q=80' }} />
-
                   <Card.Content>
                     <Paragraph>
                       Consider adding a group
@@ -178,6 +174,17 @@ const styles = StyleSheet.create({
   emptyCard: {
     margin: 25,
     backgroundColor: 'rgba(255, 255, 255, 0.8)'
+  },
+  badge: {
+    marginLeft: -10,
+    marginTop: 10,
+    fontSize: 15
+  },
+  badgesContainer: {
+    width: '100%',
+    alignItems: 'flex-start',
+    margin: 0,
+    flexDirection: 'row'
   }
 });
 

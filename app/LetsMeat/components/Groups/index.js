@@ -1,7 +1,7 @@
-import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
-import { Create } from './Create';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Header } from '../Header';
+import { Create } from './Create';
 import { Groups as SelectGroup } from './Select';
 
 const Stack = createStackNavigator();

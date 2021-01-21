@@ -108,7 +108,7 @@ const sendInvitation = ({ state, dispatch }, userId, groupId) => post({ state, d
 
 const getInvitations = ({ state, dispatch }) => get({ state, dispatch }, '/Invitations/get').then(extractData);
 
-const rejectInvitation = ({ state, dispatch }, groupId) => _delete({ state, dispatch }, '/Invitations/reject', { group_id: groupId }).catch(console.log);
+const rejectInvitation = ({ state, dispatch }, groupId) => _delete({ state, dispatch }, '/Invitations/reject', { group_id: groupId });
 
 const joinGroup = ({ state, dispatch }, groupId) => post({ state, dispatch }, '/Groups/join', { id: groupId });
 

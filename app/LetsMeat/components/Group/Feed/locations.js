@@ -25,13 +25,11 @@ const Locations = ({
   const googleLocations = state.event.candidate_google_maps_locations;
 
   useEffect(() => {
-    console.log('trigerred yo');
     setLoading(true);
     getLocationsInfo({ state, dispatch }, state.event.candidate_custom_locations, state.event.candidate_google_maps_locations)
       .then((locationsInfo) => {
         let newLocationsOrdered = [];
         if (locationsInfo) {
-          console.log(locationsInfo);
           if (order) {
             order.forEach(({ google_maps_location_id, custom_location_id }) => {
               let element;
@@ -45,8 +43,6 @@ const Locations = ({
           } else {
             newLocationsOrdered = [...locationsInfo.custom_location_infomation,
               ...locationsInfo.google_maps_location_information];
-            console.log('console.log(newLocationsOrdered)');
-            console.log(newLocationsOrdered);
           }
         }
         setLocationsOrdered([...newLocationsOrdered]);

@@ -1,8 +1,8 @@
+import React, { useState } from 'react';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import React, { useState } from 'react';
 import {
-  StyleSheet, View
+  StyleSheet, ToastAndroid, View
 } from 'react-native';
 import {
   Button, Caption, Card, Headline
@@ -70,7 +70,7 @@ const Times = ({
   const [isAdding, setAdding] = useState(false);
   const [newDate, setNewDate] = useState(null);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
-  const [isVoting, setIsVoting] = useState(false);
+  const [isVoting] = useState(false);
 
   const onDismiss = () => {
     setNewDate(null);
@@ -82,7 +82,7 @@ const Times = ({
   const onSetDate = (date) => {
     times.forEach((t) => {
       if (Math.abs(t - date) <= THREE_MIN) {
-        console.log('That date has already been added');
+        ToastAndroid.show('That date has already been added', ToastAndroid.SHORT);
         onDismiss();
       }
     });
@@ -91,18 +91,10 @@ const Times = ({
 
   return (
     <>
-      {isVoting
-        ? (
-          <View>
-            {times.map((t) => <TimeCard key={t.getTime()} time={t} />)}
-            {newDate ? <TimeCard key={newDate.getTime()} time={newDate} highlight /> : null}
-          </View>
-        ) : (
-          <View>
-            {times.map((t) => <TimeCard key={t.getTime()} time={t} />)}
-            {newDate ? <TimeCard key={newDate.getTime()} time={newDate} highlight /> : null}
-          </View>
-        )}
+      <View>
+        {times.map((t) => <TimeCard key={t.getTime()} time={t} />)}
+        {newDate ? <TimeCard key={newDate.getTime()} time={newDate} highlight /> : null}
+      </View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
         {
           showButtons
