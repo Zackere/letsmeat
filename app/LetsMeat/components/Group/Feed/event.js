@@ -66,8 +66,6 @@ const EventView = ({ navigation }) => {
                 <Card style={{ ...styles.innerSection, marginTop: 0 }} elevation={0}>
                   <Card.Title title="Locations" />
                   <Locations
-                    // googleLocations={state.event.candidate_google_maps_locations}
-                    // customLocations={state.event.candidate_custom_locations}
                     order={(results && finished) ? results.locations : undefined}
                     onRate={({ gmapsId, customId }) => navigation.navigate('RateLocation', { gmapsId, customId })}
                     onAdd={() => navigation.navigate('AddLocation', { eventId: state.event.id, groupId: state.group.id })}
@@ -80,7 +78,7 @@ const EventView = ({ navigation }) => {
                   <Card.Title title="Times" />
                   <Times
                     loading={loading}
-                    times={state.event.candidate_times.map((t) => new Date(t))}
+                    times={(results && finished) ? results.times.map((t) => new Date(t)) : state.event.candidate_times.map((t) => new Date(t))}
                     onVote={() => {
                       navigation.navigate('VoteTime', {
                         eventId: state.event.id
@@ -141,6 +139,7 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 30,
     margin: 20,
+    padding: 5,
     textAlign: 'center'
   },
   container: {

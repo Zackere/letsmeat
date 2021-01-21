@@ -91,6 +91,7 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 30,
     margin: 20,
+    padding: 4,
     textAlign: 'center'
   },
   titleCard: {

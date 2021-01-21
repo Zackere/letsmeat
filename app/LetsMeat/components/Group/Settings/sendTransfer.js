@@ -25,7 +25,7 @@ export const SendTransfer = ({ navigation, route }) => {
     if (!valid) return;
     setIsSending(true);
     addDebt({ state, dispatch },
-      state.group.id, null, state.user.id, user.id, parseAmount(amount), description, null, 1)
+      state.group.id, null, user.id, state.user.id, parseAmount(amount), description, null, 1)
       .then(() => navigation.goBack())
       .catch(() => setIsSending(false));
   };

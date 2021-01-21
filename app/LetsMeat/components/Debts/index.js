@@ -9,7 +9,7 @@ export const DebtCard = ({ value }) => {
   return (
     <Card style={{ marginHorizontal: 30, marginTop: -15, backgroundColor: 'rgba(255, 255, 255, 0.7)' }}>
       <Button>
-        {value > 0 ? `Owes you ${formatAmount(value)}` : `You owe ${formatAmount(Math.abs(value))}`}
+        {value > 0 ? `Owes you ${formatAmount(Math.abs(value))}` : `You owe ${formatAmount(Math.abs(value))}`}
       </Button>
     </Card>
   );

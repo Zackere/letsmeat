@@ -34,11 +34,10 @@ const Navigation = () => {
         webClientId: WEB_CLIENT_ID
       });
       await tryLoggingIn(state, dispatch);
-      // refreshNotifications({ state, dispatch });
       dispatch({ type: 'SET_LOADED' });
     });
     logIn();
-  }, [dispatch]);
+  }, []);
 
   let mainComponent = null;
   if (state.loading) {

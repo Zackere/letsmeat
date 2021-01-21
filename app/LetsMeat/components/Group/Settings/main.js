@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { ScrollView, StyleSheet, RefreshControl } from 'react-native';
+import Spinner from 'react-native-loading-spinner-overlay';
 import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
 import ModalButton from '../../Buttons';
 import {
@@ -7,6 +8,7 @@ import {
 } from '../../Requests';
 import { store } from '../../Store';
 import { GroupMembers } from './members';
+import { refreshGroup } from '../../../helpers/refresh';
 
 const DeleteGroup = ({ confirmAction }) => (
   <ModalButton
@@ -29,40 +31,57 @@ const LeaveGroup = ({ confirmAction }) => (
   />
 );
 
+const computeCanILeave = (state) => {
+  let myEdges = state.group.debts[state.user.id]
+    ? Object.entries(state.group.debts[state.user.id])
+      .reduce((prev, [_, curr]) => prev + Math.abs(curr), 0) : 0;
+
+  myEdges += Object.entries(state.group.debts)
+    .map(([_, userInfo]) => (userInfo[state.user.id] ? Math.abs(userInfo[state.user.id]) : 0))
+    .reduce((prev, curr) => prev + Math.abs(curr), 0);
+
+  return myEdges === 0;
+};
+
 const SettingsScroll = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
-  const [refreshing, setRefreshing] = React.useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [spinnerText, setSpinnerText] = useState('');
+  const turnOffSpinner = () => setSpinnerText('');
 
   const onRefresh = () => {
     setRefreshing(true);
-    Promise.all(
-      [getGroupInfo({ state, dispatch }, state.group.id),
-        getGroupDebts({ state, dispatch }, state.group.id)]
-    )
-      .then(([groupInfo, debtInfo]) => {
-        setRefreshing(false);
-        dispatch({ type: 'SET_GROUP', payload: { ...groupInfo, ...debtInfo } });
-      });
+    refreshGroup(state, dispatch).finally(() => { setRefreshing(false); });
   };
+
+  const canILeave = computeCanILeave(state);
 
   return (
     <BackgroundContainer>
+      <Spinner visible={spinnerText !== ''} textContent={spinnerText} />
       <ScrollView
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <GroupMembers members={state.group.users} debts={state.group.debts} navigation={navigation} />
-        <LeaveGroup confirmAction={() => {
-          leaveGroup({ state, dispatch }, state.group.id)
-            .then(() => dispatch({ type: 'REMOVE_GROUP', groupId: state.group.id }))
-            .then(() => dispatch({ type: 'SET_GROUP', payload: {} }))
-            .then(() => navigation.navigate('SelectGroup'));
-        }}
-        />
+        {canILeave
+          ? (
+            <LeaveGroup confirmAction={() => {
+              setSpinnerText('Leaving group');
+              leaveGroup({ state, dispatch }, state.group.id)
+                .then(() => dispatch({ type: 'REMOVE_GROUP', groupId: state.group.id }))
+                .then(() => dispatch({ type: 'SET_GROUP', payload: {} }))
+                .then(() => navigation.navigate('SelectGroup'))
+                .finally(turnOffSpinner);
+            }}
+            />
+          ) : null}
         <DeleteGroup confirmAction={() => {
+          setSpinnerText('Deleting the group');
           deleteGroup({ state, dispatch }, state.group.id)
             .then(() => dispatch({ type: 'REMOVE_GROUP', groupId: state.group.id }))
             .then(() => dispatch({ type: 'SET_GROUP', payload: {} }))
-            .then(() => navigation.navigate('SelectGroup'));
+            .then(() => navigation.navigate('SelectGroup'))
+            .finally(turnOffSpinner);
         }}
         />
         <ScrollPlaceholder height={100} />

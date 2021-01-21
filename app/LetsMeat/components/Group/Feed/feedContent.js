@@ -12,13 +12,14 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import { getGroupInfo, getGroupDebts } from '../../Requests';
 import { store } from '../../Store';
 import { TimeCard } from './times';
+import { refreshGroup } from '../../../helpers/refresh';
 import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
 
 const Event = ({ event, onPress }) => (
   <Card elevation={1} style={{ margin: 10, backgroundColor: 'rgba(230, 230, 230, 0.9)' }} onPress={onPress}>
     <Card.Content>
       <View style={{ margin: 20, marginTop: 10 }}>
-        <Title style={{ fontSize: 30 }}>{event.name}</Title>
+        <Title style={{ fontSize: 30, padding: 4 }}>{event.name}</Title>
       </View>
       <TimeCard time={new Date(event.deadline)} />
     </Card.Content>
@@ -32,15 +33,7 @@ const FeedContent = ({ navigation }) => {
 
   const onRefresh = () => {
     setRefreshing(true);
-    Promise.all(
-      [getGroupInfo({ state, dispatch }, state.group.id),
-        getGroupDebts({ state, dispatch }, state.group.id)]
-    )
-      .then(([groupInfo, debtInfo]) => {
-        setRefreshing(false);
-        dispatch({ type: 'SET_GROUP', payload: { ...groupInfo, ...debtInfo } });
-      });
-    return () => {};
+    refreshGroup(state, dispatch).finally(() => { setRefreshing(false); });
   };
 
   useFocusEffect(
