@@ -51,13 +51,6 @@ const StateProvider = ({ children }) => {
         };
         return newState;
       }
-      case 'SET_LOADING': {
-        const newState = {
-          ...state,
-          loading: true,
-        };
-        return newState;
-      }
       case 'SET_LOADED': {
         const newState = {
           ...state,
@@ -152,38 +145,12 @@ const StateProvider = ({ children }) => {
             events: state.group.events.filter((e) => e.id !== action.eventId)
           },
         };
-        console.log(newState.group.events);
-        return newState;
-      }
-      case 'UPDATE_GROUP_INFO': {
-        const groups = [...state.groups];
-        const groupIndex = state.groups.findIndex((g) => g.id === action.groupId);
-        const group = { ...groups[groupIndex], ...action.groupInfo };
-        groups[groupIndex] = group;
-        const newState = {
-          ...state,
-          groups,
-        };
         return newState;
       }
       case 'ADD_GROUP': {
         const newState = {
           ...state,
           groups: [action.group, ...state.groups],
-        };
-        return newState;
-      }
-      case 'RELOAD_EVENT_VIEW': {
-        const newState = {
-          ...state,
-          shouldReloadEventView: true
-        };
-        return newState;
-      }
-      case 'RELOADED_EVENT_VIEW': {
-        const newState = {
-          ...state,
-          shouldReloadEventView: false
         };
         return newState;
       }
