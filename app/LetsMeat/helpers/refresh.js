@@ -2,9 +2,10 @@ import {
   getGroupInfo, getGroupDebts
 } from '../components/Requests';
 
-export const refreshGroup = (state, dispatch) => Promise.all(
-  [getGroupInfo({ state, dispatch }, state.group.id),
-    getGroupDebts({ state, dispatch }, state.group.id)]
+// eslint-disable-next-line import/prefer-default-export
+export const refreshGroup = (state, dispatch, id) => Promise.all(
+  [getGroupInfo({ state, dispatch }, id || state.group.id),
+    getGroupDebts({ state, dispatch }, id || state.group.id)]
 ).then(([groupInfo, debtInfo]) => {
   dispatch({ type: 'SET_GROUP', payload: { ...groupInfo, ...debtInfo } });
 });

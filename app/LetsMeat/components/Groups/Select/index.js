@@ -14,6 +14,7 @@ import { refreshNotifications } from '../../../helpers/notifications';
 import { BackgroundContainer, ScrollPlaceholder } from '../../Background';
 import { getGroupInfo, getGroups } from '../../Requests';
 import { store } from '../../Store';
+import { refreshGroup } from '../../../helpers/refresh';
 
 const RenderGroup = ({
   groupId, onPress
@@ -116,11 +117,9 @@ export const Groups = ({ navigation }) => {
                     if (groupSelected.current) return;
                     groupSelected.current = true;
                     setSpinner(true);
-                    getGroupInfo({ state, dispatch }, item.id)
-                      .then((group) => {
-                        dispatch({ type: 'SET_GROUP', payload: group });
-                        navigation.navigate('Home', { screen: 'Feed' });
-                      }).finally(() => setSpinner(false));
+                    refreshGroup(state, dispatch, item.id)
+                      .then(() => navigation.navigate('Home', { screen: 'Feed' }))
+                      .finally(() => setSpinner(false));
                   }}
                 />
               )}
