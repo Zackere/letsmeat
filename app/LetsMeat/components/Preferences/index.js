@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useLayoutEffect } from 'react';
 import Slider from '@react-native-community/slider';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet } from 'react-native';
@@ -30,7 +30,7 @@ const PreferencesContent = ({ navigation }) => {
   const { state, dispatch } = useContext(store);
   const [prefs, setPrefs] = useState(state.user.prefs);
 
-  React.useLayoutEffect(() => {
+  useLayoutEffect(() => {
     navigation.setOptions({
       rightIcon: 'content-save',
       rightAction: () => {
