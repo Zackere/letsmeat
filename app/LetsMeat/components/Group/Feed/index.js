@@ -1,17 +1,17 @@
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import React, { useContext, useLayoutEffect } from 'react';
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
-import { store } from '../../Store';
 import { Header } from '../../Header';
+import { store } from '../../Store';
+import { NewEventContent } from '../NewEvent';
+import AddDebt from './addDebt';
+import AddLocation from './addLocation';
+import CreateLocation from './createLocation';
 import EventView from './event';
 import FeedContent from './feedContent';
-import VoteTime from './voteTime';
-import AddLocation from './addLocation';
-import VoteLocation from './voteLocation';
-import CreateLocation from './createLocation';
-import AddDebt from './addDebt';
 import RateLocation from './rateLocation';
-import { NewEventContent } from '../NewEvent';
+import VoteLocation from './voteLocation';
+import VoteTime from './voteTime';
 
 const Stack = createStackNavigator();
 
@@ -21,7 +21,7 @@ const SCREENS_WITHOUT_TABS = new Set(['Event',
   'NewEvent']);
 
 const Feed = ({ navigation, route }) => {
-  const { state, dispatch } = useContext(store);
+  const { state } = useContext(store);
 
   useLayoutEffect(() => {
     const screenName = getFocusedRouteNameFromRoute(route);
@@ -38,6 +38,7 @@ const Feed = ({ navigation, route }) => {
       headerMode="screen"
       screenOptions={{
         headerTitle: state.group.name,
+        // eslint-disable-next-line no-shadow
         header: ({ scene, previous, navigation }) => (
           <Header scene={scene} previous={previous} navigation={navigation} />
         ),

@@ -1,7 +1,7 @@
 import { debounce } from 'debounce';
 import React, {
-  useCallback, useContext, useRef, useState,
-  useEffect
+  useCallback, useContext,
+  useEffect, useRef, useState
 } from 'react';
 import {
   StyleSheet
@@ -10,12 +10,12 @@ import { ScrollView } from 'react-native-gesture-handler';
 import {
   Button, Searchbar
 } from 'react-native-paper';
+import { combineLocations } from '../../../helpers/locations';
 import { randomId } from '../../../helpers/random';
+import { BackgroundContainer } from '../../Background';
+import LocationCard from '../../Location';
 import { createLocationGoogle, searchLocation, updateEvent } from '../../Requests';
 import { store } from '../../Store';
-import LocationCard from '../../Location';
-import { combineLocations } from '../../../helpers/locations';
-import { BackgroundContainer } from '../../Background';
 
 const AddLocation = ({ navigation, route }) => {
   const { state, dispatch } = useContext(store);
@@ -69,11 +69,12 @@ const AddLocation = ({ navigation, route }) => {
         Or add a new custom location
       </Button>
       <ScrollView>
-        {(searchResults && Object.keys(searchResults).length) ? (combineLocations(searchResults).map((result) => (
-          <LocationCard
-            key={`${result.kind}${result.id}${result.place_id}${result.details && result.details.place_id}`}
-            location={result}
-            onPressCustom={
+        {(searchResults && Object.keys(searchResults).length)
+          ? (combineLocations(searchResults).map((result) => (
+            <LocationCard
+              key={`${result.kind}${result.id}${result.place_id}${result.details && result.details.place_id}`}
+              location={result}
+              onPressCustom={
             () => {
               updateEvent({ state, dispatch }, { id: eventId, custom_locations_ids: [result.id] })
                 .then((event) => {
@@ -82,27 +83,29 @@ const AddLocation = ({ navigation, route }) => {
                 });
             }
           }
-            onPressGMaps={
+              onPressGMaps={
             () => {
-              updateEvent({ state, dispatch }, { id: eventId, google_maps_locations_ids: [result.details.place_id] })
+              updateEvent({ state, dispatch },
+                { id: eventId, google_maps_locations_ids: [result.details.place_id] })
                 .then((event) => {
                   dispatch({ type: 'SET_EVENT', payload: event });
                   navigation.goBack();
                 });
             }
           }
-            onPressPrediction={
+              onPressPrediction={
             () => {
               createLocationGoogle({ state, dispatch }, result.place_id, sessionToken)
-                .then(() => updateEvent({ state, dispatch }, { id: eventId, google_maps_locations_ids: [result.place_id] }))
+                .then(() => updateEvent({ state, dispatch },
+                  { id: eventId, google_maps_locations_ids: [result.place_id] }))
                 .then((event) => {
                   dispatch({ type: 'SET_EVENT', payload: event });
                   navigation.goBack();
                 });
             }
           }
-          />
-        ))) : null}
+            />
+          ))) : null}
       </ScrollView>
     </BackgroundContainer>
   );
@@ -110,12 +113,6 @@ const AddLocation = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   searchbar: {
-    margin: 5
-  },
-  searchResult: {
-    margin: 5
-  },
-  selectedUserContainer: {
     margin: 5
   },
   orButton: {

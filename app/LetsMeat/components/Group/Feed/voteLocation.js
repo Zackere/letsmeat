@@ -1,14 +1,13 @@
 /* eslint-disable no-restricted-syntax */
 import React, {
-  useContext, useEffect, useLayoutEffect, useState, useRef
+  useContext, useEffect, useLayoutEffect, useRef, useState
 } from 'react';
-import { StyleSheet } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
-import { ActivityIndicator, Surface } from 'react-native-paper';
-import { getLocationsInfo, getVoteLocations, castVote } from '../../Requests';
-import { store } from '../../Store';
+import { ActivityIndicator } from 'react-native-paper';
+import { BackgroundContainer } from '../../Background';
 import LocationCard from '../../Location';
-import BackgroundContainer from '../../Background';
+import { castVote, getLocationsInfo, getVoteLocations } from '../../Requests';
+import { store } from '../../Store';
 
 const VoteLocation = ({ navigation, route }) => {
   const { state, dispatch } = useContext(store);
@@ -25,7 +24,8 @@ const VoteLocation = ({ navigation, route }) => {
         rightIcon: 'vote',
         rightAction: () => {
           setVoting(true);
-          castVote({ state, dispatch }, eventId, undefined, translateLocationsToVote(locations)).then(() => {
+          castVote({ state, dispatch }, eventId,
+            undefined, translateLocationsToVote(locations)).then(() => {
             setVoting(false);
           });
         }
@@ -40,7 +40,7 @@ const VoteLocation = ({ navigation, route }) => {
 
   useLayoutEffect(setHeaderAction, [loading, state, navigation, voting, eventId, locations]);
 
-  const translateLocationsToVote = (locations) => locations.map((l) => {
+  const translateLocationsToVote = (newLocations) => newLocations.map((l) => {
     if (l.kind === 'google_maps_locations') {
       return {
         google_maps_location_id: l.details.place_id,
@@ -75,8 +75,10 @@ const VoteLocation = ({ navigation, route }) => {
   const getAndExtractData = () => {
     getVoteLocations({ state, dispatch }, eventId).then((data) => {
       voteData.current = data;
-      const googleLocations = data.filter((l) => l.google_maps_location_id).map((l) => l.google_maps_location_id);
-      const customLocations = data.filter((l) => l.custom_location_id).map((l) => l.custom_location_id);
+      const googleLocations = data
+        .filter((l) => l.google_maps_location_id).map((l) => l.google_maps_location_id);
+      const customLocations = data
+        .filter((l) => l.custom_location_id).map((l) => l.custom_location_id);
       return getLocationsInfo({ state, dispatch }, customLocations, googleLocations);
     }).then(translateAndSetData);
   };
@@ -102,15 +104,5 @@ const VoteLocation = ({ navigation, route }) => {
     </BackgroundContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: '100%'
-  },
-  card: {
-    margin: 25
-  }
-});
 
 export default VoteLocation;

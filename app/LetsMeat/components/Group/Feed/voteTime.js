@@ -1,14 +1,12 @@
 import React, {
-  useState, useEffect, useContext, useLayoutEffect,
-  useRef
+  useContext, useEffect, useLayoutEffect, useState
 } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { Surface, ActivityIndicator } from 'react-native-paper';
 import DraggableFlatList from 'react-native-draggable-flatlist';
-import { TimeCard } from './times';
-import { store } from '../../Store';
+import { ActivityIndicator } from 'react-native-paper';
+import { BackgroundContainer } from '../../Background';
 import { castVote, getVoteTimes } from '../../Requests';
-import BackgroundContainer from '../../Background';
+import { store } from '../../Store';
+import { TimeCard } from './times';
 
 const VoteTime = ({ navigation, route }) => {
   const { state, dispatch } = useContext(store);
@@ -62,15 +60,5 @@ const VoteTime = ({ navigation, route }) => {
     </BackgroundContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: '100%'
-  },
-  card: {
-    margin: 25
-  }
-});
 
 export default VoteTime;

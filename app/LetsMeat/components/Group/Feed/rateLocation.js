@@ -23,7 +23,7 @@ const PrefSetter = ({
       maximumValue={100}
       value={prefs[prefName]}
       onSlidingComplete={(v) => {
-        setPrefs({ ...prefs, [prefName]: parseInt(v) });
+        setPrefs({ ...prefs, [prefName]: parseInt(v, 10) });
       }}
     />
   </Card>
@@ -39,7 +39,8 @@ const RateLocation = ({ navigation, route }) => {
   });
 
   useEffect(() => {
-    getLocationsInfo({ state, dispatch }, customId ? [customId] : undefined, gmapsId ? [gmapsId] : undefined).then((info) => {
+    getLocationsInfo({ state, dispatch },
+      customId ? [customId] : undefined, gmapsId ? [gmapsId] : undefined).then((info) => {
       if (gmapsId) {
         setLocationInfo({ ...info.google_maps_location_information[0], kind: 'google_maps_locations' });
       } else {
@@ -69,9 +70,10 @@ const RateLocation = ({ navigation, route }) => {
             onPress={
         () => {
           setIsRating(true);
-          rateLocation({ state, dispatch }, prefs.taste, prefs.price, prefs.amount_of_food, prefs.waiting_time, gmapsId || undefined, customId || undefined)
+          rateLocation({ state, dispatch }, prefs.taste, prefs.price,
+            prefs.amount_of_food, prefs.waiting_time, gmapsId || undefined, customId || undefined)
             .then(() => navigation.goBack())
-            .catch((e) => setIsRating(false));
+            .catch(() => setIsRating(false));
         }
       }
           >

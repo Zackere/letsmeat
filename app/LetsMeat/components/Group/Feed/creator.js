@@ -3,14 +3,11 @@ import React, {
   useEffect, useState
 } from 'react';
 import {
-  StyleSheet
-} from 'react-native';
-import {
   ActivityIndicator,
   Card
 } from 'react-native-paper';
-import { store } from '../../Store';
 import { getUsersInfo } from '../../Requests';
+import { store } from '../../Store';
 import UserCard from '../../User';
 
 const Creator = ({ userId, containerStyle }) => {

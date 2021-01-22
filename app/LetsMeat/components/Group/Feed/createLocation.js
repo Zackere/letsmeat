@@ -1,10 +1,10 @@
 import React, { useContext, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { Surface, TextInput, Button } from 'react-native-paper';
+import { Button, TextInput } from 'react-native-paper';
+import { BackgroundContainer } from '../../Background';
 import { CustomLocationCard } from '../../Location';
-import { store } from '../../Store';
 import { createLocationCustom, updateEvent } from '../../Requests';
-import BackgroundContainer from '../../Background';
+import { store } from '../../Store';
 
 const CreateLocation = ({ navigation, route }) => {
   const { state, dispatch } = useContext(store);
@@ -27,7 +27,8 @@ const CreateLocation = ({ navigation, route }) => {
         onPress={() => {
           setAdding(true);
           createLocationCustom({ state, dispatch }, groupId, name, address)
-            .then((location) => updateEvent({ state, dispatch }, { id: eventId, custom_locations_ids: [location.id] }))
+            .then((location) => updateEvent({ state, dispatch },
+              { id: eventId, custom_locations_ids: [location.id] }))
             .then((event) => dispatch({ type: 'SET_EVENT', payload: event }))
             .then(() => navigation.pop(2))
             .finally(() => setAdding(false));
@@ -40,10 +41,6 @@ const CreateLocation = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    height: '100%',
-    width: '100%'
-  },
   input: {
     margin: 10
   }

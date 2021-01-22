@@ -2,13 +2,13 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import {
-  Button, Card, Surface
+  Button, Card
 } from 'react-native-paper';
+import { BackgroundContainer } from '../../Background';
+import { DebtCard } from '../../Debts';
 import { getUsersInfo } from '../../Requests';
 import { store } from '../../Store';
 import UserCard from '../../User';
-import DebtCard from '../../Debts';
-import BackgroundContainer from '../../Background';
 
 const getDebtValue = (state, id) => {
   const myId = state.user.id;
@@ -100,7 +100,7 @@ export const GroupMembers = ({
 };
 
 export const MembersScreen = ({ navigation }) => {
-  const { state, dispatch } = useContext(store);
+  const { state } = useContext(store);
 
   return (
     <BackgroundContainer>
@@ -116,22 +116,6 @@ export const MembersScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  progressBar: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  groupsContainer: {
-    width: '100%',
-    height: '100%'
-  },
-  fab: {
-    position: 'absolute',
-    margin: 30,
-    right: 0,
-    bottom: 0,
-  },
   emptyCard: {
     margin: 10,
     backgroundColor: 'rgba(200, 200, 200, 0.9)'
@@ -139,16 +123,6 @@ const styles = StyleSheet.create({
   user: {
     margin: 5
   },
-  cardButton: {
-    margin: 25,
-    height: 50,
-  },
-  delete: {
-    backgroundColor: '#fc3503'
-  },
-  leave: {
-    backgroundColor: '#fc3503'
-  }
 });
 
 export default GroupMembers;

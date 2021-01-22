@@ -1,9 +1,9 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import {
   ActivityIndicator, Button, Card, TextInput, Title
 } from 'react-native-paper';
-import BackgroundContainer from '../../Background';
+import { BackgroundContainer } from '../../Background';
 import { createEvent } from '../../Requests';
 import { store } from '../../Store';
 import { DateAndHourPicker, TimeCard } from '../Feed/times';
@@ -38,11 +38,11 @@ export const NewEventContent = ({ navigation }) => {
       {deadline
         ? <TimeCard time={deadline} />
         : (
-          <Card style={{ margin: 10, backgroundColor: 'rgba(240, 240, 240, 0.8)' }} onPress={() => setPickerVisible(true)}>
+          <Card style={styles.noDeadline} onPress={() => setPickerVisible(true)}>
             <Card.Title title="The event should have some deadline" />
           </Card>
         )}
-      <TextInput onChangeText={setName} style={{ margin: 5 }} mode="outlined" label="Event name" />
+      <TextInput onChangeText={setName} style={styles.input} mode="outlined" label="Event name" />
       {
         !adding
           ? (
@@ -98,20 +98,15 @@ const styles = StyleSheet.create({
     margin: 10,
     backgroundColor: 'rgba(240, 240, 240, 0.8)'
   },
-  textInput: {
-    margin: 20
-  },
-  textInputDown: {
-    marginTop: '100%'
-  },
-  dateButton: {
-    height: 100
-  },
-  emptyCard: {
-    margin: 25
-  },
   button: {
     margin: 10
+  },
+  noDeadline: {
+    margin: 10,
+    backgroundColor: 'rgba(240, 240, 240, 0.8)'
+  },
+  input: {
+    margin: 5
   }
 });
 

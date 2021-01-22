@@ -33,7 +33,7 @@ const Debt = ({
   return (
     visible ? (
       <>
-        <Card style={{ margin: 5 }}>
+        <Card style={styles.debt}>
           <Card.Title
             title={formatAmount(debt.amount)}
             subtitle={
@@ -52,7 +52,7 @@ const Debt = ({
               {debt.description}
             </Paragraph>
           </Card.Content>
-          <Card.Actions style={{ justifyContent: 'space-evenly' }}>
+          <Card.Actions style={styles.actions}>
             {owner ? (
               <>
                 <Button
@@ -70,14 +70,17 @@ const Debt = ({
                 <Button
                   color="red"
                   onPress={() => {
-                    deleteImageDebt({ state, dispatch }, debt.id).then(() => { setVisible(false); });
+                    deleteImageDebt({ state, dispatch }, debt.id)
+                      .then(() => { setVisible(false); });
                   }}
                 >
                   Delete
                 </Button>
               </>
             ) : (
-              !debt.satisfied && (!debt.pending_debt || debt.pending_debt.from_id) !== state.user.id && (
+              !debt.satisfied
+              && (!debt.pending_debt || debt.pending_debt.from_id) !== state.user.id
+              && (
               <Button
                 onPress={() => {
                   addDebt({ state, dispatch },
@@ -99,7 +102,8 @@ const Debt = ({
           dialogVisible={userPickerOpen}
           onDismiss={() => setUserPickerOpen(false)}
           setUser={(newUser) => {
-            addDebt({ state, dispatch }, state.group.id, state.event.id, newUser.id, state.user.id, null, null, debt.id, 0)
+            addDebt({ state, dispatch },
+              state.group.id, state.event.id, newUser.id, state.user.id, null, null, debt.id, 0)
               .then(() => reloadDebts(state, dispatch));
           }}
         />
@@ -148,7 +152,7 @@ const DebtImage = ({
             />
           ))}
       </Card.Content>
-      <Card.Actions style={{ justifyContent: 'space-evenly' }}>
+      <Card.Actions style={styles.actions}>
         <Button onPress={
                 () => {
                   navigation.navigate('AddDebt', { eventId: state.event.id, imageId: image.image_id });
@@ -189,7 +193,8 @@ const Debts = ({ navigation, containerStyle, debtStyle }) => {
   useEffect(() => {
     (async () => {
       const [imagesInfo, debtsInfo] = await Promise.all([
-        getImagesInfo({ state, dispatch }, state.event.images), getEventDebts({ state, dispatch }, state.event.id)]);
+        getImagesInfo({ state, dispatch }, state.event.images),
+        getEventDebts({ state, dispatch }, state.event.id)]);
       setImages(imagesInfo);
       setDebts(debtsInfo);
       const usersInfo = await getUsersInfo({ state, dispatch }, [
@@ -205,7 +210,7 @@ const Debts = ({ navigation, containerStyle, debtStyle }) => {
   return (
     <Card style={containerStyle} elevation={0}>
       <Card.Title title="Debts" />
-      { loading ? <ActivityIndicator style={{ margin: 30 }} /> : (
+      { loading ? <ActivityIndicator style={styles.addingLoader} /> : (
         <>
           {images.map((i) => (
             <DebtImage
@@ -219,7 +224,7 @@ const Debts = ({ navigation, containerStyle, debtStyle }) => {
               containerStyle={debtStyle}
             />
           ))}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
+          <View style={styles.addImage}>
             {adding ? <ActivityIndicator style={styles.addButton} /> : (
               <Button
                 style={styles.addButton}
@@ -250,33 +255,21 @@ const Debts = ({ navigation, containerStyle, debtStyle }) => {
 };
 
 const styles = StyleSheet.create({
-  eventTitle: {
-    fontSize: 30,
-    marginHorizontal: 20,
-    marginTop: 20
-  },
-  container: {
-    width: '100%',
-    height: '100%'
-  },
-  section: {
-    margin: 10
-  },
-  card: {
-    margin: 25
-  },
   addButton: {
     marginBottom: 10
   },
-  timeCard: {
-    margin: 5,
-    justifyContent: 'center'
+  debt: {
+    margin: 5
   },
-  debtContainer: {
-    color: 'rgba(200, 200, 200, 0.7)'
+  actions: {
+    justifyContent: 'space-evenly'
   },
   addingLoader: {
-
+    margin: 30
+  },
+  addImage: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly'
   }
 });
 

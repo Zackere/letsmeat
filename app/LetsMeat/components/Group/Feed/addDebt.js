@@ -27,7 +27,8 @@ const AddDebt = ({ navigation, route }) => {
   const pressAddDebt = () => {
     setAdding(true);
     if (debt) {
-      updateImageDebt({ state, dispatch }, { ...debt, amount: parseAmount(amount), description }).then(() => {
+      updateImageDebt({ state, dispatch },
+        { ...debt, amount: parseAmount(amount), description }).then(() => {
         reloadDebts();
         navigation.goBack();
       }).catch(() => setAdding(false));
@@ -44,7 +45,7 @@ const AddDebt = ({ navigation, route }) => {
       <TextInput
         mode="outlined"
         label="Amount"
-        style={{ margin: 10 }}
+        style={styles.input}
         value={`${amount}`}
         onChangeText={setAmount}
         placeholder="10,25"
@@ -54,7 +55,7 @@ const AddDebt = ({ navigation, route }) => {
       <TextInput
         mode="outlined"
         label="Description"
-        style={{ margin: 10 }}
+        style={styles.input}
         value={description}
         onChangeText={(text) => setDescription(text.slice(0, MAX_DEBT_DESCRIPTION_LENGTH))}
         placeholder="Thank you for all the fish"
@@ -75,6 +76,9 @@ const AddDebt = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   button: {
+    margin: 10
+  },
+  input: {
     margin: 10
   }
 });

@@ -1,7 +1,5 @@
 import React, { useContext, useState } from 'react';
-import {
-  Button, TextInput, ActivityIndicator
-} from 'react-native-paper';
+import { ActivityIndicator, Button, TextInput } from 'react-native-paper';
 import { MAX_DEBT_DESCRIPTION_LENGTH } from '../../../constants';
 import { formatAmount, isAmountValid, parseAmount } from '../../../helpers/money';
 import { BackgroundContainer } from '../../Background';

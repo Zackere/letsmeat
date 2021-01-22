@@ -1,25 +1,23 @@
+import { useFocusEffect } from '@react-navigation/native';
 import React, {
-  useContext, useState, useRef, useCallback
+  useCallback, useContext, useRef, useState
 } from 'react';
 import {
-  RefreshControl, ScrollView, StyleSheet, Text, View
+  RefreshControl, ScrollView, StyleSheet, View
 } from 'react-native';
 import {
-  Card, FAB, Surface, Title
+  Card, FAB, Title
 } from 'react-native-paper';
-import { useFocusEffect } from '@react-navigation/native';
-import Spinner from 'react-native-loading-spinner-overlay';
-import { getGroupInfo, getGroupDebts } from '../../Requests';
+import { refreshGroup } from '../../../helpers/refresh';
+import { BackgroundContainer, ScrollPlaceholder } from '../../Background';
 import { store } from '../../Store';
 import { TimeCard } from './times';
-import { refreshGroup } from '../../../helpers/refresh';
-import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
 
 const Event = ({ event, onPress }) => (
-  <Card elevation={1} style={{ margin: 10, backgroundColor: 'rgba(230, 230, 230, 0.9)' }} onPress={onPress}>
+  <Card elevation={1} style={styles.event} onPress={onPress}>
     <Card.Content>
-      <View style={{ margin: 20, marginTop: 10 }}>
-        <Title style={{ fontSize: 30, padding: 4 }}>{event.name}</Title>
+      <View style={styles.titleContainer}>
+        <Title style={styles.title}>{event.name}</Title>
       </View>
       <TimeCard time={new Date(event.deadline)} />
     </Card.Content>
@@ -76,18 +74,23 @@ const FeedContent = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: '100%'
-  },
-  card: {
-    margin: 25
-  },
   fab: {
     margin: 30,
     position: 'absolute',
     bottom: 100,
     right: 0
+  },
+  event: {
+    margin: 10,
+    backgroundColor: 'rgba(230, 230, 230, 0.9)'
+  },
+  titleContainer: {
+    margin: 20,
+    marginTop: 10
+  },
+  title: {
+    fontSize: 30,
+    padding: 4
   }
 });
 

@@ -1,18 +1,17 @@
+/* eslint-disable camelcase */
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import React, {
-  useContext, useEffect, useState, useCallback
+  useContext, useEffect, useState
 } from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
   ActivityIndicator, Button
 } from 'react-native-paper';
-import { useFocusEffect } from '@react-navigation/native';
 import { CustomLocationCard, GMapsCard } from '../../Location';
 import { getLocationsInfo } from '../../Requests';
 import { store } from '../../Store';
 
 const Locations = ({
-  // customLocations, googleLocations,
   onAdd, onVote, onRate,
   showButtons = true,
   order,
@@ -26,7 +25,8 @@ const Locations = ({
 
   useEffect(() => {
     setLoading(true);
-    getLocationsInfo({ state, dispatch }, state.event.candidate_custom_locations, state.event.candidate_google_maps_locations)
+    getLocationsInfo({ state, dispatch },
+      state.event.candidate_custom_locations, state.event.candidate_google_maps_locations)
       .then((locationsInfo) => {
         let newLocationsOrdered = [];
         if (locationsInfo) {
@@ -34,9 +34,11 @@ const Locations = ({
             order.forEach(({ google_maps_location_id, custom_location_id }) => {
               let element;
               if (google_maps_location_id) {
-                element = locationsInfo.google_maps_location_information.find((l) => (l.details && (l.details.place_id === google_maps_location_id)));
+                element = locationsInfo.google_maps_location_information
+                  .find((l) => (l.details && (l.details.place_id === google_maps_location_id)));
               } else {
-                element = locationsInfo.custom_location_infomation.find((l) => l.id === custom_location_id);
+                element = locationsInfo.custom_location_infomation
+                  .find((l) => l.id === custom_location_id);
               }
               newLocationsOrdered.push(element);
             });
@@ -48,8 +50,8 @@ const Locations = ({
         setLocationsOrdered([...newLocationsOrdered]);
         setLoading(false);
       });
-  }, [customLocations,
-    googleLocations, state.user.tokenId, order, state.event.candidate_google_maps_locations, state.event.candidate_custom_locations]);
+  }, [customLocations, googleLocations, state.user.tokenId, order,
+    state.event.candidate_google_maps_locations, state.event.candidate_custom_locations]);
 
   return (
     loading ? <ActivityIndicator />
@@ -78,7 +80,7 @@ const Locations = ({
           </View>
           {showButtons
             ? (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
+              <View style={styles.actions}>
                 <Button
                   style={styles.addButton}
                   onPress={onAdd}
@@ -101,27 +103,12 @@ const Locations = ({
 };
 
 const styles = StyleSheet.create({
-  eventTitle: {
-    fontSize: 30,
-    marginHorizontal: 20,
-    marginTop: 20
-  },
-  container: {
-    width: '100%',
-    height: '100%'
-  },
-  section: {
-    margin: 10
-  },
-  card: {
-    margin: 25
-  },
   addButton: {
     marginBottom: 10
   },
-  timeCard: {
-    margin: 5,
-    justifyContent: 'center'
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly'
   }
 });
 

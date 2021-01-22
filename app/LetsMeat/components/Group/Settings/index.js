@@ -1,13 +1,12 @@
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import React, { useContext } from 'react';
-import { StyleSheet } from 'react-native';
+import React, { useContext, useLayoutEffect } from 'react';
 import { Header } from '../../Header';
 import { store } from '../../Store';
 import Invite from './invite';
 import SettingsScroll from './main';
-import SendTransfer from './sendTransfer';
 import { MembersScreen } from './members';
+import { SendTransfer } from './sendTransfer';
 
 const Stack = createStackNavigator();
 
@@ -16,7 +15,7 @@ const SCREENS_WITHOUT_TABS = new Set(['Invite', 'Members', 'SendTransfer']);
 const Settings = ({ navigation, route }) => {
   const { state } = useContext(store);
 
-  React.useLayoutEffect(() => {
+  useLayoutEffect(() => {
     const screenName = getFocusedRouteNameFromRoute(route);
     if (SCREENS_WITHOUT_TABS.has(screenName)) navigation.setOptions({ tabBarVisible: false });
     else navigation.setOptions({ tabBarVisible: true });
@@ -29,6 +28,7 @@ const Settings = ({ navigation, route }) => {
       headerMode="float"
       screenOptions={{
         headerTitle: state.group.name,
+        // eslint-disable-next-line no-shadow
         header: ({ scene, previous, navigation }) => (
           <Header scene={scene} previous={previous} navigation={navigation} />
         ),
@@ -53,41 +53,6 @@ const Settings = ({ navigation, route }) => {
     </Stack.Navigator>
   );
 };
-
-const styles = StyleSheet.create({
-  progressBar: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  groupsContainer: {
-    width: '100%',
-    height: '100%'
-  },
-  fab: {
-    position: 'absolute',
-    margin: 30,
-    right: 0,
-    bottom: 0,
-  },
-  emptyCard: {
-    margin: 25
-  },
-  user: {
-    margin: 5
-  },
-  cardButton: {
-    margin: 25,
-    height: 50,
-  },
-  delete: {
-    backgroundColor: '#fc3503'
-  },
-  leave: {
-    backgroundColor: '#fc3503'
-  }
-});
 
 export default Settings;
 export { Settings };

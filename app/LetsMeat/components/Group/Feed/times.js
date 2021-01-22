@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import React, { useState } from 'react';
 import {
   StyleSheet, ToastAndroid, View
 } from 'react-native';
@@ -12,13 +12,13 @@ import { formatDate, formatTime, getTimeLeft } from '../../../helpers/time';
 export const TimeCard = ({ time, highlight = false, onLongPress }) => (
   <Card style={styles.timeCard} elevation={highlight ? 5 : 1} onLongPress={onLongPress}>
     <View style={{ textAlign: 'center' }}>
-      <Headline style={{ fontSize: 30, textAlign: 'center' }}>
+      <Headline style={styles.timeContainer}>
         {formatTime(time)}
       </Headline>
-      <Headline style={{ fontSize: 17, textAlign: 'center', lineHeight: 17 }}>
+      <Headline style={styles.dateContainer}>
         {formatDate(time)}
       </Headline>
-      <Caption style={{ textAlign: 'center', fontStyle: 'italic', lineHeight: 13 }}>
+      <Caption style={styles.timeLeft}>
         {getTimeLeft(time)}
       </Caption>
     </View>
@@ -70,7 +70,6 @@ const Times = ({
   const [isAdding, setAdding] = useState(false);
   const [newDate, setNewDate] = useState(null);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
-  const [isVoting] = useState(false);
 
   const onDismiss = () => {
     setNewDate(null);
@@ -153,16 +152,6 @@ const Times = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: '100%'
-  },
-  section: {
-    margin: 10
-  },
-  card: {
-    margin: 25
-  },
   addButton: {
     marginBottom: 10
   },
@@ -170,6 +159,20 @@ const styles = StyleSheet.create({
     margin: 5,
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     justifyContent: 'center'
+  },
+  timeContainer: {
+    fontSize: 30,
+    textAlign: 'center'
+  },
+  dateContainer: {
+    fontSize: 17,
+    textAlign: 'center',
+    lineHeight: 17
+  },
+  timeLeft: {
+    textAlign: 'center',
+    fontStyle: 'italic',
+    lineHeight: 13
   }
 });
 

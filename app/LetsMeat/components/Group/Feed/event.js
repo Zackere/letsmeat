@@ -1,7 +1,7 @@
 import React, {
-  useContext, useEffect, useState, useCallback
+  useCallback, useContext, useEffect, useState
 } from 'react';
-import { StyleSheet, RefreshControl, ScrollView } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import {
   ActivityIndicator, Card, Title
 } from 'react-native-paper';
@@ -34,8 +34,8 @@ const EventView = ({ navigation }) => {
         dispatch({ type: 'SET_EVENT', payload: event });
         setEventDetails(true);
       }),
-      getResults({ state, dispatch }, state.event.id).then((results) => {
-        setResults(results);
+      getResults({ state, dispatch }, state.event.id).then((votingResults) => {
+        setResults(votingResults);
       })]
     );
   };
@@ -62,7 +62,7 @@ const EventView = ({ navigation }) => {
           ? (
             <>
               <Card elevation={0} style={styles.outerSection}>
-                <Card.Title title={finished ? 'Results' : 'Candidates'} style={{ marginBottom: 0 }} />
+                <Card.Title title={finished ? 'Results' : 'Candidates'} style={styles.resultsTitle} />
                 <Card style={{ ...styles.innerSection, marginTop: 0 }} elevation={0}>
                   <Card.Title title="Locations" />
                   <Locations
@@ -78,7 +78,9 @@ const EventView = ({ navigation }) => {
                   <Card.Title title="Times" />
                   <Times
                     loading={loading}
-                    times={(results && finished) ? results.times.map((t) => new Date(t)) : state.event.candidate_times.map((t) => new Date(t))}
+                    times={(results && finished)
+                      ? results.times.map((t) => new Date(t))
+                      : state.event.candidate_times.map((t) => new Date(t))}
                     onVote={() => {
                       navigation.navigate('VoteTime', {
                         eventId: state.event.id
@@ -86,7 +88,8 @@ const EventView = ({ navigation }) => {
                     }}
                     onAddTime={(time) => {
                       setLoading(true);
-                      return updateEvent({ state, dispatch }, { id: state.event.id, candidate_times: [time] })
+                      return updateEvent({ state, dispatch },
+                        { id: state.event.id, candidate_times: [time] })
                         .then((event) => dispatch({ type: 'SET_EVENT', payload: event }))
                         .finally(() => setLoading(false));
                     }}
@@ -141,6 +144,9 @@ const styles = StyleSheet.create({
     margin: 20,
     padding: 5,
     textAlign: 'center'
+  },
+  resultsTitle: {
+    marginBottom: 0
   },
   container: {
     width: '100%',

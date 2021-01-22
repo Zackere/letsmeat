@@ -1,14 +1,14 @@
 import React, { useContext, useState } from 'react';
-import { ScrollView, StyleSheet, RefreshControl } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
-import BackgroundContainer, { ScrollPlaceholder } from '../../Background';
-import ModalButton from '../../Buttons';
+import { refreshGroup } from '../../../helpers/refresh';
+import { BackgroundContainer, ScrollPlaceholder } from '../../Background';
+import { ModalButton } from '../../Buttons';
 import {
-  deleteGroup, leaveGroup, getGroupInfo, getGroupDebts
+  deleteGroup, leaveGroup
 } from '../../Requests';
 import { store } from '../../Store';
 import { GroupMembers } from './members';
-import { refreshGroup } from '../../../helpers/refresh';
 
 const DeleteGroup = ({ confirmAction }) => (
   <ModalButton
@@ -34,10 +34,10 @@ const LeaveGroup = ({ confirmAction }) => (
 const computeCanILeave = (state) => {
   let myEdges = state.group.debts[state.user.id]
     ? Object.entries(state.group.debts[state.user.id])
-      .reduce((prev, [_, curr]) => prev + Math.abs(curr), 0) : 0;
+      .reduce((prev, [, curr]) => prev + Math.abs(curr), 0) : 0;
 
   myEdges += Object.entries(state.group.debts)
-    .map(([_, userInfo]) => (userInfo[state.user.id] ? Math.abs(userInfo[state.user.id]) : 0))
+    .map(([, userInfo]) => (userInfo[state.user.id] ? Math.abs(userInfo[state.user.id]) : 0))
     .reduce((prev, curr) => prev + Math.abs(curr), 0);
 
   return myEdges === 0;
@@ -62,7 +62,11 @@ const SettingsScroll = ({ navigation }) => {
       <ScrollView
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <GroupMembers members={state.group.users} debts={state.group.debts} navigation={navigation} />
+        <GroupMembers
+          members={state.group.users}
+          debts={state.group.debts}
+          navigation={navigation}
+        />
         {canILeave
           ? (
             <LeaveGroup confirmAction={() => {
@@ -91,25 +95,8 @@ const SettingsScroll = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  groupsContainer: {
-    width: '100%',
-    height: '100%',
-  },
-  fab: {
-    position: 'absolute',
-    margin: 30,
-    right: 0,
-    bottom: 0,
-  },
-  emptyCard: {
-    margin: 25
-  },
   user: {
     margin: 5
-  },
-  cardButton: {
-    margin: 25,
-    height: 50,
   },
   delete: {
     backgroundColor: 'rgba(255, 0, 0, 0.8)'

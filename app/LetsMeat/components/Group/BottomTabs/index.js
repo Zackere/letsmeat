@@ -1,17 +1,12 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
-// import { NavigationState } from 'react-navigation';
 import Feed from '../Feed';
-import NewEvent from '../NewEvent';
-
 import { Settings } from '../Settings';
 
 const Tab = createBottomTabNavigator();
 
-const makeIcon = (name) => ({ focused, color, size }) => (
+const makeIcon = (name) => ({ focused, color }) => (
   <MaterialCommunityIcons
     name={name}
     size={focused ? 25 : 20}
@@ -19,27 +14,22 @@ const makeIcon = (name) => ({ focused, color, size }) => (
   />
 );
 
-const getActiveRouteState = function (route) {
-  if (!route.routes || route.routes.length === 0 || route.index >= route.routes.length) {
-    return route;
-  }
+const ACTIVE_TAB_COLOR = 'rgba(240, 240, 240, 1)';
+const INACTIVE_TAB_COLOR = 'rgba(30, 30, 30, 1)';
+const TABS_BACKGROUND_COLOR = 'rgba(160, 160, 160, 0.7)';
 
-  const childActiveRoute = route.routes[route.index];
-  return getActiveRouteState(childActiveRoute);
-};
-
-export const BottomTabs = ({ navigation, route }) => (
+export const BottomTabs = () => (
   <Tab.Navigator
     initialRouteName="Feed"
     tabBarOptions={{
-      activeTintColor: 'rgba(240, 240, 240, 1)',
-      inactiveTintColor: 'rgba(30, 30, 30, 1)',
+      activeTintColor: ACTIVE_TAB_COLOR,
+      inactiveTintColor: INACTIVE_TAB_COLOR,
       labelStyle: {
         fontSize: 12
       },
       style: {
         position: 'absolute',
-        backgroundColor: 'rgba(160, 160, 160, 0.7)',
+        backgroundColor: TABS_BACKGROUND_COLOR,
         left: 0,
         bottom: 0,
         right: 0,

@@ -1,20 +1,19 @@
-import React, {
-  useCallback, useContext, useState, useRef,
-  useEffect
-} from 'react';
 import { debounce } from 'debounce';
+import React, {
+  useCallback, useContext,
+  useEffect, useRef, useState
+} from 'react';
 import {
-  StyleSheet, Text, View, Image
+  StyleSheet, Text, View
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import {
-  Card, Chip, Searchbar, Surface, Button, Avatar, FAB
+  Avatar, Button, Chip, FAB, Searchbar
 } from 'react-native-paper';
-import { set } from 'react-native-reanimated';
+import { BackgroundContainer } from '../../Background';
 import { searchUsers, sendInvitation } from '../../Requests';
 import { store } from '../../Store';
 import UserCard from '../../User';
-import BackgroundContainer from '../../Background';
 
 const SelectedUsers = ({ users, onClose }) => (
   <View style={styles.selectedUserContainer}>
@@ -35,8 +34,8 @@ const SelectedUsers = ({ users, onClose }) => (
   </View>
 );
 
-const Invite = ({ navigation, route }) => {
-  const _mounted = useRef(false);
+const Invite = ({ navigation }) => {
+  const mounted = useRef(false);
 
   const { state, dispatch } = useContext(store);
 
@@ -45,11 +44,9 @@ const Invite = ({ navigation, route }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const persistentSearchQuery = useRef('');
 
-  let debounceResult = null;
-
   const getSearchResults = useCallback(() => {
     searchUsers({ state, dispatch }, persistentSearchQuery.current).then((results) => {
-      if (!_mounted.current) return;
+      if (!mounted.current) return;
       setSearchResults(results);
     });
   }, [state]);
@@ -60,7 +57,7 @@ const Invite = ({ navigation, route }) => {
     setSearchQuery(query);
     persistentSearchQuery.current = query;
     if (query.length <= 3) return;
-    debounceResult = debouncedSearch();
+    debouncedSearch();
   };
 
   const invite = (user) => () => {
@@ -69,13 +66,16 @@ const Invite = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    _mounted.current = true;
-    return () => { _mounted.current = false; };
+    mounted.current = true;
+    return () => { mounted.current = false; };
   }, []);
 
   return (
     <BackgroundContainer backgroundVariant="searching">
-      <SelectedUsers users={selectedUsers} onClose={(id) => { setSelectedUsers(selectedUsers.filter((u) => u.id !== id)); }} />
+      <SelectedUsers
+        users={selectedUsers}
+        onClose={(id) => { setSelectedUsers(selectedUsers.filter((u) => u.id !== id)); }}
+      />
       <Searchbar
         style={styles.searchbar}
         placeholder="Search"
@@ -127,14 +127,7 @@ const Invite = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    height: '100%',
-    width: '100%'
-  },
   searchbar: {
-    margin: 5
-  },
-  searchResult: {
     margin: 5
   },
   selectedUserContainer: {
