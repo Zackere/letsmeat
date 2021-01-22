@@ -115,13 +115,9 @@ const joinGroup = ({ state, dispatch }, groupId) => post({ state, dispatch }, '/
 const acceptInvitation = joinGroup;
 
 const uploadImage = ({ state, dispatch }, eventId, image) => {
-  const getNameFromPath = (path) => {
-    const parts = path.split('/');
-    return parts[parts.length - 1];
-  };
   // eslint-disable-next-line no-undef
   const form = new FormData();
-  form.append('file', { uri: image.path, type: image.mime, name: getNameFromPath(image.path) });
+  form.append('file', { uri: image.uri, type: image.type, name: image.fileName });
   return fetch(`${baseURL}Images/upload?${new URLSearchParams({ token: state.user.token, event_id: eventId })}`, {
     method: 'POST',
     headers: {

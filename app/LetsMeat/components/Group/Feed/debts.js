@@ -1,9 +1,10 @@
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import React, { useContext, useEffect, useState } from 'react';
 import {
-  Image, StyleSheet, View
+  Image, StyleSheet, View, ToastAndroid
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import {
   ActivityIndicator, Button, Card, Paragraph
 } from 'react-native-paper';
@@ -131,7 +132,11 @@ const DebtImage = ({
           ? (
             <>
               <Image
-                style={{ width: '100%', height: undefined, aspectRatio: imageSize.width / imageSize.height || 0 }}
+                style={{
+                  width: '100%',
+                  height: undefined,
+                  aspectRatio: imageSize.width / imageSize.height || 0
+                }}
                 source={{ uri: image.image_url }}
               />
               <Button onPress={() => setVisible(false)}>Hide Image</Button>
@@ -230,18 +235,39 @@ const Debts = ({ navigation, containerStyle, debtStyle }) => {
                 style={styles.addButton}
                 onPress={
                   () => {
-                    setAdding(true);
-                    ImagePicker.openPicker({
-                      cropping: true
-                    })
-                      .then((i) => uploadImage({ state, dispatch }, state.event.id, i))
-                      .then((r) => dispatch({ type: 'ADD_IMAGE_TO_EVENT', imageId: r.image_id }))
-                      .catch((e) => {
-                        if (e.code === 'E_PICKER_CANCELLED') return;
-                        throw e;
-                      })
-                      .finally(() => setAdding(false));
+                    launchImageLibrary({
+                      title: 'Select a Receipt',
+
+                    }, (response) => {
+                      if (response.didCancel) {
+                        return;
+                      } if (response.error) {
+                        ToastAndroid.show('Something went wrong when selecting picture', ToastAndroid.SHORT);
+                        return;
+                      }
+                      setAdding(true);
+                      uploadImage({ state, dispatch }, state.event.id, response)
+                        .then((r) => dispatch({ type: 'ADD_IMAGE_TO_EVENT', imageId: r.image_id }))
+                        .finally(() => setAdding(false));
+                    });
                   }
+                  // () => {
+                  //   setAdding(true);
+                  //   ImagePicker.openPicker({
+                  //     cropping: true
+                  //   })
+                  //     .then((i) => {
+                  //       console.log(i);
+                  //       return uploadImage({ state, dispatch }, state.event.id, i);
+                  //     })
+                  //     .then((r) => dispatch({ type: 'ADD_IMAGE_TO_EVENT', imageId: r.image_id }))
+                  //     .catch((e) => {
+                  //       console.log(e);
+                  //       if (e.code === 'E_PICKER_CANCELLED') return;
+                  //       throw e;
+                  //     })
+                  //     .finally(() => setAdding(false));
+                  // }
                 }
               >
                 <Icon name="image-plus" size={25} />
