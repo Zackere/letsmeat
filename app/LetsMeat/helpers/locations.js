@@ -1,3 +1,5 @@
+/* eslint-disable no-continue */
+// eslint-disable-next-line import/prefer-default-export
 export const combineLocations = (results) => {
   const predictions = results.google_maps_locations_predictions;
   let predictionsIndex = 0;

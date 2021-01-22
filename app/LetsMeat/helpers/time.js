@@ -13,7 +13,7 @@ export const months = [
   'December'
 ];
 
-export const days = [
+export const daysOfWeek = [
   'Sun',
   'Mon',
   'Tue',
@@ -29,7 +29,7 @@ export const formatDate = (time) => {
   const year = time.getFullYear(); // 2019
   const date = time.getDate(); //
   const monthName = months[time.getMonth()];
-  const dayName = days[time.getDay()]; // Thu
+  const dayName = daysOfWeek[time.getDay()]; // Thu
   return `${dayName}, ${date} ${monthName} ${year}`;
 };
 
