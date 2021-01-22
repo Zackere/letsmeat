@@ -251,23 +251,6 @@ const Debts = ({ navigation, containerStyle, debtStyle }) => {
                         .finally(() => setAdding(false));
                     });
                   }
-                  // () => {
-                  //   setAdding(true);
-                  //   ImagePicker.openPicker({
-                  //     cropping: true
-                  //   })
-                  //     .then((i) => {
-                  //       console.log(i);
-                  //       return uploadImage({ state, dispatch }, state.event.id, i);
-                  //     })
-                  //     .then((r) => dispatch({ type: 'ADD_IMAGE_TO_EVENT', imageId: r.image_id }))
-                  //     .catch((e) => {
-                  //       console.log(e);
-                  //       if (e.code === 'E_PICKER_CANCELLED') return;
-                  //       throw e;
-                  //     })
-                  //     .finally(() => setAdding(false));
-                  // }
                 }
               >
                 <Icon name="image-plus" size={25} />
