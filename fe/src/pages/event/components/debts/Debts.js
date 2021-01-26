@@ -29,6 +29,7 @@ class Debts extends Component {
       selectedDebt: undefined,
       users: [],
       imageId: undefined,
+      updateModal: true
     }
   }
 
@@ -61,6 +62,7 @@ class Debts extends Component {
           loading: false,
           debts: res.image_debts,
           selectedDebt: debt || res.image_debts[0],
+          updateModal: !this.state.updateModal
         })
       })
       .then(() => {
@@ -70,7 +72,11 @@ class Debts extends Component {
 
   openModal = debt =>
     debt.image_uploaded_by_id === this.props.user.id &&
-    this.setState({ selectedDebt: debt, modalOpened: true })
+    this.setState({
+      selectedDebt: debt,
+      modalOpened: true,
+      updateModal: !this.state.updateModal
+    })
 
   closeModal = () => {
     this.setState({ modalOpened: false })
@@ -148,7 +154,7 @@ class Debts extends Component {
       <>
         <Loading show={this.state.loading} />
         <EditModal
-          show={this.state.modalOpened}
+          show={this.state.modalOpened && debts.length}
           users={this.state.users}
           debts={this.sameImageDebts()}
           closeModal={this.closeModal}
@@ -156,7 +162,9 @@ class Debts extends Component {
           eventId={this.props.eventId}
           imageId={this.state.imageId}
           getDebts={this.getDebts}
+          deleteDebt={this.debtDelete}
           selected={this.state.selectedDebt}
+          update={this.state.updateModal}
         />
         <ListGroup className="list-scroll" style={{ height: '40vh' }}>
           {debts &&

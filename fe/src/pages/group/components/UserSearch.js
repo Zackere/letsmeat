@@ -39,7 +39,7 @@ class UserSearch extends Component {
       this.setState({ loading: true })
       searchUsers(this.props.token, name).then(users => {
         const filteredUsers = this.filterArray(users, this.state.selected)
-
+        console.log(users)
         this.setState({ users: filteredUsers, loading: false })
       })
     } else this.setState({ users: [] })
@@ -89,7 +89,7 @@ class UserSearch extends Component {
             <div key={user.id}>
               <img
                 src={user.picture_url}
-                width="36px"
+                width="42px"
                 className="rounded-circle"
                 alt=""
               />
@@ -110,7 +110,7 @@ class UserSearch extends Component {
             </div>
           ))}
         </div>
-        <ListGroup className="list-scroll">
+        <ListGroup className="list-scroll" style={{height: 'auto', maxHeight:'25vh'}}>
           {this.state.users.map(user => (
             <ListGroup.Item
               key={user.id}

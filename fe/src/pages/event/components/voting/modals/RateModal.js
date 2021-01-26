@@ -83,8 +83,11 @@ class RateModal extends Component {
             customId={loc?.custom_location_id}
             showRating={false}
           />
-          <div className="d-flex">
-            <span className="small-string">{basicFormat(date)}</span>
+          <div className="row">
+            <div className="col-1" />
+            <div className="d-flex" style={{ paddingLeft: '15px' }}>
+              <span className="small-string">{basicFormat(date)}</span>
+            </div>
           </div>
           <h5 className="mt-2">Rate</h5>
           <Form>

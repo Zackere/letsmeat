@@ -63,8 +63,11 @@ class Debt extends Component {
       <div className="flex-column w-100 h-100">
         <Loading show={this.state.loading} />
         <p>
-          <b> {this.state.userName}</b>{' '}
+          <b> {this.state.userName + ' '}</b>
+          <small>from group</small>
+          <b> {' ' + this.state.groupName + ' '}</b>
           <small>{this.props.type ? 'sent you ' : 'want you to pay '}</small>
+          <br/>
           <b> {this.props.amount + ' zł'}</b>
           <br />
           <small>{this.props.description}</small>

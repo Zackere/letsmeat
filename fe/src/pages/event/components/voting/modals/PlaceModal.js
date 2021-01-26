@@ -29,7 +29,7 @@ class PlaceModal extends Component {
     this.props.addGooglePlace(p)
   }
 
-  openCustomModal = () => this.setState({ customOpened: true })
+  openCustomModal = () => this.setState({ customOpened: true, places:[] })
 
   closeCustomModal = () => {
     this.closeModal()
@@ -88,7 +88,7 @@ class PlaceModal extends Component {
                 </Form.Group>
               </Form>
             </div>
-            <ListGroup className="list-scroll">
+            <ListGroup className="list-scroll" style={{height: 'auto', maxHeight:'25vh'}}>
               {places.map(p => (
                 <ListGroup.Item
                   key={p.place_id}

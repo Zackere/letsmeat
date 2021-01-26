@@ -40,7 +40,7 @@ class UsersList extends Component {
 
     const from = me.id > user.id ? me.id : user.id
     const to = me.id < user.id ? me.id : user.id
-    
+
     if (!this.state.debts[from] || !this.state.debts[from][to]) return 0
 
     return this.state.debts[from][to]
@@ -56,7 +56,7 @@ class UsersList extends Component {
       to_id,
       amount: parseInt(amount),
       description,
-      debt_type: 1
+      debt_type: 1,
     }
 
     this.setState({ loading: true })
@@ -81,7 +81,7 @@ class UsersList extends Component {
   render() {
     const users = this.props.users
     const me = this.props.me
-    const debt = this.getDebt()/100
+    const debt = this.getDebt() / 100
 
     return (
       <>
@@ -101,12 +101,13 @@ class UsersList extends Component {
                 <div className="row align-items-center rounded-0 border-left-0">
                   <div
                     className="col-9 mx-auto"
-                    onClick={() =>
-                      this.setState({
-                        balanceModalOpened: true,
-                        activeUser: user,
-                      })
-                    }
+                    onClick={() => {
+                      me.id !== user.id &&
+                        this.setState({
+                          balanceModalOpened: true,
+                          activeUser: user,
+                        })
+                    }}
                   >
                     <img
                       src={user.picture_url}

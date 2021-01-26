@@ -81,7 +81,13 @@ class Place extends Component {
             />
           </div>
         </div>
-        <div className="flex-column mx-0 col-8">
+        <div
+          className={
+            this.props.showRating
+              ? 'flex-column mx-0 col-8'
+              : 'flex-column mx-0 col-11'
+          }
+        >
           <div className="w-100">{this.getLocationName()}</div>
           <div className="small-string">{this.getLocationAddress()}</div>
         </div>

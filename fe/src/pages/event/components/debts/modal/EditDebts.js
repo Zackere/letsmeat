@@ -4,7 +4,10 @@ import { Modal, Button, Form } from 'react-bootstrap'
 import { withToastManager } from 'react-toast-notifications'
 import { IconContext } from 'react-icons'
 import { IoIosArrowForward, IoIosArrowBack } from 'react-icons/io'
-import { BsFillPlusCircleFill } from 'react-icons/bs'
+import {
+  BsFillPlusCircleFill,
+  BsFillBackspaceReverseFill,
+} from 'react-icons/bs'
 
 import Loading from '../../../../../common/loading/Loading'
 
@@ -38,11 +41,11 @@ class EditDebts extends Component {
   _modalBody = React.createRef()
 
   componentDidUpdate(prevProps) {
-    if (this.props.debts !== prevProps.debts && !this.state.loading) {
+    if (this.props.update !== prevProps.update && !this.state.loading) {
       const width = this._modalBody?.current?.clientWidth
       this.setState({ width, loading: true })
 
-      getImages(this.props.token, [this.props.debts[0].image_id]).then(images =>
+      getImages(this.props.token, [this.props.selected.image_id]).then(images =>
         this.updateState(images[0].image_url)
       )
     }
@@ -68,7 +71,12 @@ class EditDebts extends Component {
   }
 
   closeModal = () => {
-    this.setState({ index: 0, showReceipt: false })
+    this.setState({
+      index: 0,
+      showReceipt: false,
+      descriptionIsInvalid: false,
+      amountIsInvalid: false,
+    })
     this.props.closeModal()
   }
 
@@ -130,6 +138,14 @@ class EditDebts extends Component {
     return descriptionIsInvalid
   }
 
+  deleteDebt = () => {
+    const debts = this.state.debts
+    const index = this.state.index
+
+    if (debts.length === 1) this.closeModal()
+    this.props.deleteDebt(debts[index])
+    this.setState({ descriptionIsInvalid: false, amountIsInvalid: false })
+  }
   saveDebt = () => {
     const debts = this.state.debts
     const index = this.state.index
@@ -262,17 +278,30 @@ class EditDebts extends Component {
                   >
                     Debt
                   </h5>
-                  <Button
-                    variant="link"
-                    className="no-focus"
-                    onClick={this.addDebt}
-                  >
-                    <IconContext.Provider
-                      value={{ size: '20px', color: '#343a40' }}
+                  <div className="d-flex">
+                    <Button
+                      variant="link"
+                      className="no-focus"
+                      onClick={this.deleteDebt}
                     >
-                      <BsFillPlusCircleFill />
-                    </IconContext.Provider>
-                  </Button>
+                      <IconContext.Provider
+                        value={{ size: '20px', color: '#343a40' }}
+                      >
+                        <BsFillBackspaceReverseFill />
+                      </IconContext.Provider>
+                    </Button>
+                    <Button
+                      variant="link"
+                      className="no-focus"
+                      onClick={this.addDebt}
+                    >
+                      <IconContext.Provider
+                        value={{ size: '20px', color: '#343a40' }}
+                      >
+                        <BsFillPlusCircleFill />
+                      </IconContext.Provider>
+                    </Button>
+                  </div>
                 </div>
                 <Form>
                   <Form.Group>

@@ -57,8 +57,6 @@ export const getEvent = (token, id) => {
 
 const adjustFieldsNames = event => ({
   id: event.id,
-  name: event.name,
-  deadline: event.deadline,
   custom_locations_ids: event.candidate_custom_locations,
   google_maps_locations_ids: event.candidate_google_maps_locations,
   candidate_times: event.candidate_times,

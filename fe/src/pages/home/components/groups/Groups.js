@@ -167,7 +167,10 @@ class Groups extends Component {
                           Delete
                         </Dropdown.Item>
                       ) : (
-                        <Dropdown.Item onClick={() => this.leaveGroup(group)}>
+                        <Dropdown.Item
+                          disabled={!group.can_leave}
+                          onClick={() => this.leaveGroup(group)}
+                        >
                           Leave
                         </Dropdown.Item>
                       )}
