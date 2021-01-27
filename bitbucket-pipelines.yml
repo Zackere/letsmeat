@@ -1,0 +1,41 @@
+image: mcr.microsoft.com/dotnet/sdk:5.0
+
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Deploy backend
+          caches:
+            - dotnetcore
+          deployment: production
+          script:
+            - apt-get update && apt-get install -y zip
+            - cd backend/LetsMeatAPI
+            - dotnet restore LetsMeatAPI.csproj
+            - dotnet build LetsMeatAPI.csproj --no-restore --configuration Release
+            - dotnet publish LetsMeatAPI.csproj --no-restore --no-build --configuration Release
+            - cd bin/Release/netcoreapp3.1/publish/
+            - zip -r ../letsmeatapi.zip *
+            - cd ..
+            - curl -u wreplin:${AZURE_DEPLOYMENT_PASSWORD} --data-binary @letsmeatapi.zip https://letsmeatapi.scm.azurewebsites.net/api/zipdeploy
+          condition:
+            changesets:
+              includePaths:
+                - backend/LetsMeatAPI/**
+                - bitbucket-pipelines.yml
+  default:
+    - parallel:
+        - step:
+            name: Build and Test backend
+            caches:
+              - dotnetcore
+            script:
+              - cd backend/LetsMeatAPITests
+              - dotnet restore
+              - dotnet build --no-restore --configuration Release
+              - dotnet test --no-build --configuration Release --verbosity normal
+            condition:
+              changesets:
+                includePaths:
+                  - backend/**
+                  - bitbucket-pipelines.yml
