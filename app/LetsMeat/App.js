@@ -32,6 +32,8 @@ const Navigation = () => {
       dispatch({ type: 'SET_LOADED' });
     });
     logIn();
+  // Should only run once
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   let mainComponent = null;

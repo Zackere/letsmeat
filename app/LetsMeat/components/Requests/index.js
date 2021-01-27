@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import {
   GoogleSignin
 } from '@react-native-community/google-signin';
@@ -34,6 +35,8 @@ const tryLoggingIn = async (state, dispatch) => {
   }
 };
 
+// For future use
+// eslint-disable-next-line no-unused-vars
 const executeRequest = (request, dispatch) => request()
   .catch(printAndPassError);
 
@@ -114,6 +117,8 @@ const joinGroup = ({ state, dispatch }, groupId) => post({ state, dispatch }, '/
 
 const acceptInvitation = joinGroup;
 
+// For future use
+// eslint-disable-next-line no-unused-vars
 const uploadImage = ({ state, dispatch }, eventId, image) => {
   // eslint-disable-next-line no-undef
   const form = new FormData();

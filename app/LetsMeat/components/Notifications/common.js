@@ -9,7 +9,13 @@ import {
 } from 'react-native-paper';
 import { formatAmount } from '../../helpers/money';
 import {
-  acceptDebt, acceptInvitation, getGroupInfo, getImagesInfo, getUsersInfo, rejectDebt, rejectInvitation
+  acceptDebt,
+  acceptInvitation,
+  getGroupInfo,
+  getImagesInfo,
+  getUsersInfo,
+  rejectDebt,
+  rejectInvitation
 } from '../Requests';
 import { store } from '../Store';
 
@@ -71,12 +77,13 @@ export const Invitation = ({ invitation, full = false }) => {
       if (!mounted.current) return;
       setUser(users[0]);
     });
-    getGroupInfo({ state, dispatch }, invitation.group_id).then((group) => {
+    getGroupInfo({ state, dispatch }, invitation.group_id).then((groupInfo) => {
       if (!mounted.current) return;
-      setGroup(group);
+      setGroup(groupInfo);
     });
     return () => { mounted.current = false; };
-  }, [state, invitation.from_id, invitation.group_id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [invitation.from_id, invitation.group_id]);
 
   return (
     <Card style={full ? styles.full : styles.small}>
@@ -121,9 +128,9 @@ export const Debt = ({ debt, full = false }) => {
       if (!mounted.current) return;
       setUser(users[0]);
     });
-    getGroupInfo({ state, dispatch }, debt.group_id).then((group) => {
+    getGroupInfo({ state, dispatch }, debt.group_id).then((groupInfo) => {
       if (!mounted.current) return;
-      setGroup(group);
+      setGroup(groupInfo);
     });
     if (full && debt.image_id) {
       getImagesInfo({ state, dispatch }, debt.image_id).then(([response]) => {
@@ -135,7 +142,9 @@ export const Debt = ({ debt, full = false }) => {
       });
     }
     return () => { mounted.current = false; };
-  }, [debt.to_id, state, full, debt.image_id, debt.group_id]);
+  },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [debt.to_id, state, full, debt.image_id, debt.group_id]);
 
   const request = (debt.debt_type === 0) ? 'wants you to pay' : 'wants you to confirm they transferred';
 
@@ -152,7 +161,9 @@ export const Debt = ({ debt, full = false }) => {
                 <Paragraph margin={5}>
                   {debt.description}
                 </Paragraph>
-                {image && !imageVisible && <Button onPress={() => setImageVisible(true)}>Show image</Button>}
+                {image
+                && !imageVisible
+                && <Button onPress={() => setImageVisible(true)}>Show image</Button>}
                 {image && imageVisible && (
                 <>
                   <Image

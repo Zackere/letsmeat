@@ -50,8 +50,10 @@ const Locations = ({
         setLocationsOrdered([...newLocationsOrdered]);
         setLoading(false);
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customLocations, googleLocations, state.user.tokenId, order,
-    state.event.candidate_google_maps_locations, state.event.candidate_custom_locations]);
+    state.event.candidate_google_maps_locations,
+    state.event.candidate_custom_locations, state.user.id]);
 
   return (
     loading ? <ActivityIndicator />

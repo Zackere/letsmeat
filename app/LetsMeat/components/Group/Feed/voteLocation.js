@@ -38,7 +38,9 @@ const VoteLocation = ({ navigation, route }) => {
     }
   };
 
-  useLayoutEffect(setHeaderAction, [loading, state, navigation, voting, eventId, locations]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useLayoutEffect(setHeaderAction, [loading, state.user.id,
+    navigation, voting, eventId, locations]);
 
   const translateLocationsToVote = (newLocations) => newLocations.map((l) => {
     if (l.kind === 'google_maps_locations') {

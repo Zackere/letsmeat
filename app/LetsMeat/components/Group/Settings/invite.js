@@ -52,8 +52,11 @@ const Invite = ({ navigation }) => {
       if (!mounted.current) return;
       setSearchResults(results);
     });
-  }, [state]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.user.id]);
 
+  // Only to be called once
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSearch = useCallback(debounce(getSearchResults, 1000), []);
 
   const onChangeSearch = (query) => {

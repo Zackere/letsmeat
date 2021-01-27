@@ -18,15 +18,20 @@ export const UserPicker = ({
   const filteredUsers = users.filter((u) => u.name.toLowerCase().includes(query.toLowerCase()));
 
   useEffect(() => {
-    getUsersInfo({ state, dispatch }, userIds).then((users) => {
-      setUsers(users);
+    getUsersInfo({ state, dispatch }, userIds).then((usersInfo) => {
+      setUsers(usersInfo);
       setLoading(false);
     });
-  }, [state, userIds]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.user.id, userIds]);
 
   return (
     <Portal>
-      <Dialog visible={dialogVisible} contentContainerStyle={styles.container} onDismiss={onDismiss}>
+      <Dialog
+        visible={dialogVisible}
+        contentContainerStyle={styles.container}
+        onDismiss={onDismiss}
+      >
         <Dialog.Content>
           <TextInput
             mode="outlined"

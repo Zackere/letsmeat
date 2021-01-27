@@ -35,7 +35,8 @@ const VoteTime = ({ navigation, route }) => {
     }
   };
 
-  useLayoutEffect(setHeaderAction, [times, loading, state, navigation, voting, eventId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useLayoutEffect(setHeaderAction, [times, loading, state.user.id, navigation, voting, eventId]);
 
   useEffect(() => {
     getVoteTimes({ state, dispatch }, eventId).then((data) => {

@@ -20,7 +20,8 @@ const Notifications = () => {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     refreshNotifications({ state, dispatch }).finally(() => setRefreshing(false));
-  }, [state]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.user.id]);
 
   return (
     <BackgroundContainer backgroundVariant="money">

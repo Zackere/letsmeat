@@ -16,6 +16,8 @@ import { getGroupInfo, getGroups } from '../../Requests';
 import { store } from '../../Store';
 import { refreshGroup } from '../../../helpers/refresh';
 
+const noGroupimage = require('../../../images/noGroups.jpg');
+
 const RenderGroup = ({
   groupId, onPress
 }) => {
@@ -27,7 +29,8 @@ const RenderGroup = ({
       .then((info) => {
         setGroup(info);
       });
-  }, [state]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, groupId, state.user.id]);
 
   return (
     <Card
@@ -63,7 +66,8 @@ export const Groups = ({ navigation }) => {
   useFocusEffect(useCallback(() => {
     if (groupsLoaded) setLoadingGroups(false);
     refreshNotifications({ state, dispatch });
-  }, [state.user.id]));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupsLoaded, state.user.id]));
   const [loadingGroups, setLoadingGroups] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [spinner, setSpinner] = useState(false);
@@ -89,7 +93,8 @@ export const Groups = ({ navigation }) => {
     getGroups({ state, dispatch }).then((groups) => {
       dispatch({ type: 'SET_GROUPS', payload: groups });
     }).finally(() => setRefreshing(false));
-  }, [state]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.user.id]);
 
   useEffect(loadGroups, [state, groupsLoaded, dispatch]);
 
@@ -128,7 +133,7 @@ export const Groups = ({ navigation }) => {
                   style={styles.emptyCard}
                 >
                   <Card.Title title="Nothing to show" />
-                  <Card.Cover source={{ uri: 'https://images.unsplash.com/photo-1577460551100-907ba84418ce?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1274&q=80' }} />
+                  <Card.Cover source={noGroupimage} />
                   <Card.Content>
                     <Paragraph>
                       Consider adding a group

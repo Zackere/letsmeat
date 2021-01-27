@@ -43,9 +43,11 @@ const EventView = ({ navigation }) => {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadData().then(() => setRefreshing(false));
-  }, [state.event.id, loadData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.event.id, loadData, state.user.id]);
 
-  useEffect(() => { loadData(); return () => {}; }, [state.user.tokenId, deleting, dispatch]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { loadData(); return () => {}; }, [state.user.tokenId, deleting]);
 
   return (
     <BackgroundContainer>

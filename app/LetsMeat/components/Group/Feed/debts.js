@@ -3,8 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   Image, StyleSheet, View, ToastAndroid
 } from 'react-native';
-import ImagePicker from 'react-native-image-crop-picker';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import {
   ActivityIndicator, Button, Card, Paragraph
 } from 'react-native-paper';
@@ -210,6 +209,7 @@ const Debts = ({ navigation, containerStyle, debtStyle }) => {
       setUsers(usersInfo);
       setLoading(false);
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.event.images, state.user.tokenId]);
 
   return (

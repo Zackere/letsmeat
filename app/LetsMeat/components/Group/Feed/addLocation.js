@@ -44,8 +44,11 @@ const AddLocation = ({ navigation, route }) => {
         if (!mounted.current) return;
         setSearchResults(results);
       });
-  }, [groupId, sessionToken, state]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupId, sessionToken, state.user.id]);
 
+  // Only call useCallback once
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSearch = useCallback(debounce(getSearchResults, 1000), []);
 
   const onChangeSearch = (query) => {

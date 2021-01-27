@@ -18,7 +18,8 @@ const Creator = ({ userId, containerStyle }) => {
     getUsersInfo({ state, dispatch }, userId).then((users) => {
       setUserInfo(users[0]);
     });
-  }, [state, userId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.user.id, userId]);
 
   return (
     <Card elevation={0} style={containerStyle}>

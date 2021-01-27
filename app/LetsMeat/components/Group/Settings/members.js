@@ -34,7 +34,8 @@ export const GroupMembers = ({
 
   useEffect(() => {
     getUsersInfo({ state, dispatch }, members.map((m) => m.id)).then(setMembersInfo);
-  }, [members, state]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [members, state.user.id]);
 
   const membersSlice = showAll ? membersInfo : membersInfo.slice(0, membersToDisplay);
 
