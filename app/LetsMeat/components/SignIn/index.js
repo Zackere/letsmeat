@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { appendAPIToken, appendUserID } from '../Requests';
 import { store } from '../Store';
+import BackgroundContainer from '../Background';
 
 function SignInScreen() {
   const { dispatch } = useContext(store);
@@ -36,16 +37,20 @@ function SignInScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Let&apos;s meat</Text>
-      <GoogleSigninButton
-        style={styles.button}
-        size={GoogleSigninButton.Size.Wide}
-        color={GoogleSigninButton.Color.Dark}
-        onPress={signIn}
-        disabled={signingIn}
-      />
-    </View>
+    <BackgroundContainer>
+      <View
+        style={styles.container}
+      >
+        <Text style={styles.title}>Let&apos;s meat</Text>
+        <GoogleSigninButton
+          style={styles.button}
+          size={GoogleSigninButton.Size.Wide}
+          color={GoogleSigninButton.Color.Dark}
+          onPress={signIn}
+          disabled={signingIn}
+        />
+      </View>
+    </BackgroundContainer>
   );
 }
 
@@ -58,7 +63,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 50,
-    margin: 50
+    margin: 50,
+    color: 'black',
+    textShadowColor: 'white',
+    textShadowRadius: 5
   },
   button: {
     width: 200,
