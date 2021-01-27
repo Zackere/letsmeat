@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { appendAPIToken, appendUserID } from '../Requests';
 import { store } from '../Store';
-import BackgroundContainer from '../Background';
+import { BackgroundContainer } from '../Background';
 
 function SignInScreen() {
   const { dispatch } = useContext(store);
