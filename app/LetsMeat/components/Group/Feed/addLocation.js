@@ -10,6 +10,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import {
   Button, Searchbar
 } from 'react-native-paper';
+import { MIN_SEARCH_LENGTH } from '../../../constants';
 import { combineLocations } from '../../../helpers/locations';
 import { randomId } from '../../../helpers/random';
 import { BackgroundContainer } from '../../Background';
@@ -36,6 +37,7 @@ const AddLocation = ({ navigation, route }) => {
   }, [debouncedSearch]);
 
   const getSearchResults = useCallback(() => {
+    if (!persistentSearchQuery.current || persistentSearchQuery.current.length <= MIN_SEARCH_LENGTH) return;
     searchLocation({ state, dispatch }, groupId, persistentSearchQuery.current, sessionToken)
       .then((results) => {
         if (!mounted.current) return;

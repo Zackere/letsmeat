@@ -26,10 +26,10 @@ export const daysOfWeek = [
 export const formatTime = (time) => (`${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`);
 
 export const formatDate = (time) => {
-  const year = time.getFullYear(); // 2019
-  const date = time.getDate(); //
+  const year = time.getFullYear();
+  const date = time.getDate();
   const monthName = months[time.getMonth()];
-  const dayName = daysOfWeek[time.getDay()]; // Thu
+  const dayName = daysOfWeek[time.getDay()];
   return `${dayName}, ${date} ${monthName} ${year}`;
 };
 

@@ -10,6 +10,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import {
   Avatar, Button, Chip, FAB, Searchbar
 } from 'react-native-paper';
+import { MIN_SEARCH_LENGTH } from '../../../constants';
 import { BackgroundContainer } from '../../Background';
 import { searchUsers, sendInvitation } from '../../Requests';
 import { store } from '../../Store';
@@ -45,6 +46,7 @@ const Invite = ({ navigation }) => {
   const persistentSearchQuery = useRef('');
 
   const getSearchResults = useCallback(() => {
+    if (!persistentSearchQuery.current || persistentSearchQuery.current.length <= MIN_SEARCH_LENGTH) return;
     searchUsers({ state, dispatch }, persistentSearchQuery.current).then((results) => {
       if (!mounted.current) return;
       setSearchResults(results);
