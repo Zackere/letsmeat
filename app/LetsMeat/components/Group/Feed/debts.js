@@ -119,9 +119,13 @@ const DebtImage = ({
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    Image.getSize(image.image_url, (width, height) => {
-      setImageSize({ width, height });
-    });
+    try {
+      Image.getSize(image.image_url, (width, height) => {
+        setImageSize({ width, height });
+      });
+    } catch (error) {
+      setImageSize({ width: 0, height: 0 });
+    }
   }, [image.image_url]);
 
   return (
