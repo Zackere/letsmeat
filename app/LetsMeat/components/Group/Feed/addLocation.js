@@ -37,7 +37,8 @@ const AddLocation = ({ navigation, route }) => {
   }, [debouncedSearch]);
 
   const getSearchResults = useCallback(() => {
-    if (!persistentSearchQuery.current || persistentSearchQuery.current.length <= MIN_SEARCH_LENGTH) return;
+    if (!persistentSearchQuery.current
+      || persistentSearchQuery.current.length <= MIN_SEARCH_LENGTH) return;
     searchLocation({ state, dispatch }, groupId, persistentSearchQuery.current, sessionToken)
       .then((results) => {
         if (!mounted.current) return;

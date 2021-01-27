@@ -46,7 +46,8 @@ const Invite = ({ navigation }) => {
   const persistentSearchQuery = useRef('');
 
   const getSearchResults = useCallback(() => {
-    if (!persistentSearchQuery.current || persistentSearchQuery.current.length <= MIN_SEARCH_LENGTH) return;
+    if (!persistentSearchQuery.current
+      || persistentSearchQuery.current.length <= MIN_SEARCH_LENGTH) return;
     searchUsers({ state, dispatch }, persistentSearchQuery.current).then((results) => {
       if (!mounted.current) return;
       setSearchResults(results);
