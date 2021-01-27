@@ -43,7 +43,8 @@ const VoteTime = ({ navigation, route }) => {
       setTimes(data);
       setLoading(false);
     });
-  }, [state, eventId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.user.id, eventId]);
 
   return (
     <BackgroundContainer backgroundVariant="vote">

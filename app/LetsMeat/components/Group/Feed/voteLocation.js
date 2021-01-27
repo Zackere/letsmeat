@@ -85,7 +85,8 @@ const VoteLocation = ({ navigation, route }) => {
     }).then(translateAndSetData);
   };
 
-  useEffect(getAndExtractData, [state, eventId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(getAndExtractData, [state.user.id, eventId]);
 
   const keyExtractor = (item) => `${item.kind === 'google_maps_locations' ? item.details.place_id : item.id}`;
 
