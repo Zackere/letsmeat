@@ -3,6 +3,7 @@ using LetsMeatAPI;
 using LetsMeatAPI.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -17,6 +18,26 @@ namespace LetsMeatAPITests {
     protected readonly ITestOutputHelper _output;
     public TestBase(ITestOutputHelper output) {
       _output = output;
+    }
+    public Mock<IServiceProvider> ServiceProviderMock(Func<LMDbContext> context) {
+      var serviceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
+      serviceProvider.Setup(s => s.GetService(typeof(LMDbContext)))
+                     .Returns(context);
+      var serviceScope = new Mock<IServiceScope>(MockBehavior.Strict);
+      serviceScope.Setup(s => s.Dispose());
+      serviceScope.Setup(x => x.ServiceProvider)
+                  .Returns(serviceProvider.Object);
+      var serviceScopeFactory = new Mock<IServiceScopeFactory>(MockBehavior.Strict);
+      serviceScopeFactory
+          .Setup(x => x.CreateScope())
+          .Returns(serviceScope.Object);
+      serviceProvider
+          .Setup(x => x.GetService(typeof(IServiceScopeFactory)))
+          .Returns(serviceScopeFactory.Object);
+      return serviceProvider;
+    }
+    public Mock<IServiceProvider> ServiceProviderMock(string connection) {
+      return ServiceProviderMock(() => CreateContextForConnection(connection));
     }
     public static Mock<IUserManager> UserManagerMock(User[] users) {
       var userManager = new Mock<IUserManager>(MockBehavior.Strict);

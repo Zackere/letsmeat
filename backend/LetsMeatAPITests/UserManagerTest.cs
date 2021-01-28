@@ -2,8 +2,10 @@ using Google.Apis.Auth;
 using LetsMeatAPI;
 using LetsMeatAPI.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,12 +23,11 @@ namespace LetsMeatAPITests {
       GoogleJsonWebSignature.Payload[] jwts
     ) {
       var connection = GetDb();
-      using var context = CreateContextForConnection(connection);
-      var userManager = new UserManager(context, Mock.Of<ILogger<UserManager>>());
+      var userManager = new UserManager(ServiceProviderMock(connection).Object, Mock.Of<ILogger<UserManager>>());
       await Task.WhenAll(tokens.Zip(jwts).Select(p => userManager.OnTokenGranted(p.First, p.Second)).ToArray());
 
+      using var context = CreateContextForConnection(connection);
       Assert.Equal(tokens.Count(), context.Users.Count());
-
       foreach(var user in context.Users) {
         var (token, jwt) = (from p in tokens.Zip(jwts)
                             where p.Second.Subject == user.Id
@@ -43,8 +44,7 @@ namespace LetsMeatAPITests {
       var token = (data[0] as object[])[0] as string;
       var jwt = (data[1] as object[])[0] as GoogleJsonWebSignature.Payload;
       var connection = GetDb();
-      using var context = CreateContextForConnection(connection);
-      var userManager = new UserManager(context, Mock.Of<ILogger<UserManager>>());
+      var userManager = new UserManager(ServiceProviderMock(connection).Object, Mock.Of<ILogger<UserManager>>());
 
       await userManager.OnTokenGranted(token, jwt);
       Assert.Equal(jwt.Subject, userManager.IsLoggedIn(token));
@@ -65,28 +65,31 @@ namespace LetsMeatAPITests {
       var jwt2 = (data[1] as object[])[1] as GoogleJsonWebSignature.Payload;
       jwt2.Subject = jwt.Subject; // They are the same user
       var connection = GetDb();
-      using var context = CreateContextForConnection(connection);
 
       var userManager = new UserManager(
-        context,
+        ServiceProviderMock(connection).Object,
         Mock.Of<ILogger<UserManager>>()
       );
       await userManager.OnTokenGranted(token, jwt);
 
+      var context = CreateContextForConnection(connection);
       Assert.Equal(1, context.Users.Count());
       var user = context.Users.First();
       VerifyUserInformation(user, jwt);
       ++user.PricePref;
       context.Users.Update(user);
       await context.SaveChangesAsync();
+      context.Dispose();
 
       await userManager.OnTokenGranted(token2, jwt2);
 
+      context = CreateContextForConnection(connection);
       Assert.Equal(1, context.Users.Count());
       user = context.Users.First();
       VerifyUserInformation(user, jwt2);
       Assert.Equal(jwt.Subject, userManager.IsLoggedIn(token2));
       Assert.Null(userManager.IsLoggedIn(token));
+      context.Dispose();
     }
     [Fact]
     public async Task ThrowsDbUpdateExceptionOnRealDb() {
@@ -110,20 +113,21 @@ namespace LetsMeatAPITests {
           return ret;
         });
       mockUsers.Setup(u => u.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
-        .Returns<User, CancellationToken>((u, t) => genuineUsers.AddAsync(u, t));
+        .Returns<User, CancellationToken>(async (u, t) => await genuineUsers.AddAsync(u, t));
 
-      var userManager1 = new UserManager(context1, Mock.Of<ILogger<UserManager>>());
-      var userManager2 = new UserManager(context2, Mock.Of<ILogger<UserManager>>());
-      userManager1.LogOut(token1);
+      var userManager1 = new UserManager(ServiceProviderMock(() => context1).Object, Mock.Of<ILogger<UserManager>>());
+      var userManager2 = new UserManager(ServiceProviderMock(() => context2).Object, Mock.Of<ILogger<UserManager>>());
+
       context2.Users = mockUsers.Object;
       var create2 = Assert.ThrowsAsync<DbUpdateException>(() => userManager2.OnTokenGranted(token2, jwt2));
       await Task.Delay(500);
       await userManager1.OnTokenGranted(token1, jwt1);
       await create2;
 
-      Assert.Equal(1, genuineUsers.Count());
-      var user = genuineUsers.First();
-      VerifyUserInformation(user, jwt2);
+      var context = CreateContextForConnection(connection);
+      Assert.Equal(1, context.Users.Count());
+      var user = context.Users.First();
+      VerifyUserInformation(user, jwt1);
     }
     [Fact]
     public async Task ThrowsDbUpdateConcurrencyExceptionOnRealDb() {
@@ -156,15 +160,16 @@ namespace LetsMeatAPITests {
           return ret;
         });
       context1.Users = mockUsers.Object;
-      var userManager1 = new UserManager(context1, Mock.Of<ILogger<UserManager>>());
-      userManager1.LogOut(token1);
+      var userManager1 = new UserManager(ServiceProviderMock(()=> context1).Object, Mock.Of<ILogger<UserManager>>());
+
       var update1 = Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => userManager1.OnTokenGranted(token1, jwt1));
       await Task.Delay(500);
       context2.Users.Remove(context2.Users.Find(jwt1.Subject));
       await context2.SaveChangesAsync();
       await update1;
 
-      Assert.Equal(0, genuineUsers.Count());
+      using var context = CreateContextForConnection(connection);
+      Assert.Equal(0, context.Users.Count());
     }
     private void VerifyUserInformation(
       User user,

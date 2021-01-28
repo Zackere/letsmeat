@@ -126,6 +126,10 @@ namespace LetsMeatAPITests {
       var connection = GetDb();
       var (users, group, events, customLocations, googleMapsLocations, invitations, images, debts, pendingDebts)
         = await SeedDbWithOneGroup(connection);
+      using(var cc = CreateContextForConnection(connection)) {
+        cc.RemoveRange(cc.Debts);
+        await cc.SaveChangesAsync();
+      }
       var userManager = UserManagerMock(users);
       var blobClientFactory = new Mock<IBlobClientFactory>(MockBehavior.Strict);
       using(var context = CreateContextForConnection(connection)) {
