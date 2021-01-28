@@ -4,6 +4,7 @@ using LetsMeatAPI.ExternalAPI;
 using LetsMeatAPI.ReceiptExtractor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,7 +56,7 @@ namespace LetsMeatAPI {
         s => new PLMcDonaldsReceiptExtractor(new EmptyReceiptExtractor())
       );
       services.AddScoped<IDebtReducer, DebtReducer>();
-      services.AddScoped<IUserManager, UserManager>();
+      services.AddSingleton<IUserManager, UserManager>();
       services.AddScoped<IPaidResourceGuard, PaidResouceGuard>(
         s => new PaidResouceGuard(0_250, s.GetService<ILogger<PaidResouceGuard>>()!)
       );
@@ -97,7 +98,8 @@ namespace LetsMeatAPI {
     public void Configure(
       IApplicationBuilder app,
       IWebHostEnvironment env,
-      LMDbContext context
+      LMDbContext context,
+      IUserManager userManager
     ) {
       app.UseMiddleware<RequestResponseLoggingMiddleware>();
       if(env.IsDevelopment()) {
@@ -106,7 +108,11 @@ namespace LetsMeatAPI {
       app.UseCors(_letsMeatAPIPolicy);
       app.UseHttpsRedirection();
       app.UseRouting();
-      app.UseStaticFiles();
+      var contentTypes = new FileExtensionContentTypeProvider();
+      contentTypes.Mappings[".apk"] = "application/vnd.android.package-archive";
+      app.UseStaticFiles(new StaticFileOptions {
+        ContentTypeProvider = contentTypes
+      });
       app.UseEndpoints(endpoints => endpoints.MapControllers());
       app.UseSwagger();
       app.UseSwaggerUI(config => {
@@ -114,9 +120,11 @@ namespace LetsMeatAPI {
         config.RoutePrefix = string.Empty;
       });
 
-      UserManager.Init(from user in context.Users
-                       where user.Token != null
-                       select new ValueTuple<string, string>(user.Token!, user.Id));
+      foreach(var user in from user in context.Users
+                          where user.Token != null
+                          select user) {
+        userManager.LogIn(user.Token!, user.Id);
+      }
     }
     private readonly IConfiguration _configuration;
     private const string _letsMeatAPIPolicy = "_letsMeatAPIPolicy";

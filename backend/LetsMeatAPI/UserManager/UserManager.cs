@@ -1,5 +1,6 @@
 using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,18 +12,24 @@ namespace LetsMeatAPI {
     public Task OnTokenGranted(string token, GoogleJsonWebSignature.Payload jwt);
     public string? IsLoggedIn(string token);
     public string? LogOut(string token);
+    public void LogIn(string token, string id);
   }
   public class UserManager : IUserManager {
-    public UserManager(LMDbContext context, ILogger<UserManager> logger) {
-      _context = context;
+    public UserManager(
+      IServiceProvider serviceProvider,
+      ILogger<UserManager> logger
+    ) {
+      _serviceProvider = serviceProvider;
       _logger = logger;
     }
     public async Task OnTokenGranted(string token, GoogleJsonWebSignature.Payload jwt) {
       if(_loggedUsersTokenToId.ContainsKey(token))
         return;
-      var user = await _context.Users.FindAsync(jwt.Subject);
+      using var scope = _serviceProvider.CreateScope();
+      using var context = scope.ServiceProvider.GetRequiredService<LMDbContext>();
+      var user = await context.Users.FindAsync(jwt.Subject);
       if(user == null) {
-        await _context.Users.AddAsync(new() {
+        await context.Users.AddAsync(new() {
           Id = jwt.Subject,
           PictureUrl = jwt.Picture,
           Email = jwt.Email,
@@ -38,10 +45,10 @@ namespace LetsMeatAPI {
         user.Email = jwt.Email;
         user.Name = jwt.Name;
         user.Token = token;
-        _context.Entry(user).State = EntityState.Modified;
+        context.Entry(user).State = EntityState.Modified;
       }
-      await _context.SaveChangesAsync();
-      logUser(token, jwt.Subject);
+      await context.SaveChangesAsync();
+      LogIn(token, jwt.Subject);
     }
     public string? IsLoggedIn(string token) {
       try {
@@ -69,17 +76,7 @@ namespace LetsMeatAPI {
         return null;
       }
     }
-    public static void Init(IEnumerable<(string token, string id)> grantedTokens) {
-      try {
-        _mtx.AcquireWriterLock(_mtxTimeout);
-        foreach(var (token, id) in grantedTokens) {
-          _loggedUsersIdToToken[id] = token;
-          _loggedUsersTokenToId[token] = id;
-        }
-        _mtx.ReleaseWriterLock();
-      } catch(ApplicationException) { }
-    }
-    private void logUser(string token, string id) {
+    public void LogIn(string token, string id) {
       try {
         _mtx.AcquireWriterLock(_mtxTimeout);
         _loggedUsersIdToToken.TryGetValue(id, out var oldToken);
@@ -92,11 +89,11 @@ namespace LetsMeatAPI {
         _logger.LogError(ex.ToString());
       }
     }
-    private readonly LMDbContext _context;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<UserManager> _logger;
-    private static readonly Dictionary<string, string> _loggedUsersIdToToken = new();
-    private static readonly Dictionary<string, string> _loggedUsersTokenToId = new();
-    private static readonly ReaderWriterLock _mtx = new();
+    private readonly Dictionary<string, string> _loggedUsersIdToToken = new();
+    private readonly Dictionary<string, string> _loggedUsersTokenToId = new();
+    private readonly ReaderWriterLock _mtx = new();
     private const int _mtxTimeout = 500;
   }
 }
